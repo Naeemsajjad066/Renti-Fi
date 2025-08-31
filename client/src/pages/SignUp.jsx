@@ -277,36 +277,6 @@ const SignUp = () => {
               )}
             </motion.div>
 
-            <motion.div variants={itemVariants}>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Choose Role
-              </label>
-              <div className="flex gap-4">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="guest"
-                    checked={formData.role === 'guest'}
-                    onChange={handleChange}
-                    className="mr-2 h-4 w-4 text-primary border-gray-300 focus:ring-2 focus:ring-primary/20"
-                  />
-                  <span className="text-sm text-gray-700">Guest</span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="host"
-                    checked={formData.role === 'host'}
-                    onChange={handleChange}
-                    className="mr-2 h-4 w-4 text-primary border-gray-300 focus:ring-2 focus:ring-primary/20"
-                  />
-                  <span className="text-sm text-gray-700">Host</span>
-                </label>
-              </div>
-            </motion.div>
-
             <motion.div variants={itemVariants} className="flex items-start">
               <div className="flex items-center h-5">
                 <input

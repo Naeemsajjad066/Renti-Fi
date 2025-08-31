@@ -7,23 +7,25 @@ export function ThemeProvider({ children }) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Always use light theme as default
     const savedTheme = localStorage.getItem('theme') || 'light';
     setTheme(savedTheme);
-    
-    // Remove dark class to ensure light mode
-    document.documentElement.classList.remove('dark');
-    
+    updateDocumentClass(savedTheme);
     setIsInitialized(true);
   }, []);
 
+  const updateDocumentClass = (theme) => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+
   const toggleTheme = () => {
-    // Since we want to stay in light mode, we'll just keep it as 'light'
-    setTheme('light');
-    localStorage.setItem('theme', 'light');
-    
-    // Ensure dark mode is off
-    document.documentElement.classList.remove('dark');
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateDocumentClass(newTheme);
   };
 
   return (

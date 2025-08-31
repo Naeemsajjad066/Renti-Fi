@@ -120,6 +120,16 @@ const Navbar = () => {
               Home
             </Link>
             <Link 
+              to="/properties" 
+              className={cn(
+                "nav-item", 
+                location.pathname === "/properties" && "active",
+                theme === 'dark' && "text-gray-300 hover:text-white"
+              )}
+            >
+              Properties
+            </Link>
+            <Link 
               to="/bookings" 
               className={cn(
                 "nav-item", 

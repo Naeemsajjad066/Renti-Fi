@@ -220,7 +220,7 @@ const HostDashboard = () => {
                 </div>
                 <div className="mt-6 md:mt-0">
                   <Link to="/host/add-listing">
-                    <Button size="lg" className="bg-earth-brown hover:bg-earth-brown/90 text-white">
+                    <Button size="lg" className="bg-earth-brown hover:bg-earth-brown/90 text-white p-3">
                       <Plus size={18} className="mr-2" />
                       Add New Property
                     </Button>
