@@ -12,7 +12,7 @@ export const register = async (req, res) => {
     if (!idCardNumber || !fullName || !email || !phoneNumber || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide all required fields'
+        message: "Please provide all required fields",
       });
     }
 
@@ -20,19 +20,19 @@ export const register = async (req, res) => {
     if (!validateIdCardNumber(idCardNumber)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid ID card number format'
+        message: "Invalid ID card number format",
       });
     }
 
     // Check if user already exists
     const existingUser = await User.findOne({
-      $or: [{ idCardNumber }, { email }]
+      $or: [{ idCardNumber }, { email }],
     });
 
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'User already exists with this ID card number or email'
+        message: "User already exists with this ID card number or email",
       });
     }
 
@@ -43,27 +43,33 @@ export const register = async (req, res) => {
       email,
       phoneNumber,
       password,
-      role: role || 'guest'
+      role: role || "guest",
     });
 
     // Generate JWT token
     const token = generateToken(user._id);
 
-    // Remove password from response
+    // Remove password before sending response
     const userResponse = user.toObject();
     delete userResponse.password;
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: "User registered successfully",
       data: {
         user: userResponse,
-        token
-      }
+        token,
+      },
     });
-
   } catch (error) {
     console.error('Registration error:', error);
+    // Handle duplicate key error for idCardNumber
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.idCardNumber) {
+      return res.status(400).json({
+        success: false,
+        message: 'This ID card number is already registered. Please use a different one.'
+      });
+    }
     res.status(500).json({
       success: false,
       message: error.message

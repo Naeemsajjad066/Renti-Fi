@@ -4,6 +4,11 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Home } from 'lucide-react';
 import PageTransition from '@/components/PageTransition';
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useUser } from '../contexts/UserContext';
+
+
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,7 +24,13 @@ const SignUp = () => {
     agreeToTerms: false,
   });
 
+  const { register } = useAuth();
+  const navigate = useNavigate();
+  const { user } = useUser();
+  const [success, setSuccess] = useState(false);  
+
   const [errors, setErrors] = useState({});
+  const [generalError, setGeneralError] = useState("");
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -60,18 +71,36 @@ const SignUp = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setGeneralError("");
     const newErrors = validateForm();
-    
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    
-    // Handle successful form submission (will connect to backend)
-    console.log('Form submitted', formData);
-    // Here you would typically send the data to your backend
+    try {
+      await register({
+        fullName: formData.fullName,
+        idCardNumber: formData.idCardNumber,
+        phoneNumber: formData.phoneNumber,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+      });
+      setSuccess(true);
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+    } catch (err) {
+      // Show backend error message to user
+      const errorMsg = err.response?.data?.message || "Registration failed. Please try again.";
+      if (errorMsg.includes("ID card number")) {
+        setErrors({ ...errors, idCardNumber: errorMsg });
+      } else {
+        setGeneralError(errorMsg);
+      }
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -139,6 +168,9 @@ const SignUp = () => {
             onSubmit={handleSubmit}
             className="space-y-6"
           >
+            {generalError && (
+              <div className="mb-2 text-sm text-red-600 text-center">{generalError}</div>
+            )}
             <motion.div variants={itemVariants}>
               <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
                 Full Name

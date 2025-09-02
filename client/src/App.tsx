@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import { AppProviders } from "./contexts";
 
 
 import Home from "./pages/Home";
@@ -67,7 +68,10 @@ const App = () => (
       <Toaster />
       <Sonner position="top-right" closeButton theme="light" richColors />
       <BrowserRouter>
-        <AnimatedRoutes />
+        {/* Wrap the application with our context providers */}
+        <AppProviders>
+          <AnimatedRoutes />
+        </AppProviders>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

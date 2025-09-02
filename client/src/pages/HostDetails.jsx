@@ -9,13 +9,14 @@ import {
   ShieldCheck,
   Calendar,
   ChevronLeft,
-  MessageSquare
+  MessageSquare,
+  CheckCircle
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
 
-// Updated mock data structure
+// Updated mock data structure with additional hosts
 const mockHosts = {
   'sarah-johnson': {
     id: 1,
@@ -24,7 +25,9 @@ const mockHosts = {
     rating: 4.9,
     responseRate: 99,
     joined: 'January 2020',
-    about: "I'm a passionate host who loves to provide comfortable and memorable stays for my guests...",
+    about: "I'm a passionate host who loves to provide comfortable and memorable stays for my guests. With over 5 years of hosting experience, I'm committed to making sure every guest has a wonderful experience. I'm always available to answer questions and provide local recommendations to make your stay even better.",
+    verified: true,
+    languages: ['English', 'Spanish'],
     listings: [
       {
         id: 1,
@@ -35,6 +38,7 @@ const mockHosts = {
         rating: 4.8,
         beds: 2,
         baths: 1,
+        type: 'Apartment',
         reviews: [
           {
             id: 1,
@@ -65,6 +69,7 @@ const mockHosts = {
         rating: 4.9,
         beds: 3,
         baths: 2,
+        type: 'Cottage',
         reviews: [
           {
             id: 3,
@@ -74,6 +79,41 @@ const mockHosts = {
             rating: 5,
             comment: 'Absolutely stunning location! Sarah was very helpful with local recommendations. Would definitely stay again!',
             propertyId: 2
+          }
+        ]
+      }
+    ]
+  },
+  'michael-rodriguez': {
+    id: 2,
+    name: 'Michael Rodriguez',
+    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
+    rating: 4.7,
+    responseRate: 95,
+    joined: 'March 2021',
+    about: "As an architect, I've designed and curated spaces that are both functional and beautiful. I enjoy sharing my unique properties with travelers from around the world. My goal is to provide memorable experiences through thoughtful design and hospitality.",
+    verified: true,
+    languages: ['English', 'French'],
+    listings: [
+      {
+        id: 3,
+        name: 'Architectural Studio Loft',
+        image: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        location: 'Chicago, IL',
+        price: 180,
+        rating: 4.9,
+        beds: 1,
+        baths: 1,
+        type: 'Loft',
+        reviews: [
+          {
+            id: 4,
+            guestName: 'Emma Thompson',
+            guestImage: 'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&q=80',
+            date: 'April 2023',
+            rating: 5,
+            comment: 'This loft is even more beautiful in person! Michael was a wonderful host with great communication.',
+            propertyId: 3
           }
         ]
       }
@@ -156,11 +196,18 @@ const HostDetail = () => {
               <div className="flex flex-col md:flex-row gap-8 mb-12">
                 <div className="md:w-1/3 lg:w-1/4">
                   <div className="sticky top-24">
-                    <img
-                      src={host.image}
-                      alt={host.name}
-                      className="w-full h-auto rounded-lg mb-4"
-                    />
+                    <div className="relative">
+                      <img
+                        src={host.image}
+                        alt={host.name}
+                        className="w-full h-auto rounded-lg mb-4"
+                      />
+                      {host.verified && (
+                        <div className="absolute bottom-2 right-2 bg-white rounded-full p-1 shadow-md">
+                          <CheckCircle size={20} className="text-blue-500" />
+                        </div>
+                      )}
+                    </div>
                     
                     <div className="bg-white rounded-lg shadow-md p-6">
                       <h1 className="text-2xl font-bold mb-2">{host.name}</h1>
@@ -176,10 +223,23 @@ const HostDetail = () => {
                         <span>{host.responseRate}% Response Rate</span>
                       </div>
                       
-                      <div className="flex items-center">
+                      <div className="flex items-center mb-4">
                         <Calendar size={16} className="text-gray-600 mr-1" />
                         <span>Joined {host.joined}</span>
                       </div>
+                      
+                      {host.languages && host.languages.length > 0 && (
+                        <div className="mt-4">
+                          <h3 className="font-medium mb-2">Languages</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {host.languages.map((language, index) => (
+                              <span key={index} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-sm">
+                                {language}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -202,39 +262,50 @@ const HostDetail = () => {
                         <Link 
                           to={`/property/${listing.id}`} 
                           key={listing.id}
-                          className="group"
+                          className="group block"
                         >
-                          <div className="overflow-hidden rounded-lg mb-2">
+                          <motion.div 
+                            whileHover={{ y: -5 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden rounded-lg mb-2 border border-gray-200"
+                          >
                             <img
                               src={listing.image}
                               alt={listing.name}
                               className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                             />
-                          </div>
-                          <div>
-                            <h3 className="font-medium group-hover:text-primary transition-colors">
-                              {listing.name}
-                            </h3>
-                            <div className="flex items-center text-sm text-gray-600 mt-1">
-                              <MapPin size={14} className="mr-1" />
-                              <span>{listing.location}</span>
-                            </div>
-                            <div className="flex items-center justify-between mt-2">
-                              <div className="flex items-center">
-                                <Star size={14} className="text-primary mr-1" />
-                                <span>{listing.rating}</span>
-                                <span className="text-gray-500 ml-1">({listing.reviews.length})</span>
+                            <div className="p-4">
+                              <h3 className="font-medium group-hover:text-primary transition-colors mb-1">
+                                {listing.name}
+                              </h3>
+                              <div className="flex items-center text-sm text-gray-600 mb-2">
+                                <MapPin size={14} className="mr-1" />
+                                <span>{listing.location}</span>
                               </div>
-                              <div>
-                                <span className="font-medium">${listing.price}</span>
-                                <span className="text-gray-600">/night</span>
+                              <div className="flex items-center justify-between mt-2">
+                                <div className="flex items-center">
+                                  <Star size={14} className="text-primary mr-1" />
+                                  <span>{listing.rating}</span>
+                                  <span className="text-gray-500 ml-1">({listing.reviews.length})</span>
+                                </div>
+                                <div>
+                                  <span className="font-medium">${listing.price}</span>
+                                  <span className="text-gray-600">/night</span>
+                                </div>
                               </div>
+                              <div className="flex items-center text-sm text-gray-600 mt-2">
+                                <Home size={14} className="mr-1" />
+                                <span>{listing.beds} beds · {listing.baths} bath</span>
+                              </div>
+                              {listing.type && (
+                                <div className="mt-2">
+                                  <span className="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+                                    {listing.type}
+                                  </span>
+                                </div>
+                              )}
                             </div>
-                            <div className="flex items-center text-sm text-gray-600 mt-1">
-                              <Home size={14} className="mr-1" />
-                              <span>{listing.beds} beds · {listing.baths} bath</span>
-                            </div>
-                          </div>
+                          </motion.div>
                         </Link>
                       ))}
                     </div>
@@ -249,7 +320,13 @@ const HostDetail = () => {
                     {allReviews.length > 0 ? (
                       <div className="space-y-6">
                         {allReviews.map(review => (
-                          <div key={review.id} className="border-b pb-6 last:border-b-0 last:pb-0">
+                          <motion.div 
+                            key={review.id} 
+                            className="border-b pb-6 last:border-b-0 last:pb-0"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.3 }}
+                          >
                             <div className="flex justify-between items-start mb-2">
                               <div className="flex items-center">
                                 <img 
@@ -282,7 +359,7 @@ const HostDetail = () => {
                             </div>
                             
                             <p className="text-gray-700">{review.comment}</p>
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
                     ) : (

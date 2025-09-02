@@ -304,7 +304,7 @@ const PropertyDetails = () => {
                 </div>
               </div>
               
-              <div className="mb-8">
+              <div className="mb-8 "   >
                 <ImageGallery images={property.images} />
               </div>
               
@@ -321,13 +321,13 @@ const PropertyDetails = () => {
                         </span>
                       </div>
                     </div>
-                    <div className="flex-shrink-0">
+                    <Link to={"/"} className="flex-shrink-0">
                       <img
                         src={property.host.image}
                         alt={property.host.name}
-                        className="w-12 h-12 rounded-full object-cover"
+                        className="w-12 h-12 rounded-full object-cover cursor-pointer"
                       />
-                    </div>
+                    </Link>
                   </div>
                   
                   <div className="mb-8">
@@ -369,7 +369,7 @@ const PropertyDetails = () => {
                  {/* In PropertyDetails component, modify the host section */}
 <div className="mb-8">
   <h2 className="text-xl font-semibold mb-4">Host</h2>
-  <Link to={`/host/${property.host.name.replace(/\s+/g, '-').toLowerCase()}`} className="flex items-start space-x-4 hover:bg-gray-50 p-2 rounded-lg transition-colors">
+  <Link to={`/host/${property.host}`} className="flex items-start space-x-4 hover:bg-gray-50 p-2 rounded-lg transition-colors">
     <img
       src={property.host.image}
       alt={property.host.name}
