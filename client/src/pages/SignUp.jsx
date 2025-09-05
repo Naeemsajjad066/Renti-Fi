@@ -1,123 +1,67 @@
-
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Eye, EyeOff, Home } from 'lucide-react';
-import PageTransition from '@/components/PageTransition';
-import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { useUser } from '../contexts/UserContext';
-
-
+import React, { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Eye, EyeOff, Home } from "lucide-react";
+import PageTransition from "@/components/PageTransition";
+import { AuthContext } from "@/contexts/AuthContext";
 
 const SignUp = () => {
+  const { signup } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: '',
-    idCardNumber: '',
-    phoneNumber: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'guest',
-    agreeToTerms: false,
+    fullName: "",
+    idCard: "",
+    phoneNumber: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
 
-  const { register } = useAuth();
-  const navigate = useNavigate();
-  const { user } = useUser();
-  const [success, setSuccess] = useState(false);  
-
-  const [errors, setErrors] = useState({});
-  const [generalError, setGeneralError] = useState("");
-
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: value,
     });
-    
-    // Clear the error for this field when user starts typing
-    if (errors[name]) {
-      setErrors({
-        ...errors,
-        [name]: '',
-      });
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
-    if (!formData.idCardNumber.trim()) newErrors.idCardNumber = 'ID Card Number is required';
-    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = 'Phone number is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
-    
-    if (!formData.password) newErrors.password = 'Password is required';
-    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
-    
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-    
-    if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = 'You must agree to terms and conditions';
-    }
-    
-    return newErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setGeneralError("");
-    const newErrors = validateForm();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+  
+    if (formData.password !== formData.confirmPassword) {
+      console.log("Passwords do not match");
       return;
     }
+  
     try {
-      await register({
+      const response = await signup({
         fullName: formData.fullName,
-        idCardNumber: formData.idCardNumber,
+        idCard: formData.idCard,   // or idCardNumber depending on backend
         phoneNumber: formData.phoneNumber,
         email: formData.email,
         password: formData.password,
-        role: formData.role,
       });
-      setSuccess(true);
-      setTimeout(() => {
+    
+      if (response?.success) {
+        console.log("Signup success");
         navigate("/login");
-      }, 1500);
-    } catch (err) {
-      // Show backend error message to user
-      const errorMsg = err.response?.data?.message || "Registration failed. Please try again.";
-      if (errorMsg.includes("ID card number")) {
-        setErrors({ ...errors, idCardNumber: errorMsg });
       } else {
-        setGeneralError(errorMsg);
+        console.log("Signup failed");
       }
+    } catch (err) {
+      console.log("Signup error:", err.response?.data || err.message);
     }
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
+    
   };
 
   const formVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
+      transition: { staggerChildren: 0.1 },
     },
   };
 
@@ -129,7 +73,7 @@ const SignUp = () => {
   return (
     <PageTransition>
       <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gray-50">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -149,30 +93,33 @@ const SignUp = () => {
               </span>
             </div>
           </Link>
-          <h1 className="mt-4 text-2xl font-bold text-gray-900">Create an account</h1>
+          <h1 className="mt-4 text-2xl font-bold text-gray-900">
+            Create an account
+          </h1>
           <p className="mt-2 text-sm text-gray-600">
             Join our community of hosts and guests
           </p>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           className="w-full max-w-md p-8 bg-white rounded-lg shadow-sm"
         >
-          <motion.form 
+          <motion.form
             variants={formVariants}
             initial="hidden"
             animate="visible"
             onSubmit={handleSubmit}
             className="space-y-6"
           >
-            {generalError && (
-              <div className="mb-2 text-sm text-red-600 text-center">{generalError}</div>
-            )}
+            {/* Full Name */}
             <motion.div variants={itemVariants}>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="fullName"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Full Name
               </label>
               <input
@@ -181,18 +128,17 @@ const SignUp = () => {
                 type="text"
                 value={formData.fullName}
                 onChange={handleChange}
-                className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors ${
-                  errors.fullName ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
                 placeholder="John Doe"
               />
-              {errors.fullName && (
-                <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>
-              )}
             </motion.div>
 
+            {/* ID Card Number */}
             <motion.div variants={itemVariants}>
-              <label htmlFor="idCardNumber" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="idCardNumber"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 ID Card Number
               </label>
               <input
@@ -201,18 +147,17 @@ const SignUp = () => {
                 type="text"
                 value={formData.idCardNumber}
                 onChange={handleChange}
-                className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors ${
-                  errors.idCardNumber ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
                 placeholder="ID123456789"
               />
-              {errors.idCardNumber && (
-                <p className="mt-1 text-sm text-red-600">{errors.idCardNumber}</p>
-              )}
             </motion.div>
 
+            {/* Phone Number */}
             <motion.div variants={itemVariants}>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="phoneNumber"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Phone Number
               </label>
               <input
@@ -221,18 +166,17 @@ const SignUp = () => {
                 type="tel"
                 value={formData.phoneNumber}
                 onChange={handleChange}
-                className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors ${
-                  errors.phoneNumber ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
                 placeholder="+1 (555) 123-4567"
               />
-              {errors.phoneNumber && (
-                <p className="mt-1 text-sm text-red-600">{errors.phoneNumber}</p>
-              )}
             </motion.div>
 
+            {/* Email */}
             <motion.div variants={itemVariants}>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Email Address
               </label>
               <input
@@ -241,104 +185,74 @@ const SignUp = () => {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors ${
-                  errors.email ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
                 placeholder="john.doe@example.com"
               />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-              )}
             </motion.div>
 
+            {/* Password */}
             <motion.div variants={itemVariants}>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Password
               </label>
               <div className="relative">
                 <input
                   id="password"
                   name="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={formData.password}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors ${
-                    errors.password ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
-                  onClick={togglePasswordVisibility}
+                  onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-              )}
             </motion.div>
 
+            {/* Confirm Password */}
             <motion.div variants={itemVariants}>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Confirm Password
               </label>
               <div className="relative">
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
+                  type={showConfirmPassword ? "text" : "password"}
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors ${
-                    errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
-                  onClick={toggleConfirmPasswordVisibility}
+                  onClick={() =>
+                    setShowConfirmPassword(!showConfirmPassword)
+                  }
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                 >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showConfirmPassword ? (
+                    <EyeOff size={20} />
+                  ) : (
+                    <Eye size={20} />
+                  )}
                 </button>
               </div>
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
-              )}
             </motion.div>
 
-            <motion.div variants={itemVariants} className="flex items-start">
-              <div className="flex items-center h-5">
-                <input
-                  id="agreeToTerms"
-                  name="agreeToTerms"
-                  type="checkbox"
-                  checked={formData.agreeToTerms}
-                  onChange={handleChange}
-                  className={`h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/20 ${
-                    errors.agreeToTerms ? 'border-red-500' : ''
-                  }`}
-                />
-              </div>
-              <div className="ml-3">
-                <label htmlFor="agreeToTerms" className="text-sm text-gray-600">
-                  I agree to the{" "}
-                  <a href="#" className="text-primary hover:underline">
-                    Terms of Service
-                  </a>{" "}
-                  and{" "}
-                  <a href="#" className="text-primary hover:underline">
-                    Privacy Policy
-                  </a>
-                </label>
-                {errors.agreeToTerms && (
-                  <p className="mt-1 text-sm text-red-600">{errors.agreeToTerms}</p>
-                )}
-              </div>
-            </motion.div>
-
+            {/* Submit */}
             <motion.div variants={itemVariants}>
               <button
                 type="submit"
@@ -352,7 +266,10 @@ const SignUp = () => {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
-              <Link to="/login" className="text-primary hover:underline font-medium">
+              <Link
+                to="/login"
+                className="text-primary hover:underline font-medium"
+              >
                 Login
               </Link>
             </p>

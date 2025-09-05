@@ -1,96 +1,49 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Home } from 'lucide-react';
 import PageTransition from '@/components/PageTransition';
+import { AuthContext } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import {toast} from 'react-hot-toast';
 
 const Login = () => {
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    idCardNumber: '',
+    email: '',
     password: '',
   });
-  const [errors, setErrors] = useState({});
 
-  const formatIdCardNumber = (value) => {
-    // Remove all non-digit characters
-    const digits = value.replace(/\D/g, '');
-    
-    // Limit to 13 digits
-    const limited = digits.slice(0, 13);
-    
-    // Add hyphens at the correct positions
-    if (limited.length > 5 && limited.length < 12) {
-      return `${limited.slice(0, 5)}-${limited.slice(5)}`;
-    } else if (limited.length >= 12) {
-      return `${limited.slice(0, 5)}-${limited.slice(5, 12)}-${limited.slice(12)}`;
-    }
-    
-    return limited;
-  };
-
-  const handleIdCardChange = (e) => {
-    const { value } = e.target;
-    const formattedValue = formatIdCardNumber(value);
-    
+  const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      idCardNumber: formattedValue,
+      [name]: value,
     });
-    
-    // Clear the error for this field when user starts typing
-    if (errors.idCardNumber) {
-      setErrors({
-        ...errors,
-        idCardNumber: '',
-      });
-    }
   };
 
-  const handlePasswordChange = (e) => {
-    const { value } = e.target;
-    setFormData({
-      ...formData,
-      password: value,
-    });
-    
-    // Clear the error for this field when user starts typing
-    if (errors.password) {
-      setErrors({
-        ...errors,
-        password: '',
-      });
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    
-    // Remove hyphens for validation
-    const idCardDigits = formData.idCardNumber.replace(/\D/g, '');
-    
-    if (!idCardDigits) newErrors.idCardNumber = 'ID Card Number is required';
-    else if (idCardDigits.length !== 13) newErrors.idCardNumber = 'ID Card Number must be 13 digits';
-    
-    if (!formData.password) newErrors.password = 'Password is required';
-    
-    return newErrors;
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    const newErrors = validateForm();
-    
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
+    console.log('Form submitted', formData);
+    try {
+      const response= await login({
+        email: formData.email,
+        password: formData.password,
+      })
+      if (response?.success) {
+        console.log("Login success");
+        navigate("/");
+      }
+      else {
+        console.log("Login failed");
+      }
     }
-    
-    // Handle successful form submission (will connect to backend)
-    console.log('Form submitted', {
-      ...formData,
-      idCardNumber: formData.idCardNumber.replace(/\D/g, ''), // Send without hyphens to backend
-    });
+    catch (err) {
+      console.log("Login error:", err.response?.data || err.message);
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -100,6 +53,7 @@ const Login = () => {
   return (
     <PageTransition>
       <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gray-50">
+        {/* Logo & Heading */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -126,6 +80,7 @@ const Login = () => {
           </p>
         </motion.div>
 
+        {/* Login Form */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -134,25 +89,18 @@ const Login = () => {
         >
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="idCardNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                ID Card Number
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email
               </label>
               <input
-                id="idCardNumber"
-                name="idCardNumber"
+                id="email"
+                name="email"
                 type="text"
-                value={formData.idCardNumber}
-                onChange={handleIdCardChange}
-                className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors ${
-                  errors.idCardNumber ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="12345-6789012-3"
-                maxLength={15} // 13 digits + 2 hyphens
-                inputMode="numeric"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
+                placeholder="Naeem123@gmail.com"
               />
-              {errors.idCardNumber && (
-                <p className="mt-1 text-sm text-red-600">{errors.idCardNumber}</p>
-              )}
             </div>
 
             <div>
@@ -170,10 +118,8 @@ const Login = () => {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
-                  onChange={handlePasswordChange}
-                  className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors ${
-                    errors.password ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
                   placeholder="••••••••"
                 />
                 <button
@@ -184,9 +130,6 @@ const Login = () => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-              )}
             </div>
 
             <div>
