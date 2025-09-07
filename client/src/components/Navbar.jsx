@@ -15,10 +15,11 @@ const Navbar = () => {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
-  const { logout, } = useContext(AuthContext);
+  const { logout,authUser } = useContext(AuthContext);
+  const isLoggedIn=!!authUser
 
   // Mock authentication state
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // Changed to true to show settings link
+  // const [isLoggedIn, setIsLoggedIn] = useState(true); // Changed to true to show settings link
   const [userType, setUserType] = useState('guest'); // 'guest' or 'host'
 
   useEffect(() => {
@@ -290,8 +291,9 @@ const Navbar = () => {
                           theme === 'dark' && "hover:bg-gray-700"
                         )}
                         onClick={() => {
-                          setIsLoggedIn(false);
-                          closeDropdown();
+                          logout();         // clear token, user, etc.
+                          closeDropdown();  
+                          navigate("/login");
                         }}
                       >
                         <LogOut size={16} className="mr-3" />
@@ -449,9 +451,8 @@ const Navbar = () => {
                     theme === 'dark' && "text-red-400"
                   )}
                   onClick={() => {
-                    setIsLoggedIn(false);
-                    closeMobileMenu();
                     logout();
+                    closeMobileMenu();
                     navigate("/login");
                   }}
                 >

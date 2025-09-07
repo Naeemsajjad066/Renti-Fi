@@ -193,7 +193,7 @@ const UserProfile = () => {
                               <input
                                 type="text"
                                 name="name"
-                                value={formData.name}
+                                value={authUser?.fullName}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                               />
@@ -203,7 +203,7 @@ const UserProfile = () => {
                               <input
                                 type="email"
                                 name="email"
-                                value={formData.email}
+                                value={authUser?.email}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                               />
@@ -213,7 +213,7 @@ const UserProfile = () => {
                               <input
                                 type="tel"
                                 name="phone"
-                                value={formData.phone}
+                                value={authUser.phoneNumber}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                               />
@@ -223,7 +223,7 @@ const UserProfile = () => {
                               <input
                                 type="text"
                                 name="location"
-                                value={formData.location}
+                                value={authUser?.location || "Lahore"}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                               />
@@ -234,7 +234,7 @@ const UserProfile = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
                             <textarea
                               name="bio"
-                              value={formData.bio}
+                              value={authUser?.bio || "I am a traveler"}
                               onChange={handleInputChange}
                               rows="4"
                               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
@@ -248,28 +248,28 @@ const UserProfile = () => {
                               <User size={20} className="text-gray-500 mr-3" />
                               <div>
                                 <p className="text-sm text-gray-500">Name</p>
-                                <p className="font-medium">{userData.name}</p>
+                                <p className="font-medium">{authUser?.fullName}</p>
                               </div>
                             </div>
                             <div className="flex items-center">
                               <Mail size={20} className="text-gray-500 mr-3" />
                               <div>
                                 <p className="text-sm text-gray-500">Email</p>
-                                <p className="font-medium">{userData.email}</p>
+                                <p className="font-medium">{authUser?.email}</p>
                               </div>
                             </div>
                             <div className="flex items-center">
                               <Phone size={20} className="text-gray-500 mr-3" />
                               <div>
                                 <p className="text-sm text-gray-500">Phone</p>
-                                <p className="font-medium">{userData.phone}</p>
+                                <p className="font-medium">{authUser?.phoneNumber}</p>
                               </div>
                             </div>
                             <div className="flex items-center">
                               <MapPin size={20} className="text-gray-500 mr-3" />
                               <div>
                                 <p className="text-sm text-gray-500">Location</p>
-                                <p className="font-medium">{userData.location}</p>
+                                <p className="font-medium">{authUser?.location || "Lahore"}</p>
                               </div>
                             </div>
                           </div>
@@ -279,7 +279,7 @@ const UserProfile = () => {
                               <User size={20} className="text-gray-500 mr-3 mt-1" />
                               <div>
                                 <p className="text-sm text-gray-500">About</p>
-                                <p className="text-gray-700">{userData.bio}</p>
+                                <p className="text-gray-700">{authUser?.bio || "i am traverler"}</p>
                               </div>
                             </div>
                           </div>
