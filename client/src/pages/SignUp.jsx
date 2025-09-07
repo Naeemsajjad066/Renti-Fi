@@ -3,9 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Home } from 'lucide-react';
 import PageTransition from '@/components/PageTransition';
-// import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-// import { useUser } from '../contexts/UserContext';
 import { AuthContext } from '../contexts/AuthContext';
 import { useContext } from 'react';
 const SignUp = () => {
@@ -134,14 +132,14 @@ const SignUp = () => {
             </motion.div>
 
             <motion.div variants={itemVariants}>
-              <label htmlFor="idCardNumber" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="idCard" className="block text-sm font-medium text-gray-700 mb-1">
                 ID Card Number
               </label>
               <input
-                id="idCardNumber"
-                name="idCardNumber"
+                id="idCard"
+                name="idCard"
                 type="text"
-                value={formData.idCardNumber}
+                value={formData.idCard}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                 placeholder="ID123456789"
