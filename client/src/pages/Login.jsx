@@ -34,7 +34,6 @@ const Login = () => {
         password: formData.password,
       })
       if (response?.success) {
-        console.log("Login success");
         navigate("/");
       }
       else {

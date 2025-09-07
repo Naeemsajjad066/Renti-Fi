@@ -1,27 +1,33 @@
-import React, { useState, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Eye, EyeOff, Home } from "lucide-react";
-import PageTransition from "@/components/PageTransition";
-import { AuthContext } from "@/contexts/AuthContext";
-
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Eye, EyeOff, Home } from 'lucide-react';
+import PageTransition from '@/components/PageTransition';
+// import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+// import { useUser } from '../contexts/UserContext';
+import { AuthContext } from '../contexts/AuthContext';
+import { useContext } from 'react';
 const SignUp = () => {
-  const { signup } = useContext(AuthContext);
-  const navigate = useNavigate();
-
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: "",
-    idCard: "",
-    phoneNumber: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+    fullName: '',
+    idCard: '',
+    phoneNumber: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
   });
 
+  // const { register } = useAuth();
+  const navigate = useNavigate();
+  // const { user } = useUser();
+  const { register } = useContext(AuthContext);
+  const [success, setSuccess] = useState(false);  
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
     setFormData({
       ...formData,
       [name]: value,
@@ -30,38 +36,38 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    if (formData.password !== formData.confirmPassword) {
-      console.log("Passwords do not match");
-      return;
-    }
-  
     try {
-      const response = await signup({
+      await register({
         fullName: formData.fullName,
-        idCard: formData.idCard,   // or idCardNumber depending on backend
+        idCard: formData.idCard,
         phoneNumber: formData.phoneNumber,
         email: formData.email,
         password: formData.password,
       });
-    
-      if (response?.success) {
-        console.log("Signup success");
+      setSuccess(true);
+      setTimeout(() => {
         navigate("/login");
-      } else {
-        console.log("Signup failed");
-      }
+      }, 1500);
     } catch (err) {
-      console.log("Signup error:", err.response?.data || err.message);
+      // Error is handled by AuthContext
     }
-    
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   };
 
   const formVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.1 },
+      transition: {
+        staggerChildren: 0.1,
+      },
     },
   };
 
@@ -73,7 +79,7 @@ const SignUp = () => {
   return (
     <PageTransition>
       <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gray-50">
-        <motion.div
+        <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -93,33 +99,27 @@ const SignUp = () => {
               </span>
             </div>
           </Link>
-          <h1 className="mt-4 text-2xl font-bold text-gray-900">
-            Create an account
-          </h1>
+          <h1 className="mt-4 text-2xl font-bold text-gray-900">Create an account</h1>
           <p className="mt-2 text-sm text-gray-600">
             Join our community of hosts and guests
           </p>
         </motion.div>
 
-        <motion.div
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           className="w-full max-w-md p-8 bg-white rounded-lg shadow-sm"
         >
-          <motion.form
+          <motion.form 
             variants={formVariants}
             initial="hidden"
             animate="visible"
             onSubmit={handleSubmit}
             className="space-y-6"
           >
-            {/* Full Name */}
             <motion.div variants={itemVariants}>
-              <label
-                htmlFor="fullName"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
                 Full Name
               </label>
               <input
@@ -128,17 +128,13 @@ const SignUp = () => {
                 type="text"
                 value={formData.fullName}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                 placeholder="John Doe"
               />
             </motion.div>
 
-            {/* ID Card Number */}
             <motion.div variants={itemVariants}>
-              <label
-                htmlFor="idCardNumber"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="idCardNumber" className="block text-sm font-medium text-gray-700 mb-1">
                 ID Card Number
               </label>
               <input
@@ -147,17 +143,13 @@ const SignUp = () => {
                 type="text"
                 value={formData.idCardNumber}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                 placeholder="ID123456789"
               />
             </motion.div>
 
-            {/* Phone Number */}
             <motion.div variants={itemVariants}>
-              <label
-                htmlFor="phoneNumber"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
                 Phone Number
               </label>
               <input
@@ -166,17 +158,13 @@ const SignUp = () => {
                 type="tel"
                 value={formData.phoneNumber}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                 placeholder="+1 (555) 123-4567"
               />
             </motion.div>
 
-            {/* Email */}
             <motion.div variants={itemVariants}>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Email Address
               </label>
               <input
@@ -185,32 +173,28 @@ const SignUp = () => {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                 placeholder="john.doe@example.com"
               />
             </motion.div>
 
-            {/* Password */}
             <motion.div variants={itemVariants}>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                 Password
               </label>
               <div className="relative">
                 <input
                   id="password"
                   name="password"
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={togglePasswordVisibility}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -218,41 +202,30 @@ const SignUp = () => {
               </div>
             </motion.div>
 
-            {/* Confirm Password */}
             <motion.div variants={itemVariants}>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
                 Confirm Password
               </label>
               <div className="relative">
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
+                  type={showConfirmPassword ? 'text' : 'password'}
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowConfirmPassword(!showConfirmPassword)
-                  }
+                  onClick={toggleConfirmPasswordVisibility}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff size={20} />
-                  ) : (
-                    <Eye size={20} />
-                  )}
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </motion.div>
 
-            {/* Submit */}
             <motion.div variants={itemVariants}>
               <button
                 type="submit"
@@ -266,10 +239,7 @@ const SignUp = () => {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
-              <Link
-                to="/login"
-                className="text-primary hover:underline font-medium"
-              >
+              <Link to="/login" className="text-primary hover:underline font-medium">
                 Login
               </Link>
             </p>

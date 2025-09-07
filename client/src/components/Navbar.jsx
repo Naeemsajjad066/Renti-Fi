@@ -4,6 +4,9 @@ import { motion } from 'framer-motion';
 import { User, LogOut, Settings, Calendar, ChevronDown, Home, Menu, X, Sun, Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/use-theme';
+import { AuthContext } from '../contexts/AuthContext';
+import { useNavigate } from'react-router-dom';  
+import { useContext } from 'react';
 
 const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -11,6 +14,8 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
+  const { logout, } = useContext(AuthContext);
 
   // Mock authentication state
   const [isLoggedIn, setIsLoggedIn] = useState(true); // Changed to true to show settings link
@@ -446,6 +451,8 @@ const Navbar = () => {
                   onClick={() => {
                     setIsLoggedIn(false);
                     closeMobileMenu();
+                    logout();
+                    navigate("/login");
                   }}
                 >
                   Logout

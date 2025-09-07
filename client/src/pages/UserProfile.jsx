@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
 import { motion } from 'framer-motion';
 import { 
   User,
@@ -17,8 +18,11 @@ import {
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
+import { AuthContext } from '../contexts/AuthContext';
+
 
 const UserProfile = () => {
+  const {authUser}= useContext(AuthContext);
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
@@ -114,7 +118,7 @@ const UserProfile = () => {
                           </label>
                         )}
                       </div>
-                      <h2 className="text-xl font-bold text-center">{userData.name}</h2>
+                      <h2 className="text-xl font-bold text-center">{authUser?.fullName || "Waseem"}</h2>
                       <p className="text-gray-500 text-sm text-center">Member since {userData.joinDate}</p>
                     </div>
                     
