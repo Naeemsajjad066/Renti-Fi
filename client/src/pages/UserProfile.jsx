@@ -21,6 +21,7 @@ import { AuthContext } from "../contexts/AuthContext";
 
 const UserProfile = () => {
   const { authUser, updateProfile } = useContext(AuthContext);
+  
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");

@@ -85,12 +85,7 @@ const AddListing = () => {
     maxGuests: 2,
     price: '',
     selectedAmenities: [],
-    minimumStay: '1',
     instantBooking: false,
-    availableDates: {
-      from: null,
-      to: null,
-    },
   });
   
   const handleInputChange = (e) => {
@@ -704,48 +699,10 @@ const AddListing = () => {
                     transition={{ duration: 0.3 }}
                     className="bg-white p-6 rounded-lg shadow-sm"
                   >
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Availability & Pricing</h2>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6"> Pricing</h2>
                     
                     <div className="space-y-6">
-                      <div>
-                        <Label className="text-sm font-medium text-gray-700 block mb-3">
-                          Select Availability Dates
-                        </Label>
-                        <div className="border rounded-lg p-4">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className="w-full justify-start text-left font-normal"
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {formData.availableDates.from ? (
-                                  formData.availableDates.to ? (
-                                    <>
-                                      {format(formData.availableDates.from, "LLL dd, y")} -{" "}
-                                      {format(formData.availableDates.to, "LLL dd, y")}
-                                    </>
-                                  ) : (
-                                    format(formData.availableDates.from, "LLL dd, y")
-                                  )
-                                ) : (
-                                  <span>Select available dates</span>
-                                )}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 bg-white shadow-lg" align="start">
-                              <Calendar
-                                initialFocus
-                                mode="range"
-                                selected={formData.availableDates}
-                                onSelect={handleDateSelect}
-                                numberOfMonths={2}
-                                className="p-3 pointer-events-auto"
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                      </div>
+
                       
                       <div>
                         <Label htmlFor="price" className="text-sm font-medium text-gray-700 block mb-3">
@@ -768,46 +725,6 @@ const AddListing = () => {
                         </div>
                       </div>
                       
-                      <div>
-                        <Label className="text-sm font-medium text-gray-700 block mb-3">
-                          Minimum Stay
-                        </Label>
-                        <RadioGroup 
-                          value={formData.minimumStay} 
-                          onValueChange={handleRadioChange} 
-                          className="grid grid-cols-3 sm:grid-cols-6 gap-2"
-                        >
-                          {[1, 2, 3, 5, 7, 14].map((days) => (
-                            <div key={days}>
-                              <RadioGroupItem
-                                value={days.toString()}
-                                id={`stay-${days}`}
-                                className="peer sr-only"
-                              />
-                              <Label
-                                htmlFor={`stay-${days}`}
-                                className="flex flex-col items-center justify-center rounded-md border-2 border-gray-200 bg-white px-3 py-2 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5"
-                              >
-                                <span className="text-sm font-semibold">{days}</span>
-                                <span className="text-xs text-gray-500">
-                                  {days === 1 ? 'night' : 'nights'}
-                                </span>
-                              </Label>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Switch 
-                          id="instant-booking" 
-                          checked={formData.instantBooking}
-                          onCheckedChange={toggleInstantBooking}
-                        />
-                        <Label htmlFor="instant-booking" className="text-sm">
-                          Enable instant booking
-                        </Label>
-                      </div>
                     </div>
                     
                     <div className="mt-8 flex justify-between">
