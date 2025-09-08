@@ -136,12 +136,6 @@ const UserProfile = () => {
                         Security
                       </button>
                       <button
-                        onClick={() => setActiveTab('bookings')}
-                        className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${activeTab === 'bookings' ? 'bg-primary/10 text-primary' : 'hover:bg-gray-100'}`}
-                      >
-                        My Bookings
-                      </button>
-                      <button
                         onClick={() => setActiveTab('payments')}
                         className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${activeTab === 'payments' ? 'bg-primary/10 text-primary' : 'hover:bg-gray-100'}`}
                       >
@@ -346,25 +340,6 @@ const UserProfile = () => {
                             </button>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {activeTab === 'bookings' && (
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                      <h2 className="text-xl font-semibold mb-6">My Bookings</h2>
-                      <div className="text-center py-12">
-                        <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                          <Calendar size={32} className="text-gray-400" />
-                        </div>
-                        <h3 className="text-lg font-medium mb-2">No bookings yet</h3>
-                        <p className="text-gray-600 mb-4">When you book a stay, it will appear here</p>
-                        <Link
-                          to="/"
-                          className="inline-flex items-center px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-md transition-colors"
-                        >
-                          Explore stays
-                        </Link>
                       </div>
                     </div>
                   )}

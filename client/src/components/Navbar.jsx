@@ -145,17 +145,7 @@ const Navbar = () => {
             >
               Bookings
             </Link>
-            {!isLoggedIn || userType === 'guest' ? (
-              <Link 
-                to="/host/dashboard" 
-                className={cn(
-                  "nav-item",
-                  theme === 'dark' && "text-gray-300 hover:text-white"
-                )}
-              >
-                Become a Host
-              </Link>
-            ) : null}
+ 
           </motion.nav>
 
           <motion.div variants={itemVariants} className="md:hidden">
@@ -358,18 +348,7 @@ const Navbar = () => {
             >
               Bookings
             </Link>
-            {!isLoggedIn || userType === 'guest' ? (
-              <Link 
-                to="/host/dashboard" 
-                className={cn(
-                  "px-3 py-2 rounded-md text-base font-medium",
-                  theme === 'dark' ? "text-gray-300" : "text-gray-900"
-                )}
-                onClick={closeMobileMenu}
-              >
-                Become a Host
-              </Link>
-            ) : null}
+
             
             <button 
               onClick={toggleTheme} 

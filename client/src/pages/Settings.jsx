@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -9,6 +9,7 @@ import {
   CheckCircle,
   User 
 } from 'lucide-react';
+import { AuthContext } from '../contexts/AuthContext';
 import PageTransition from '@/components/PageTransition';
 
 const Settings = () => {
@@ -22,6 +23,8 @@ const Settings = () => {
   });
 
   // Profile photo state
+  const {authUser}=useContext(AuthContext);
+
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
   const fileInputRef = useRef(null);
@@ -199,7 +202,7 @@ const Settings = () => {
                       id="name"
                       name="name"
                       type="text"
-                      value={userData.name}
+                      value={authUser?.fullName}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                     />
@@ -214,7 +217,7 @@ const Settings = () => {
                       id="email"
                       name="email"
                       type="email"
-                      value={userData.email}
+                      value={authUser?.email}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                     />
