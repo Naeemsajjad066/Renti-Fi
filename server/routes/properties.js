@@ -13,7 +13,7 @@ import {
 import { protect, hostProtect } from '../middleware/auth.js';
 import { uploadMultiple } from '../middleware/upload.js';
 
-const router = express.Router();
+const propertyRouter = express.Router();
 
 // Public routes
 router.get('/', getProperties);
@@ -31,4 +31,4 @@ router.post('/', uploadMultiple('images', 10), createProperty);
 router.put('/:id', uploadMultiple('images', 10), updateProperty);
 router.delete('/:id', deleteProperty);
 
-export default router;
+export default propertyRouter;

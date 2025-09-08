@@ -51,9 +51,6 @@ export const createProperty = async (req, res) => {
       maxGuests,
       price,
       selectedAmenities: selectedAmenities ? JSON.parse(selectedAmenities) : [],
-      minimumStay,
-      instantBooking,
-      availableDates: availableDates ? JSON.parse(availableDates) : null,
       images: uploadedImages,
     });
 
