@@ -223,18 +223,6 @@ const Navbar = () => {
                         <span>My Profile</span>
                       </Link>
 
-                      {/* Settings Link */}
-                      <Link 
-                        to="/settings" 
-                        className={cn(
-                          "flex items-center px-4 py-2 text-sm hover:bg-gray-100",
-                          theme === 'dark' ? "text-gray-300 hover:bg-gray-700" : "text-gray-700"
-                        )}
-                        onClick={closeDropdown}
-                      >
-                        <Settings size={16} className="mr-3" />
-                        <span>Settings</span>
-                      </Link>
 
                       <Link 
                         to="/bookings" 
@@ -387,17 +375,7 @@ const Navbar = () => {
                   My Profile
                 </Link>
                 
-                {/* Settings Link in Mobile Menu */}
-                <Link 
-                  to="/settings" 
-                  className={cn(
-                    "px-3 py-2 rounded-md text-base font-medium",
-                    theme === 'dark' ? "text-gray-300" : "text-gray-900"
-                  )}
-                  onClick={closeMobileMenu}
-                >
-                  Settings
-                </Link>
+
                 
                 {userType === 'guest' ? (
                   <Link 
