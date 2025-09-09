@@ -1,6 +1,7 @@
 // models/Property.js
 import mongoose from "mongoose";
 
+
 const propertySchema = new mongoose.Schema({
   title: {
     type: String,
@@ -58,20 +59,15 @@ const propertySchema = new mongoose.Schema({
 
   amenities: [String],
 
-  pricePerNight: { type: Number, required: true },
+  price: { type: Number, required: true },
 
-  images: [
-    {
-      url: String,
-      caption: String
-    }
-  ],
+  images: [String],
 
   rating: { type: Number, default: 0 },
   totalReviews: { type: Number, default: 0 },
 
   isActive: { type: Boolean, default: true },
-  isVerified: { type: Boolean, default: false }
+  isVerified: { type: Boolean, default: true }
 },
 {
   timestamps: true

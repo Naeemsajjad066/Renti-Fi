@@ -6,29 +6,29 @@ import {
   getProperty,
   updateProperty,
   deleteProperty,
-  checkAvailability,
+  // checkAvailability,
   getUserProperties,
   getFeaturedProperties
 } from '../controllers/propertyController.js';
-import { protect, hostProtect } from '../middleware/auth.js';
+import { protect } from '../middleware/auth.js';
 import { uploadMultiple } from '../middleware/upload.js';
 
 const propertyRouter = express.Router();
 
 // Public routes
-router.get('/', getProperties);
-router.get('/featured', getFeaturedProperties);
-router.get('/:id', getProperty);
-router.get('/:id/availability', checkAvailability);
+propertyRouter.get('/', getProperties);
+propertyRouter.get('/featured', getFeaturedProperties);
+propertyRouter.get('/:id', getProperty);
+// propertyRouter.get('/:id/availability', checkAvailability);
 
 // Protected routes
-router.use(protect);
-router.get('/user/:userId?', getUserProperties);
+propertyRouter.use(protect);
+propertyRouter.get('/user/:userId?', getUserProperties);
 
 // Host routes
-router.use(hostProtect);
-router.post('/', uploadMultiple('images', 10), createProperty);
-router.put('/:id', uploadMultiple('images', 10), updateProperty);
-router.delete('/:id', deleteProperty);
+// propertyRouter.use(hostProtect);
+propertyRouter.post('/', uploadMultiple('images', 10), createProperty);
+propertyRouter.put('/:id', uploadMultiple('images', 10), updateProperty);
+propertyRouter.delete('/:id', deleteProperty);
 
 export default propertyRouter;

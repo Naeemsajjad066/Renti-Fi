@@ -28,7 +28,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   Select,
   SelectContent,
@@ -44,7 +43,8 @@ import PageTransition from '@/components/PageTransition';
 import HostSidebar from '@/components/HostSidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
-
+import { PropertyContext } from '../contexts/PropertyContext';
+import { useContext } from 'react';
 const propertyTypes = [
   { id: 'apartment', label: 'Apartment' },
   { id: 'house', label: 'House' },
@@ -54,7 +54,7 @@ const propertyTypes = [
   { id: 'loft', label: 'Loft' },
 ];
 
-const amenities = [
+const selectedAmenities = [
   { id: 'wifi', label: 'Wi-Fi', icon: Wifi },
   { id: 'tv', label: 'TV', icon: Tv },
   { id: 'kitchen', label: 'Kitchen', icon: Utensils },
@@ -68,7 +68,7 @@ const AddListing = () => {
   const [activeStep, setActiveStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  
+  const {createProperty} = useContext(PropertyContext);
   // Form state
   const [images, setImages] = useState([]);
   const [formData, setFormData] = useState({
@@ -108,14 +108,7 @@ const AddListing = () => {
     });
   };
   
-  const handleRadioChange = (value) => {
-    setFormData(prev => ({ ...prev, minimumStay: value }));
-  };
-  
-  const toggleInstantBooking = () => {
-    setFormData(prev => ({ ...prev, instantBooking: !prev.instantBooking }));
-  };
-  
+
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     
@@ -138,12 +131,7 @@ const AddListing = () => {
     });
   };
 
-  const handleDateSelect = (range) => {
-    setFormData(prev => ({
-      ...prev,
-      availableDates: range,
-    }));
-  };
+
   
   const nextStep = () => {
     setActiveStep(prev => prev + 1);
@@ -158,82 +146,71 @@ const AddListing = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+  
     try {
       const formDataToSend = new FormData();
-      
-      // Add all form fields to FormData
-      Object.keys(formData).forEach(key => {
-        if (key === 'availableDates' || key === 'selectedAmenities') {
+  
+      // Append all text/number/boolean fields
+      Object.keys(formData).forEach((key) => {
+        if (key === "selectedAmenities") {
           formDataToSend.append(key, JSON.stringify(formData[key]));
         } else {
           formDataToSend.append(key, formData[key]);
         }
       });
-      
-      // Add the first image if exists
+  
+      // Append images
       if (images.length > 0) {
-        formDataToSend.append('image', images[0].file);
+        images.forEach((img) => {
+          formDataToSend.append("images", img.file); // ✅ multiple images support
+        });
       }
-      
-      const response = await fetch('http://localhost:5000/api/properties', {
-        method: 'POST',
-        body: formDataToSend,
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to create property listing');
-      }
-      
-      const result = await response.json();
-      
+  
+      // Call context function
+      const result = await createProperty(formDataToSend);
+  
       if (result.success) {
         toast({
           title: "Success!",
-          description: result.message || "Your property has been listed successfully.",
-          variant: "success"
+          description:
+            result.message || "Your property has been listed successfully.",
+          variant: "success",
         });
-        
-        // Reset form
+  
+        // Reset form state
         setFormData({
-          title: '',
-          description: '',
-          address: '',
-          city: '',
-          state: '',
-          zipCode: '',
-          country: '',
-          propertyType: '',
+          title: "",
+          description: "",
+          address: "",
+          city: "",
+          state: "",
+          zipCode: "",
+          country: "",
+          propertyType: "",
           bedrooms: 1,
           bathrooms: 1,
           maxGuests: 2,
-          price: '',
+          price: "",
           selectedAmenities: [],
-          minimumStay: '1',
           instantBooking: false,
-          availableDates: {
-            from: null,
-            to: null,
-          },
+          minimumStay: "1",
         });
         setImages([]);
-        
+  
         // Redirect to dashboard
-        window.location.href = '/host/dashboard';
-      } else {
-        throw new Error(result.message || 'Failed to create property listing');
+        window.location.href = "/host/dashboard";
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: error.message,
-        variant: "destructive"
+        description: error.message || "Something went wrong.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
+  
   
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -283,9 +260,9 @@ const AddListing = () => {
                       </div>
                       <div className="text-xs text-gray-600">
                         {step === 1 && "Basic Info"}
-                        {step === 2 && "Details & Amenities"}
+                        {step === 2 && "Details & selectedAmenities"}
                         {step === 3 && "Photos"}
-                        {step === 4 && "Availability & Price"}
+                        {step === 4 && "Prices"}
                       </div>
                     </div>
                   ))}
@@ -460,7 +437,7 @@ const AddListing = () => {
                   </motion.div>
                 )}
                 
-                {/* Step 2: Details & Amenities */}
+                {/* Step 2: Details & selectedAmenities */}
                 {activeStep === 2 && (
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
@@ -469,7 +446,7 @@ const AddListing = () => {
                     transition={{ duration: 0.3 }}
                     className="bg-white p-6 rounded-lg shadow-sm"
                   >
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Property Details & Amenities</h2>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Property Details & selectedAmenities</h2>
                     
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -571,10 +548,10 @@ const AddListing = () => {
                       
                       <div>
                         <Label className="text-sm font-medium text-gray-700 block mb-3">
-                          Available Amenities
+                          Available selectedAmenities
                         </Label>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {amenities.map((amenity) => (
+                          {selectedAmenities.map((amenity) => (
                             <div key={amenity.id} className="flex items-center space-x-2">
                               <Switch 
                                 checked={formData.selectedAmenities.includes(amenity.id)}

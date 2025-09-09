@@ -1,8 +1,9 @@
 // middleware/auth.js
-import { verifyToken } from '../utils/jwt.js';
+import { verifyToken } from '../lib/utils.js';
 import User from '../models/User.js';
 
 export const protect = async (req, res, next) => {
+
   try {
     let token;
     
@@ -20,6 +21,7 @@ export const protect = async (req, res, next) => {
     
     // Verify token
     const decoded = verifyToken(token);
+
     
     // Get user from token
     const user = await User.findById(decoded.userId);
@@ -31,13 +33,7 @@ export const protect = async (req, res, next) => {
       });
     }
     
-    if (!user.isActive) {
-      return res.status(401).json({
-        success: false,
-        message: 'Account is deactivated'
-      });
-    }
-    
+
     // Add user to request object
     req.user = user;
     next();
