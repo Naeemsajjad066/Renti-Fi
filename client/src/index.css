@@ -76,7 +76,7 @@
   }
 
   .glass-effect {
-    @apply bg-white/90 backdrop-blur-md border border-cream-beige/20 shadow-soft;
+    @apply bg-white/90 backdrop-blur-sm border border-cream-beige/20 shadow-soft;
   }
 
   .nav-item {

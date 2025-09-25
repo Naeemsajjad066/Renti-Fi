@@ -4,7 +4,8 @@ import App from "./App.tsx";
 import "./index.css";
 import { ThemeProvider } from "./hooks/use-theme.jsx";
 import { AuthProvider } from "./contexts/AuthContext.jsx"; // ✅ fixed relative path
-import {PropertyProvider} from './contexts/PropertyContext.jsx'
+import { PropertyProvider } from './contexts/PropertyContext.jsx';
+import { LoadingProvider } from './contexts/LoadingContext.jsx';
 
 const rootElement = document.getElementById("root");
 
@@ -17,12 +18,13 @@ const root = createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <ThemeProvider>
-      <AuthProvider>
-        <PropertyProvider>
-        <App />   {/* ✅ App is now wrapped inside AuthProvider */}
-
-        </PropertyProvider>
-      </AuthProvider>
+      <LoadingProvider>
+        <AuthProvider>
+          <PropertyProvider>
+            <App />   {/* ✅ App is now wrapped inside all providers */}
+          </PropertyProvider>
+        </AuthProvider>
+      </LoadingProvider>
     </ThemeProvider>
   </React.StrictMode>
 );

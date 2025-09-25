@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Home, Mail, RefreshCw, CheckCircle } from 'lucide-react';
 import PageTransition from '@/components/PageTransition';
 import { AuthContext } from '../contexts/AuthContext';
+import { useLoading } from '../contexts/LoadingContext';
 import toast from 'react-hot-toast';
 
 const EmailVerification = () => {
@@ -16,6 +17,7 @@ const EmailVerification = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { axios } = useContext(AuthContext);
+  const { showLoading, hideLoading } = useLoading();
   
   // Get email and userData from location state (passed from SignUp page)
   const email = location.state?.email;
@@ -75,6 +77,7 @@ const EmailVerification = () => {
     }
 
     setIsLoading(true);
+    showLoading("Verifying your email...");
 
     try {
       const { data } = await axios.post('/api/auth/verify-email', {
@@ -103,6 +106,7 @@ const EmailVerification = () => {
       document.getElementById('code-0')?.focus();
     } finally {
       setIsLoading(false);
+      hideLoading();
     }
   };
 
@@ -110,6 +114,7 @@ const EmailVerification = () => {
     if (!canResend || isResending) return;
 
     setIsResending(true);
+    showLoading("Sending new verification code...");
     
     try {
       const { data } = await axios.post('/api/auth/resend-verification', {
@@ -141,6 +146,7 @@ const EmailVerification = () => {
       toast.error(error.response?.data?.message || 'Failed to resend code');
     } finally {
       setIsResending(false);
+      hideLoading();
     }
   };
 

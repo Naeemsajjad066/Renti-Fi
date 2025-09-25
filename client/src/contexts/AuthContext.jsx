@@ -1,6 +1,7 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useContext } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useLoading } from "./LoadingContext";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -11,6 +12,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [authUser, setAuthUsr] = useState(null);
+  const { showLoading, hideLoading } = useLoading();
 
   // check if user is authenticated
   const checkAuth = async () => {
@@ -26,6 +28,7 @@ export const AuthProvider = ({ children }) => {
 
   // signup function
   const register = async (credentials) => {
+    showLoading("Creating your account...");
     try {
       const { data } = await axios.post("/api/auth/signup", credentials);
       if (data.success) {
@@ -49,11 +52,14 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
       throw error;
+    } finally {
+      hideLoading();
     }
   };
 
   // verify email function
   const verifyEmail = async (email, code, userData) => {
+    showLoading("Verifying your email...");
     try {
       const { data } = await axios.post("/api/auth/verify-email", {
         email,
@@ -71,11 +77,14 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
       return { success: false, message: error.response?.data?.message || error.message };
+    } finally {
+      hideLoading();
     }
   };
 
   // resend verification code function
   const resendVerificationCode = async (email, fullName) => {
+    showLoading("Sending verification code...");
     try {
       const { data } = await axios.post("/api/auth/resend-verification", {
         email,
@@ -92,11 +101,14 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
       return { success: false, message: error.response?.data?.message || error.message };
+    } finally {
+      hideLoading();
     }
   };
 
   // login function
   const login = async (credentials) => {
+    showLoading("Signing you in...");
     try {
       const { data } = await axios.post(`/api/auth/login`, credentials);
       if (data.success) {
@@ -112,6 +124,8 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
       throw error;  // 🔑 rethrow so you can catch it in handleSubmit
+    } finally {
+      hideLoading();
     }
   };
 
@@ -126,6 +140,7 @@ export const AuthProvider = ({ children }) => {
 
   // update profile function
   const updateProfile = async (body) => {
+    showLoading("Updating profile...");
     try {
       const { data } = await axios.put("/api/auth/update-profile", body);
       if (data.success) {
@@ -134,6 +149,8 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       toast.error(error.message);
+    } finally {
+      hideLoading();
     }
   };
 

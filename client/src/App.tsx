@@ -21,6 +21,7 @@ import NotFound from "./pages/NotFound";
 import AllProperties from "./pages/AllProperties";
 import AdminPanel from "./components/AdminPanel";
 import Settings from "./pages/Settings";
+import GlobalLoader from "./components/GlobalLoader";
 
 
 const queryClient = new QueryClient({
@@ -69,8 +70,8 @@ const App = () => (
       <Toaster />
       <Sonner position="top-right" closeButton theme="light" richColors />
       <BrowserRouter>
-        {/* Wrap the application with our context providers */}
-          <AnimatedRoutes />
+        <AnimatedRoutes />
+        <GlobalLoader />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
