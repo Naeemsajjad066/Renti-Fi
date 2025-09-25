@@ -27,21 +27,32 @@ const Login = () => {
 
   const handleSubmit = async(e) => {
     e.preventDefault();
-    console.log('Form submitted', formData);
+    
+    if (!formData.email || !formData.password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
     try {
-      const response= await login({
+      const response = await login({
         email: formData.email,
         password: formData.password,
-      })
+      });
+      
       if (response?.success) {
         navigate("/");
+      } else if (response?.requiresVerification) {
+        // User needs to verify email
+        navigate("/verify-email", {
+          state: {
+            email: response.email,
+            userData: null // User already exists, no need to pass userData
+          }
+        });
       }
-      else {
-        console.log("Login failed");
-      }
-    }
-    catch (err) {
+    } catch (err) {
       console.log("Login error:", err.response?.data || err.message);
+      // Error handling is done in AuthContext
     }
   };
 

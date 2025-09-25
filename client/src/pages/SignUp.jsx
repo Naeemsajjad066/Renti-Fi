@@ -6,6 +6,7 @@ import PageTransition from '@/components/PageTransition';
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from '../contexts/AuthContext';
 import { useContext } from 'react';
+import toast from 'react-hot-toast';
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -34,18 +35,47 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords don't match");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
     try {
-      await register({
+      const result = await register({
         fullName: formData.fullName,
         idCard: formData.idCard,
         phoneNumber: formData.phoneNumber,
         email: formData.email,
         password: formData.password,
       });
-      setSuccess(true);
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+
+      if (result.success && result.requiresVerification) {
+        // Navigate to email verification page
+        navigate("/verify-email", {
+          state: {
+            email: result.email,
+            userData: {
+              fullName: formData.fullName,
+              idCard: formData.idCard,
+              phoneNumber: formData.phoneNumber,
+              password: formData.password
+            }
+          }
+        });
+      } else if (result.success) {
+        // Direct registration success (fallback)
+        setSuccess(true);
+        setTimeout(() => {
+          navigate("/login");
+        }, 1500);
+      }
     } catch (err) {
       // Error is handled by AuthContext
     }

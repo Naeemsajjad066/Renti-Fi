@@ -29,16 +29,69 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data } = await axios.post("/api/auth/signup", credentials);
       if (data.success) {
-        setAuthUsr(data.userData);
-        axios.defaults.headers.common["token"] = data.token;
-        setToken(data.token);
-        localStorage.setItem("token", data.token);
-        toast.success(data.message);
+        if (data.requiresVerification) {
+          // Email verification required
+          toast.success(data.message);
+          return { success: true, requiresVerification: true, email: data.email };
+        } else {
+          // Direct registration (fallback)
+          setAuthUsr(data.userData);
+          axios.defaults.headers.common["token"] = data.token;
+          setToken(data.token);
+          localStorage.setItem("token", data.token);
+          toast.success(data.message);
+          return { success: true, requiresVerification: false };
+        }
       } else {
         toast.error(data.message);
+        return { success: false, message: data.message };
       }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.response?.data?.message || error.message);
+      throw error;
+    }
+  };
+
+  // verify email function
+  const verifyEmail = async (email, code, userData) => {
+    try {
+      const { data } = await axios.post("/api/auth/verify-email", {
+        email,
+        code,
+        userData
+      });
+      
+      if (data.success) {
+        toast.success(data.message);
+        return { success: true };
+      } else {
+        toast.error(data.message);
+        return { success: false, message: data.message };
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  };
+
+  // resend verification code function
+  const resendVerificationCode = async (email, fullName) => {
+    try {
+      const { data } = await axios.post("/api/auth/resend-verification", {
+        email,
+        fullName
+      });
+      
+      if (data.success) {
+        toast.success(data.message);
+        return { success: true };
+      } else {
+        toast.error(data.message);
+        return { success: false, message: data.message };
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+      return { success: false, message: error.response?.data?.message || error.message };
     }
   };
 
@@ -97,6 +150,8 @@ export const AuthProvider = ({ children }) => {
     token,
     login,
     register,
+    verifyEmail,
+    resendVerificationCode,
     logout,
     updateProfile,
   };
