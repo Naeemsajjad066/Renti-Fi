@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { motion } from 'framer-motion';
 import { Filter, Search, MapPin, Star } from 'lucide-react';
 import Navbar from '@/components/Navbar';
@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { PropertyContext } from '../contexts/PropertyContext';
 
 const AllProperties = () => {
   // Mock properties data
@@ -110,26 +111,20 @@ const AllProperties = () => {
     }
   ];
 
-  const [properties, setProperties] = useState([]);
+  const { properties, loading } = useContext(PropertyContext);
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [activeType, setActiveType] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState([0, 500]);
   const [sortBy, setSortBy] = useState('');
-  const [loading, setLoading] = useState(false); // Changed to false since we're using mock data
 
-  const propertyTypeOptions = ['All', 'Apartment', 'House', 'Villa', 'Cabin', 'Cottage'];
+  const propertyTypeOptions = ['All', 'Apartment', 'House', 'Villa', 'Cabin', 'Cottage', 'Loft', 'Condo', 'Townhouse'];
   const sortOptions = ['Price: Low to High', 'Price: High to Low', 'Rating: High to Low', 'Latest'];
 
   useEffect(() => {
-    // Simulate loading data
-    setLoading(true);
-    setTimeout(() => {
-      setProperties(mockProperties);
-      setFilteredProperties(mockProperties);
-      setLoading(false);
-    }, 500); // Small delay to simulate network request
-  }, []);
+    // Set initial filtered properties when properties load
+    setFilteredProperties(properties);
+  }, [properties]);
 
   useEffect(() => {
     // Filter properties based on type, search query, and price range
@@ -137,7 +132,10 @@ const AllProperties = () => {
     
     // Filter by type
     if (activeType !== 'All') {
-      filtered = filtered.filter(property => property.type === activeType);
+      filtered = filtered.filter(property => 
+        property.propertyType?.toLowerCase() === activeType.toLowerCase() || 
+        property.type?.toLowerCase() === activeType.toLowerCase()
+      );
     }
     
     // Filter by search query
@@ -145,8 +143,9 @@ const AllProperties = () => {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         property => 
-          property.name.toLowerCase().includes(query) || 
-          property.location.toLowerCase().includes(query)
+          (property.title || property.name)?.toLowerCase().includes(query) || 
+          (property.city && property.state ? `${property.city}, ${property.state}` : property.location)?.toLowerCase().includes(query) ||
+          property.description?.toLowerCase().includes(query)
       );
     }
     
@@ -161,9 +160,9 @@ const AllProperties = () => {
     } else if (sortBy === 'Price: High to Low') {
       filtered = [...filtered].sort((a, b) => b.price - a.price);
     } else if (sortBy === 'Rating: High to Low') {
-      filtered = [...filtered].sort((a, b) => b.rating - a.rating);
+      filtered = [...filtered].sort((a, b) => (b.rating || 0) - (a.rating || 0));
     } else if (sortBy === 'Latest') {
-      filtered = [...filtered].sort((a, b) => b.id - a.id); // Assuming higher ID means newer
+      filtered = [...filtered].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     }
     
     setFilteredProperties(filtered);
@@ -324,7 +323,7 @@ const AllProperties = () => {
                         className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
                       >
                         {filteredProperties.map(property => (
-                          <motion.div key={property.id} variants={cardVariants}>
+                          <motion.div key={property._id || property.id} variants={cardVariants}>
                             <PropertyCard property={property} />
                           </motion.div>
                         ))}

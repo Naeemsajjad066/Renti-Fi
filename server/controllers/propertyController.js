@@ -135,7 +135,14 @@ export const createProperty = async (req, res) => {
 // GET all properties
 export const getProperties = async (req, res) => {
   try {
-    const properties = await Property.find().populate("host", "fullName email");
+    const properties = await Property.find().populate("host", "fullName email profilePicture");
+    
+    // Add caching headers for better performance
+    res.set({
+      'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
+      'ETag': `"properties-${Date.now()}"`
+    });
+    
     res.json({ success: true, properties });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error fetching properties" });
@@ -145,13 +152,20 @@ export const getProperties = async (req, res) => {
 // GET single property by ID
 export const getProperty = async (req, res) => {
   try {
-    const property = await Property.findById(req.params.id).populate("host", "fullName email");
+    const property = await Property.findById(req.params.id).populate("host", "fullName email profilePicture createdAt");
     if (!property) {
       return res.status(404).json({ success: false, message: "Property not found" });
     }
+    
+    // Add caching headers for better performance
+    res.set({
+      'Cache-Control': 'public, max-age=600', // Cache for 10 minutes
+      'ETag': `"property-${property._id}-${property.updatedAt}"`
+    });
+    
     res.json({ success: true, property });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error fetching property" });
+    res.status(500).json({ success: false, message: "Error fetching property", error: error.message });
   }
 };
 
@@ -239,7 +253,17 @@ export const getUserProperties = async (req, res) => {
 // GET featured properties (latest 5 for example)
 export const getFeaturedProperties = async (req, res) => {
   try {
-    const properties = await Property.find().sort({ createdAt: -1 }).limit(5);
+    const properties = await Property.find({ isActive: true })
+      .populate("host", "fullName email profilePicture")
+      .sort({ createdAt: -1 })
+      .limit(6);
+    
+    // Add caching headers
+    res.set({
+      'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
+      'ETag': `"featured-${Date.now()}"`
+    });
+    
     res.json({ success: true, properties });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error fetching featured properties" });

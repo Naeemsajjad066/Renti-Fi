@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, MapPin, Calendar, Home as HomeIcon, Filter, Star, ArrowRight, Heart, TrendingUp, CheckCircle } from 'lucide-react';
@@ -10,9 +10,33 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTheme } from '@/hooks/use-theme';
+import { PropertyContext } from '../contexts/PropertyContext';
 
-// Mock data for property listings
-const mockProperties = [{
+// Destinations data (keeping as static for now)
+// const destinations = [{
+//   id: 1,
+//   name: 'New York',
+//   properties: 243,
+//   image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+// }, {
+//   id: 2,
+//   name: 'Miami',
+//   properties: 186,
+//   image: 'https://images.unsplash.com/photo-1514214246283-d427a95c5d2f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+// }, {
+//   id: 3,
+//   name: 'Los Angeles',
+//   properties: 312,
+//   image: 'https://images.unsplash.com/photo-1580655653885-65763b2597d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+// }, {
+//   id: 4,
+//   name: 'Chicago',
+//   properties: 167,
+//   image: 'https://images.unsplash.com/photo-1494522358652-f30e61a60313?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+// }];
+
+// Mock properties for fallback (keeping structure but removing data)
+const mockPropertiesBackup = [{
   id: 1,
   name: 'Modern Apartment in Downtown',
   location: 'New York, NY',
@@ -293,9 +317,8 @@ const PropertyTypeFilter = ({
     </Tabs>;
 };
 const FeaturedListings = ({
-  properties
+  featuredProperties
 }) => {
-  const featuredProperties = properties.filter(property => property.featured);
   return <section className="py-16 bg-white">
       <div className="page-container">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
@@ -318,7 +341,7 @@ const FeaturedListings = ({
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {featuredProperties.map(property => <motion.div key={property.id} initial={{
+          {featuredProperties.map(property => <motion.div key={property._id || property.id} initial={{
           opacity: 0,
           y: 20
         }} whileInView={{
@@ -370,23 +393,19 @@ const PopularDestinations = () => {
     </section>;
 };
 const Home = () => {
-  const [properties, setProperties] = useState([]);
+  const { properties, featuredProperties, loading } = useContext(PropertyContext);
   const [activeType, setActiveType] = useState('All');
   const [isLoading, setIsLoading] = useState(true);
   const {
     theme
   } = useTheme();
+  
   useEffect(() => {
-    const fetchProperties = () => {
-      setIsLoading(true);
-      setTimeout(() => {
-        setProperties(mockProperties);
-        setIsLoading(false);
-      }, 1000);
-    };
-    fetchProperties();
-  }, []);
-  const filteredProperties = activeType === 'All' ? properties : properties.filter(property => property.type === activeType);
+    // Properties are managed by PropertyContext
+    setIsLoading(loading);
+  }, [loading]);
+  
+  const filteredProperties = activeType === 'All' ? properties : properties.filter(property => property.propertyType === activeType.toLowerCase());
   const containerVariants = {
     hidden: {
       opacity: 0
@@ -415,7 +434,7 @@ const Home = () => {
         <main className="flex-grow">
           <Hero />
           
-          <FeaturedListings properties={properties} />
+          <FeaturedListings featuredProperties={featuredProperties} />
           
           <PopularDestinations />
           
@@ -452,7 +471,7 @@ const Home = () => {
                       <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
                     </div>)}
                 </div> : <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredProperties.map(property => <motion.div key={property.id} variants={cardVariants}>
+                  {filteredProperties.map(property => <motion.div key={property._id || property.id} variants={cardVariants}>
                       <PropertyCard property={property} />
                     </motion.div>)}
                 </motion.div>}

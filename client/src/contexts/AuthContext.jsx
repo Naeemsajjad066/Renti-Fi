@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
         } else {
           // Direct registration (fallback)
           setAuthUsr(data.userData);
-          axios.defaults.headers.common["token"] = data.token;
+          axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
           setToken(data.token);
           localStorage.setItem("token", data.token);
           toast.success(data.message);
@@ -112,8 +112,8 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data } = await axios.post(`/api/auth/login`, credentials);
       if (data.success) {
-        setAuthUsr(data.userData);
-        axios.defaults.headers.common["token"] = data.token;
+  setAuthUsr(data.userData);
+  axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
         setToken(data.token);
         localStorage.setItem("token", data.token);
         toast.success(data.message);
@@ -134,7 +134,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     setToken(null);
     setAuthUsr(null);
-    axios.defaults.headers.common["token"] = null;
+    delete axios.defaults.headers.common["Authorization"];
     toast.success("Logged out successfully");
   };
 
@@ -162,7 +162,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      axios.defaults.headers.common["token"] = token;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
     checkAuth();
   }, []);

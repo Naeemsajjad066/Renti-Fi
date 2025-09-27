@@ -23,6 +23,7 @@ export const PropertyProvider = ({ children }) => {
   const [userProperties, setUserProperties] = useState([]);
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [cache, setCache] = useState(new Map());
 
   // ✅ Get all properties
   const fetchProperties = async () => {
@@ -51,12 +52,29 @@ export const PropertyProvider = ({ children }) => {
     }
   };
 
-  // ✅ Get single property
+  // ✅ Get single property with caching
   const fetchPropertyById = async (id) => {
     try {
+      // Check cache first
+      const cacheKey = `property_${id}`;
+      const cachedProperty = cache.get(cacheKey);
+      const now = Date.now();
+      
+      // Use cached data if it's less than 5 minutes old
+      if (cachedProperty && (now - cachedProperty.timestamp) < 300000) {
+        setSelectedProperty(cachedProperty.data);
+        return;
+      }
+
       const { data } = await axios.get(`/api/properties/${id}`);
       if (data.success) {
         setSelectedProperty(data.property);
+        
+        // Cache the property data
+        setCache(prev => new Map(prev).set(cacheKey, {
+          data: data.property,
+          timestamp: now
+        }));
       }
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
