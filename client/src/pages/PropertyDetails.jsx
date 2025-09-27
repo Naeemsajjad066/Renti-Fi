@@ -21,11 +21,13 @@ import {
   Bath,
   Car,
   Utensils,
-  ShieldCheck
+  ShieldCheck,
+  CheckCircle
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
+import { Button } from '@/components/ui/button';
 
 // Default amenities mapping for display
 const amenityIcons = {
@@ -154,7 +156,7 @@ const BookingForm = ({ property }) => {
     <div className="bg-white rounded-lg shadow-lg p-6 sticky top-24">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <span className="text-2xl font-semibold">${property.price}</span>
+          <span className="text-2xl font-semibold">Rs {property.price}</span>
           <span className="text-gray-600">/night</span>
         </div>
         <div className="flex items-center">
@@ -222,20 +224,20 @@ const BookingForm = ({ property }) => {
       
       <div className="mt-6">
         <div className="flex items-center justify-between py-2 border-b">
-          <span className="text-gray-600">${property.price} x 5 nights</span>
-          <span>${property.price * 5}</span>
+          <span className="text-gray-600">Rs {property.price} x 5 nights</span>
+          <span>Rs {property.price * 5}</span>
         </div>
         <div className="flex items-center justify-between py-2 border-b">
           <span className="text-gray-600">Cleaning fee</span>
-          <span>$50</span>
+          <span>Rs 5,000</span>
         </div>
         <div className="flex items-center justify-between py-2 border-b">
           <span className="text-gray-600">Service fee</span>
-          <span>$30</span>
+          <span>Rs 3,000</span>
         </div>
         <div className="flex items-center justify-between py-4 font-semibold">
           <span>Total</span>
-          <span>${property.price * 5 + 80}</span>
+          <span>Rs {property.price * 5 + 8000}</span>
         </div>
       </div>
     </div>
@@ -245,17 +247,12 @@ const BookingForm = ({ property }) => {
 const PropertyDetails = () => {
   const { id } = useParams();
   const { selectedProperty, fetchPropertyById, loading } = useContext(PropertyContext);
-  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     if (id) {
       fetchPropertyById(id);
     }
   }, [id, fetchPropertyById]);
-
-  useEffect(() => {
-    setIsLoading(loading);
-  }, [loading]);
 
   // Preload property images when property data is available
   useEffect(() => {
@@ -270,7 +267,7 @@ const PropertyDetails = () => {
 
   const property = selectedProperty;
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-pulse space-y-8 w-full max-w-6xl p-4">
@@ -284,7 +281,7 @@ const PropertyDetails = () => {
     );
   }
 
-  if (!property) {
+  if (!loading && !property) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -394,22 +391,78 @@ const PropertyDetails = () => {
                   
                   <div className="mb-8">
                     <h2 className="text-xl font-semibold mb-4">Location</h2>
-                    <div className="h-64 bg-gray-200 rounded-lg">
+                    
+                    {/* Location verification badge */}
+                    {property.isLocationVerified && (
+                      <div className="mb-4 inline-flex items-center px-3 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                        <CheckCircle size={12} className="mr-1" />
+                        Location Verified
+                      </div>
+                    )}
+                    
+                    <div className="h-64 bg-gray-200 rounded-lg relative">
                       <div className="w-full h-full flex items-center justify-center">
                         <iframe
                           className="w-full h-64 rounded-lg"
-                          src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                            property.city && property.state 
-                              ? `${property.city}, ${property.state}` 
-                              : property.location || property.address
-                          )}&output=embed`}
+                          src={
+                            property.latitude && property.longitude
+                              ? `https://maps.google.com/maps?q=${property.latitude},${property.longitude}&output=embed&z=15`
+                              : `https://maps.google.com/maps?q=${encodeURIComponent(
+                                  property.city && property.state 
+                                    ? `${property.city}, ${property.state}` 
+                                    : property.location || property.address
+                                )}&output=embed`
+                          }
                           allowFullScreen
                         />
                       </div>
+                      
+                      {/* Get Route Button */}
+                      {property.latitude && property.longitude && (
+                        <div className="absolute bottom-4 right-4">
+                          <Button
+                            onClick={() => {
+                              const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${property.latitude},${property.longitude}`;
+                              window.open(googleMapsUrl, '_blank');
+                            }}
+                            className="bg-earth-brown hover:bg-earth-brown/90 text-white shadow-lg"
+                            size="sm"
+                          >
+                            <MapPin size={14} className="mr-1" />
+                            Get Route
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                    <p className="mt-3 text-gray-600">
-                      Exact location provided after booking.
-                    </p>
+                    
+                    <div className="mt-4 space-y-2">
+                      <p className="text-gray-600">
+                        {property.city && property.state 
+                          ? `${property.city}, ${property.state}${property.country ? `, ${property.country}` : ''}` 
+                          : property.address}
+                      </p>
+                      
+                      {property.isLocationVerified ? (
+                        <p className="text-sm text-green-600 dark:text-green-400">
+                          ✓ This property's location has been verified by the host
+                          {property.locationCapturedAt && (
+                            <span className="text-gray-500 ml-2">
+                              (Verified on {new Date(property.locationCapturedAt).toLocaleDateString()})
+                            </span>
+                          )}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-gray-500">
+                          Exact location will be provided after booking confirmation
+                        </p>
+                      )}
+                      
+                      {property.locationAccuracy && property.locationAccuracy < 50 && (
+                        <p className="text-xs text-gray-400">
+                          Location accuracy: ±{property.locationAccuracy.toFixed(1)}m
+                        </p>
+                      )}
+                    </div>
                   </div>
                   
                                   <div className="mb-8">

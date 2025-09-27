@@ -63,6 +63,13 @@ const propertySchema = new mongoose.Schema({
 
   images: [String],
 
+  // Geolocation fields for property location verification
+  latitude: { type: Number, required: false },
+  longitude: { type: Number, required: false },
+  locationCapturedAt: { type: Date, required: false },
+  isLocationVerified: { type: Boolean, default: false },
+  locationAccuracy: { type: Number, required: false }, // GPS accuracy in meters
+
   rating: { type: Number, default: 0 },
   totalReviews: { type: Number, default: 0 },
 

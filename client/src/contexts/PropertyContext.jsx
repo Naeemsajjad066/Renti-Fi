@@ -55,6 +55,9 @@ export const PropertyProvider = ({ children }) => {
   // ✅ Get single property with caching
   const fetchPropertyById = async (id) => {
     try {
+      setLoading(true);
+      setSelectedProperty(null); // Clear previous property
+      
       // Check cache first
       const cacheKey = `property_${id}`;
       const cachedProperty = cache.get(cacheKey);
@@ -63,6 +66,7 @@ export const PropertyProvider = ({ children }) => {
       // Use cached data if it's less than 5 minutes old
       if (cachedProperty && (now - cachedProperty.timestamp) < 300000) {
         setSelectedProperty(cachedProperty.data);
+        setLoading(false);
         return;
       }
 
@@ -75,9 +79,15 @@ export const PropertyProvider = ({ children }) => {
           data: data.property,
           timestamp: now
         }));
+      } else {
+        setSelectedProperty(null);
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message);
+      console.error('Error fetching property:', error);
+      toast.error(error.response?.data?.message || 'Property not found');
+      setSelectedProperty(null);
+    } finally {
+      setLoading(false);
     }
   };
 

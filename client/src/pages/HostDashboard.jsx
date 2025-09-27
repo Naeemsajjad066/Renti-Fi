@@ -6,7 +6,7 @@ import {
   ChevronRight,
   Home,
   Calendar,
-  DollarSign,
+  Banknote,
   TrendingUp,
   MessageSquare,
   Star,
@@ -89,7 +89,7 @@ const recentBookings = [
 const listings = [
   {
     id: 1,
-    title: "Luxury Villa with Ocean View",
+    title: "Luxury Villa with Sea View",
     location: "Malibu, CA",
     rating: 4.9,
     bookings: 23,
@@ -100,8 +100,8 @@ const listings = [
   },
   {
     id: 2,
-    title: "Modern Downtown Loft",
-    location: "New York, NY",
+    title: "Modern F-7 Apartment",
+    location: "Karachi, Sindh",
     rating: 4.7,
     bookings: 18,
     income: 7600,
@@ -111,7 +111,7 @@ const listings = [
   },
   {
     id: 3,
-    title: "Beachfront Cottage",
+    title: "Seaside House",
     location: "Santa Monica, CA",
     rating: 4.8,
     bookings: 15,
@@ -162,9 +162,9 @@ const activityItems = [
     id: 4,
     type: "payout",
     title: "Payout processed",
-    description: "Your payout of $840 has been processed",
+    description: "Your payout of Rs 84,000 has been processed",
     time: "2 days ago",
-    icon: DollarSign,
+    icon: Banknote,
   },
   {
     id: 5,

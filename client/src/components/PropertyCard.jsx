@@ -80,7 +80,7 @@ const PropertyCard = ({ property }) => {
           <div className="mt-4 flex items-center justify-between">
             <div>
               <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                ${property.price}
+                Rs {property.price}
                 <span className="text-sm text-gray-600 dark:text-gray-400 font-normal">/night</span>
               </p>
             </div>

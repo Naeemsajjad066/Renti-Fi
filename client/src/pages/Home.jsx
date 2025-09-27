@@ -36,94 +36,27 @@ import { PropertyContext } from '../contexts/PropertyContext';
 // }];
 
 // Mock properties for fallback (keeping structure but removing data)
-const mockPropertiesBackup = [{
-  id: 1,
-  name: 'Modern Apartment in Downtown',
-  location: 'New York, NY',
-  price: 120,
-  rating: 4.8,
-  image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-  featured: true,
-  type: 'Apartment'
-}, {
-  id: 2,
-  name: 'Cozy Beach House',
-  location: 'Miami, FL',
-  price: 200,
-  rating: 4.9,
-  image: 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-  featured: true,
-  type: 'House'
-}, {
-  id: 3,
-  name: 'Mountain View Cabin',
-  location: 'Denver, CO',
-  price: 150,
-  rating: 4.7,
-  image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-  type: 'Cabin'
-}, {
-  id: 4,
-  name: 'Luxury Penthouse',
-  location: 'Los Angeles, CA',
-  price: 350,
-  rating: 4.9,
-  image: 'https://images.unsplash.com/photo-1565183997392-2f6f122e5912?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-  featured: true,
-  type: 'Apartment'
-}, {
-  id: 5,
-  name: 'Historic Townhouse',
-  location: 'Boston, MA',
-  price: 180,
-  rating: 4.6,
-  image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-  type: 'House'
-}, {
-  id: 6,
-  name: 'Lakefront Cottage',
-  location: 'Chicago, IL',
-  price: 140,
-  rating: 4.8,
-  image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-  type: 'Cottage'
-}, {
-  id: 7,
-  name: 'Urban Loft',
-  location: 'Seattle, WA',
-  price: 165,
-  rating: 4.7,
-  image: 'https://images.unsplash.com/photo-1554995207-c18c203602cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-  type: 'Apartment'
-}, {
-  id: 8,
-  name: 'Desert Retreat',
-  location: 'Phoenix, AZ',
-  price: 130,
-  rating: 4.5,
-  image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-  type: 'Villa'
-}];
+
 const destinations = [{
   id: 1,
-  name: 'New York',
+  name: 'Karachi',
   properties: 243,
   image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
 }, {
   id: 2,
-  name: 'Miami',
+  name: 'Lahore',
   properties: 186,
   image: 'https://images.unsplash.com/photo-1514214246283-d427a95c5d2f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
 }, {
   id: 3,
-  name: 'Los Angeles',
+  name: 'Islamabad',
   properties: 312,
-  image: 'https://images.unsplash.com/photo-1580655653885-65763b2597d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+  image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
 }, {
   id: 4,
-  name: 'Chicago',
+  name: 'Rawalpindi',
   properties: 167,
-  image: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+  image: 'https://images.unsplash.com/photo-1551218808-94e220e084d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
 }];
 const propertyTypes = ['All', 'Apartment', 'House', 'Villa', 'Cabin', 'Beachfront', 'Countryside'];
 const Hero = () => {
@@ -196,7 +129,7 @@ const Hero = () => {
             
             <div className="mt-4 flex flex-wrap gap-3 items-center px-2">
               <span className="text-sm text-gray-500">Popular:</span>
-              {['Beach house', 'Mountain cabin', 'City apartment', 'Villa'].map(term => <Badge key={term} variant="outline" className="bg-transparent border-cream-beige text-gray-700 hover:bg-cream-beige/10 cursor-pointer">
+              {['Karachi apartment', 'Lahore house', 'Islamabad villa', 'Murree cabin'].map(term => <Badge key={term} variant="outline" className="bg-transparent border-cream-beige text-gray-700 hover:bg-cream-beige/10 cursor-pointer">
                   {term}
                 </Badge>)}
             </div>
@@ -250,11 +183,11 @@ const Hero = () => {
                     <h3 className="text-xl font-semibold mb-1 text-emerald-400">Mountain View Retreat</h3>
                     <div className="flex items-center">
                       <MapPin size={16} className="mr-1" />
-                      <span>Aspen, Colorado</span>
+                      <span>Murree, Punjab</span>
                     </div>
                   </div>
                   <div className="bg-white/90 backdrop-blur-sm text-earth-brown px-3 py-1 rounded-lg font-medium">
-                    $320/night
+                    Rs 32,000/night
                   </div>
                 </div>
               </div>
@@ -592,7 +525,7 @@ const Home = () => {
                       <div className="flex flex-col sm:flex-row gap-3 mb-6">
                         <div className="flex items-center text-gray-700 dark:text-gray-300">
                           <TrendingUp size={16} className="mr-2 text-earth-brown dark:text-cream-beige" />
-                          <span>Earn up to $3,000/month</span>
+                          <span>Earn up to Rs 300,000/month</span>
                         </div>
                         <div className="flex items-center text-gray-700 dark:text-gray-300">
                           <Calendar size={16} className="mr-2 text-earth-brown dark:text-cream-beige" />

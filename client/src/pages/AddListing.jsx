@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { 
   Upload, 
   MapPin, 
-  DollarSign, 
+  Banknote, 
   Home, 
   CalendarIcon, 
   Check, 
@@ -41,6 +41,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import PageTransition from '@/components/PageTransition';
 import HostSidebar from '@/components/HostSidebar';
+import LocationCapture from '@/components/LocationCapture';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
 import { PropertyContext } from '../contexts/PropertyContext';
@@ -86,7 +87,13 @@ const AddListing = () => {
     price: '',
     selectedAmenities: [],
     instantBooking: false,
+    latitude: null,
+    longitude: null,
+    locationAccuracy: null,
   });
+  
+  // Location capture state
+  const [locationCaptured, setLocationCaptured] = useState(false);
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -105,6 +112,30 @@ const AddListing = () => {
       } else {
         return { ...prev, selectedAmenities: [...selected, amenityId] };
       }
+    });
+  };
+  
+  // Location capture handlers
+  const handleLocationCapture = (locationData) => {
+    setFormData(prev => ({
+      ...prev,
+      latitude: locationData.latitude,
+      longitude: locationData.longitude,
+      locationAccuracy: locationData.accuracy
+    }));
+    setLocationCaptured(true);
+    toast({
+      title: "Location Captured!",
+      description: "Property location has been successfully captured.",
+      variant: "success",
+    });
+  };
+  
+  const handleLocationError = (error) => {
+    toast({
+      title: "Location Error",
+      description: error,
+      variant: "destructive",
     });
   };
   
@@ -267,10 +298,12 @@ const AddListing = () => {
                     </div>
                   ))}
                 </div>
-                <div className="mt-2 grid grid-cols-3 gap-1">
+                <div className="mt-2 grid grid-cols-5 gap-1">
                   <div className={`h-1 rounded-l ${activeStep >= 2 ? 'bg-primary' : 'bg-gray-200'}`}></div>
                   <div className={`h-1 ${activeStep >= 3 ? 'bg-primary' : 'bg-gray-200'}`}></div>
-                  <div className={`h-1 rounded-r ${activeStep >= 4 ? 'bg-primary' : 'bg-gray-200'}`}></div>
+                  <div className={`h-1 ${activeStep >= 4 ? 'bg-primary' : 'bg-gray-200'}`}></div>
+                  <div className={`h-1 ${activeStep >= 5 ? 'bg-primary' : 'bg-gray-200'}`}></div>
+                  <div className={`h-1 rounded-r ${activeStep >= 6 ? 'bg-primary' : 'bg-gray-200'}`}></div>
                 </div>
               </div>
               
@@ -294,7 +327,7 @@ const AddListing = () => {
                         <Input
                           id="title"
                           name="title"
-                          placeholder="e.g. Cozy Beachfront Apartment"
+                          placeholder="e.g. Cozy DHA Apartment"
                           value={formData.title}
                           onChange={handleInputChange}
                           required
@@ -365,7 +398,7 @@ const AddListing = () => {
                             <Input
                               id="city"
                               name="city"
-                              placeholder="New York"
+                              placeholder="Karachi"
                               value={formData.city}
                               onChange={handleInputChange}
                               required
@@ -412,16 +445,16 @@ const AddListing = () => {
                                 <SelectValue placeholder="Select country" />
                               </SelectTrigger>
                               <SelectContent className="bg-white">
+                                <SelectItem value="PK">Pakistan</SelectItem>
+                                <SelectItem value="IN">India</SelectItem>
+                                <SelectItem value="BD">Bangladesh</SelectItem>
+                                <SelectItem value="AF">Afghanistan</SelectItem>
+                                <SelectItem value="IR">Iran</SelectItem>
+                                <SelectItem value="CN">China</SelectItem>
+                                <SelectItem value="AE">UAE</SelectItem>
+                                <SelectItem value="SA">Saudi Arabia</SelectItem>
+                                <SelectItem value="TR">Turkey</SelectItem>
                                 <SelectItem value="US">United States</SelectItem>
-                                <SelectItem value="CA">Canada</SelectItem>
-                                <SelectItem value="MX">Mexico</SelectItem>
-                                <SelectItem value="UK">United Kingdom</SelectItem>
-                                <SelectItem value="FR">France</SelectItem>
-                                <SelectItem value="DE">Germany</SelectItem>
-                                <SelectItem value="IT">Italy</SelectItem>
-                                <SelectItem value="ES">Spain</SelectItem>
-                                <SelectItem value="AU">Australia</SelectItem>
-                                <SelectItem value="JP">Japan</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -437,8 +470,48 @@ const AddListing = () => {
                   </motion.div>
                 )}
                 
-                {/* Step 2: Details & selectedAmenities */}
+                {/* Step 2: Location Verification */}
                 {activeStep === 2 && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="bg-white p-6 rounded-lg shadow-sm"
+                  >
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Property Location Verification</h2>
+                    
+                    <div className="mb-6">
+                      <p className="text-gray-600 mb-4">
+                        To ensure the authenticity of your listing, we need to verify the property's location. 
+                        This helps build trust with potential guests and improves your listing's credibility.
+                      </p>
+                    </div>
+                    
+                    <LocationCapture
+                      onLocationCapture={handleLocationCapture}
+                      onLocationError={handleLocationError}
+                      isRequired={true}
+                    />
+                    
+                    <div className="mt-8 flex justify-between">
+                      <Button type="button" onClick={prevStep} variant="outline">
+                        Back
+                      </Button>
+                      <Button 
+                        type="button" 
+                        onClick={nextStep}
+                        disabled={!locationCaptured}
+                        className={locationCaptured ? '' : 'opacity-50 cursor-not-allowed'}
+                      >
+                        Next <ArrowRight size={16} className="ml-2" />
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+                
+                {/* Step 3: Details & selectedAmenities */}
+                {activeStep === 3 && (
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -583,7 +656,7 @@ const AddListing = () => {
                 )}
                 
                 {/* Step 3: Photos */}
-                {activeStep === 3 && (
+                {activeStep === 4 && (
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -668,7 +741,7 @@ const AddListing = () => {
                 )}
                 
                 {/* Step 4: Availability & Price */}
-                {activeStep === 4 && (
+                {activeStep === 5 && (
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -687,7 +760,7 @@ const AddListing = () => {
                         </Label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <DollarSign size={16} className="text-gray-500" />
+                            <Banknote size={16} className="text-gray-500" />
                           </div>
                           <Input
                             id="price"

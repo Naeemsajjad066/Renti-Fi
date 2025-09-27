@@ -14,7 +14,7 @@ import { useTheme } from '@/hooks/use-theme';
 const featuredProperties = [
   {
     id: 1,
-    title: "Luxury Villa with Ocean View",
+    title: "Luxury Villa with Sea View",
     location: "Malibu, CA",
     price: 350,
     rating: 4.9,
@@ -23,8 +23,8 @@ const featuredProperties = [
   },
   {
     id: 2,
-    title: "Modern Downtown Loft",
-    location: "New York, NY",
+    title: "Modern DHA Apartment",
+    location: "Karachi, Sindh",
     price: 200,
     rating: 4.7,
     image: "https://images.unsplash.com/photo-1554995207-c18c203602cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
@@ -32,7 +32,7 @@ const featuredProperties = [
   },
   {
     id: 3,
-    title: "Beachfront Cottage",
+    title: "Seaside House",
     location: "Santa Monica, CA",
     price: 280,
     rating: 4.8,
@@ -43,10 +43,10 @@ const featuredProperties = [
 
 // Popular destinations
 const destinations = [
-  { name: "New York", properties: 245, image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-  { name: "Los Angeles", properties: 189, image: "https://images.unsplash.com/photo-1580655653885-65763b2597d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-  { name: "San Francisco", properties: 167, image: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
-  { name: "Miami", properties: 214, image: "https://images.unsplash.com/photo-1514214246283-d427a95c5d2f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+    { name: "Karachi", properties: 245, image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+  { name: "Lahore", properties: 189, image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+  { name: "Islamabad", properties: 156, image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+  { name: "Rawalpindi", properties: 214, image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },,
 ];
 
 // Experience categories with icons
@@ -199,7 +199,7 @@ const Index = () => {
                       <div className="text-2xl font-bold mb-2">Mountain Lodge</div>
                       <div className="flex items-center mb-3">
                         <MapPin className="h-4 w-4 mr-1" />
-                        <span>Aspen, Colorado</span>
+                        <span>Murree, Punjab</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm flex items-center">
@@ -207,7 +207,7 @@ const Index = () => {
                           <span>4.9</span>
                         </div>
                         <div className="px-3 py-1 bg-earth-brown/70 backdrop-blur-sm rounded-full text-sm">
-                          $350/night
+                          Rs 35,000/night
                         </div>
                       </div>
                     </div>
@@ -550,7 +550,7 @@ const Index = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                     <div className="absolute bottom-6 left-6 right-6 p-6 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg">
                       <div className="flex items-start gap-4">
-                        <div className="text-4xl font-bold text-earth-brown">$1,240</div>
+                        <div className="text-4xl font-bold text-earth-brown">Rs 124,000</div>
                         <div className="flex-1">
                           <p className="text-gray-900 font-medium">Average monthly income</p>
                           <p className="text-gray-600 text-sm">for hosts in your area</p>

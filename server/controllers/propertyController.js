@@ -80,6 +80,9 @@ export const createProperty = async (req, res) => {
       maxGuests,
       price,
       selectedAmenities,
+      latitude,
+      longitude,
+      locationAccuracy,
     } = req.body;
 
     // Upload multiple images from memory
@@ -118,6 +121,11 @@ export const createProperty = async (req, res) => {
       price,
       amenities: selectedAmenities ? JSON.parse(selectedAmenities) : [],
       images: uploadedImages,
+      latitude: latitude ? parseFloat(latitude) : null,
+      longitude: longitude ? parseFloat(longitude) : null,
+      locationAccuracy: locationAccuracy ? parseFloat(locationAccuracy) : null,
+      locationCapturedAt: latitude && longitude ? new Date() : null,
+      isLocationVerified: !!(latitude && longitude),
     });
 
     return res.json({
