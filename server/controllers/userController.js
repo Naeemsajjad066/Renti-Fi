@@ -251,25 +251,132 @@ export const resendVerificationCode = async (req, res) => {
     }
 };
 
-export const updateProfile=async(req,res)=>{
+export const updateProfile = async (req, res) => {
     try {
-        const {profilePic,bio,fullName}=req.body;
+        const { profilePic, bio, fullName, phoneNumber } = req.body;
+        const userId = req.user._id;
 
-        const userId=req.user._id;
-        let updatedUser;
-        if(!profilePic){
-            updatedUser=await User.findByIdAndUpdate(userId,{bio,fullName},{new:true});
-        }else{
-            const upload=await cloudinary.uploader.upload(profilePic);
-            updatedUser=await User.findByIdAndUpdate(userId,{profilePic:upload.secure_url,bio,fullName},{new:true})
+        // Validate image size if provided (4MB limit to match server limit)
+        if (profilePic) {
+            const base64Data = profilePic.replace(/^data:image\/[a-z]+;base64,/, '');
+            const imageSize = (base64Data.length * 3) / 4; // Calculate size in bytes
+            const maxSize = 4 * 1024 * 1024; // 4MB in bytes (matching server limit)
+
+            if (imageSize > maxSize) {
+                return res.json({
+                    success: false,
+                    message: 'Image size too large. Please choose an image smaller than 4MB.',
+                });
+            }
+
+            // Validate image format
+            const imageFormat = profilePic.match(/^data:image\/([a-zA-Z]*);base64,/);
+            if (!imageFormat) {
+                return res.json({
+                    success: false,
+                    message: 'Invalid image format. Please upload a valid image file.',
+                });
+            }
+
+            const allowedFormats = ['jpeg', 'jpg', 'png', 'webp'];
+            if (!allowedFormats.includes(imageFormat[1].toLowerCase())) {
+                return res.json({
+                    success: false,
+                    message: 'Unsupported image format. Please use JPEG, PNG, or WEBP.',
+                });
+            }
         }
 
-        res.json({success:true, user:updatedUser})
-    } catch (error) {
-        console.log(error.message);
+        // Find user first to check if exists
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.json({
+                success: false,
+                message: 'User not found',
+            });
+        }
 
-        res.json({success:false,message:error.message})
+        // Prepare update object
+        const updateData = {};
+        if (fullName) updateData.fullName = fullName.trim();
+        if (bio) updateData.bio = bio.trim();
+        if (phoneNumber) updateData.phoneNumber = phoneNumber.trim();
+
+        // Handle profile picture upload to Cloudinary
+        if (profilePic) {
+            try {
+                // Delete old image from Cloudinary if exists
+                if (user.profilePic) {
+                    const publicIdMatch = user.profilePic.match(/\/([^\/]+)\.[^.]+$/);
+                    if (publicIdMatch) {
+                        const publicId = `rentifi/profiles/${publicIdMatch[1]}`;
+                        await cloudinary.uploader.destroy(publicId);
+                    }
+                }
+
+                // Upload new image to Cloudinary with optimization
+                const uploadResult = await cloudinary.uploader.upload(profilePic, {
+                    folder: 'rentifi/profiles',
+                    transformation: [
+                        { width: 400, height: 400, crop: 'fill', gravity: 'face' },
+                        { quality: 'auto:good' }
+                    ],
+                });
+
+                updateData.profilePic = uploadResult.secure_url;
+            } catch (cloudinaryError) {
+                console.error('Cloudinary upload error:', cloudinaryError);
+                return res.json({
+                    success: false,
+                    message: 'Failed to upload image. Please try again.',
+                });
+            }
+        }
+
+        // Update user in database
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            updateData,
+            { new: true, runValidators: true }
+        ).select('-password');
+
+        if (!updatedUser) {
+            return res.json({
+                success: false,
+                message: 'Failed to update profile',
+            });
+        }
+
+        console.log('Profile updated successfully for user:', userId);
+        console.log('Updated data:', updateData);
+
+        res.json({
+            success: true,
+            message: 'Profile updated successfully',
+            user: updatedUser,
+        });
+
+    } catch (error) {
+        console.error('Update profile error:', error);
         
+        // Handle specific errors
+        if (error.name === 'ValidationError') {
+            return res.json({
+                success: false,
+                message: 'Invalid data provided',
+            });
+        }
         
+        if (error.message.includes('PayloadTooLargeError')) {
+            return res.json({
+                success: false,
+                message: 'Image size too large. Please choose an image smaller than 4MB.',
+            });
+        }
+
+        res.json({
+            success: false,
+            message: 'Failed to update profile. Please try again.',
+        });
     }
 }

@@ -17,6 +17,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageTransition from "@/components/PageTransition";
+import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import { AuthContext } from "../contexts/AuthContext";
 
 const UserProfile = () => {
@@ -25,7 +26,7 @@ const UserProfile = () => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
-  const [imagePreview, setImagePreview] = useState(null);
+  const [profileImage, setProfileImage] = useState(null);
 
   // Local form state initialized from authUser
   const [formData, setFormData] = useState({
@@ -34,7 +35,7 @@ const UserProfile = () => {
     phoneNumber: "",
     bio: "",
     location: "",
-    profileImage: "",
+    profilePic: "",
     joinDate: "",
   });
 
@@ -46,9 +47,10 @@ const UserProfile = () => {
         phoneNumber: authUser.phoneNumber || "",
         bio: authUser.bio || "",
         location: authUser.location || "",
-        profileImage: authUser.profileImage || "",
-        joinDate: authUser.joinDate || "2025",
+        profilePic: authUser.profilePic || "",
+        joinDate: authUser.createdAt ? new Date(authUser.createdAt).getFullYear().toString() : "2025",
       });
+      setProfileImage(authUser.profilePic || null);
     }
   }, [authUser]);
 
@@ -60,32 +62,28 @@ const UserProfile = () => {
     }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setFormData((prev) => ({
-          ...prev,
-          profileImage: reader.result,
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleImageChange = (base64Image) => {
+    setProfileImage(base64Image);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await updateProfile({
+      const updateData = {
         fullName: formData.fullName,
         bio: formData.bio,
-        location: formData.location,
-        profileImage: imagePreview || formData.profileImage,
-      });
-      setIsEditing(false);
-      setImagePreview(null);
+        phoneNumber: formData.phoneNumber,
+      };
+      
+      // Only include profilePic if it has changed
+      if (profileImage && profileImage !== authUser.profilePic) {
+        updateData.profilePic = profileImage;
+      }
+      
+      const result = await updateProfile(updateData);
+      if (result.success) {
+        setIsEditing(false);
+      }
     } catch (err) {
       console.log("Update profile error:", err);
     }
@@ -93,15 +91,15 @@ const UserProfile = () => {
 
   const handleCancel = () => {
     setIsEditing(false);
-    setImagePreview(null);
+    setProfileImage(authUser.profilePic || null);
     setFormData({
-      fullName: authUser.fullName,
-      email: authUser.email,
-      phoneNumber: authUser.phoneNumber,
-      bio: authUser.bio,
-      location: authUser.location,
-      profileImage: authUser.profileImage,
-      joinDate: authUser.joinDate,
+      fullName: authUser.fullName || "",
+      email: authUser.email || "",
+      phoneNumber: authUser.phoneNumber || "",
+      bio: authUser.bio || "",
+      location: authUser.location || "",
+      profilePic: authUser.profilePic || "",
+      joinDate: authUser.createdAt ? new Date(authUser.createdAt).getFullYear().toString() : "2025",
     });
   };
 
@@ -128,24 +126,23 @@ const UserProfile = () => {
                 <div className="md:w-1/4">
                   <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
                     <div className="flex flex-col items-center mb-6">
-                      <div className="relative mb-4">
-                        <img
-                          src={imagePreview || formData.profileImage}
-                          alt={formData.fullName}
-                          className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md"
-                        />
-                        {isEditing && (
-                          <label className="absolute bottom-0 right-0 bg-primary p-2 rounded-full cursor-pointer hover:bg-primary/90 transition-colors">
-                            <Camera size={16} className="text-white" />
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageChange}
-                              className="hidden"
-                            />
-                          </label>
-                        )}
-                      </div>
+                      {isEditing ? (
+                        <div className="mb-4">
+                          <ProfilePictureUpload
+                            currentImage={profileImage}
+                            onImageChange={handleImageChange}
+                            disabled={false}
+                          />
+                        </div>
+                      ) : (
+                        <div className="relative mb-4">
+                          <img
+                            src={profileImage || "/placeholder.svg"}
+                            alt={formData.fullName}
+                            className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md"
+                          />
+                        </div>
+                      )}
                       <h2 className="text-xl font-bold text-center">
                         {formData.fullName}
                       </h2>

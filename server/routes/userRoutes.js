@@ -10,6 +10,7 @@ userRouter.post("/signup",Signup)
 userRouter.post("/verify-email", verifyEmail)
 userRouter.post("/resend-verification", resendVerificationCode)
 userRouter.post("/login",login)
+userRouter.get("/profile", protectRoute, checkAuth)
 userRouter.put("/update-profile",protectRoute,updateProfile)
 userRouter.get("/check",protectRoute,checkAuth)
 

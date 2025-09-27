@@ -15,6 +15,17 @@ const server = http.createServer(app);
 app.use(express.json({ limit: "4mb" }));
 app.use(cors());
 
+// Error handling middleware for payload too large
+app.use((error, req, res, next) => {
+  if (error.type === 'entity.too.large') {
+    return res.status(413).json({
+      success: false,
+      message: 'File too large. Please choose an image smaller than 4MB.',
+    });
+  }
+  next(error);
+});
+
 // test route
 app.use("/api/status", (req, res) => res.send("Server is live"));
 

@@ -111,11 +111,11 @@ const Footer = () => {
             <ul className="space-y-4">
               <li className="flex items-start">
                 <Mail size={18} className="mr-3 text-gray-500 mt-0.5" />
-                <span className="text-sm text-gray-600">naeem@sajjad.rentifi.com</span>
+                <span className="text-sm text-gray-600">Rentifi.project@gmail.com</span>
               </li>
               <li className="flex items-start">
                 <Phone size={18} className="mr-3 text-gray-500 mt-0.5" />
-                <span className="text-sm text-gray-600">+92 123-456744</span>
+                <span className="text-sm text-gray-600">+92 3059924066</span>
               </li>
             </ul>
           </motion.div>

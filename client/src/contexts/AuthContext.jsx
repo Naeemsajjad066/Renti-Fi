@@ -145,10 +145,16 @@ export const AuthProvider = ({ children }) => {
       const { data } = await axios.put("/api/auth/update-profile", body);
       if (data.success) {
         setAuthUsr(data.user);
-        toast.success("Profile updated successfully");
+        toast.success(data.message || "Profile updated successfully");
+        return { success: true, user: data.user };
+      } else {
+        toast.error(data.message || "Failed to update profile");
+        return { success: false, message: data.message };
       }
     } catch (error) {
-      toast.error(error.message);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to update profile";
+      toast.error(errorMessage);
+      return { success: false, message: errorMessage };
     } finally {
       hideLoading();
     }
