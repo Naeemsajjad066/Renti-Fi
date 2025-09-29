@@ -491,3 +491,32 @@ export const updateProfile = async (req, res) => {
         });
     }
 }
+
+// Get user by ID (for host profile viewing)
+export const getUserById = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        // Find user by ID, excluding sensitive information
+        const user = await User.findById(userId).select('-password -verificationCode');
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        res.json({
+            success: true,
+            user
+        });
+
+    } catch (error) {
+        console.error("❌ Error fetching user:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch user details"
+        });
+    }
+};

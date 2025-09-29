@@ -1,5 +1,5 @@
 import express from "express";
-import { checkAuth, login, Signup, updateProfile, verifyEmail, resendVerificationCode, forgotPassword, resetPassword } from "../controllers/userController.js";
+import { checkAuth, login, Signup, updateProfile, verifyEmail, resendVerificationCode, forgotPassword, resetPassword, getUserById } from "../controllers/userController.js";
 import { protectRoute } from "../controllers/auth.js";
 
 
@@ -15,6 +15,7 @@ userRouter.post("/reset-password", resetPassword)
 userRouter.get("/profile", protectRoute, checkAuth)
 userRouter.put("/update-profile",protectRoute,updateProfile)
 userRouter.get("/check",protectRoute,checkAuth)
+userRouter.get("/user/:userId", protectRoute, getUserById)
 
 
 export default userRouter;

@@ -66,3 +66,23 @@ export const sendWelcomeEmail = async (email, user) => {
         // Don't throw error for welcome email failure
     }
 };
+
+// Send booking confirmation email
+export const sendBookingConfirmationEmail = async (booking, property, user) => {
+    try {
+        const template = emailTemplates.bookingConfirmation(booking, property, user);
+        
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+            to: user.email,
+            subject: template.subject,
+            html: template.html
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log('✅ Booking confirmation email sent to:', user.email);
+    } catch (error) {
+        console.error('❌ Booking confirmation email failed:', error.message);
+        throw new Error(`Failed to send booking confirmation email: ${error.message}`);
+    }
+};

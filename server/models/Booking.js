@@ -96,8 +96,8 @@ const bookingSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['credit_card', 'debit_card', 'paypal', 'bank_transfer'],
-    required: true
+    enum: ['credit_card', 'debit_card', 'paypal', 'bank_transfer', 'pending'],
+    default: 'pending'
   },
   paymentId: String, // Payment gateway transaction ID
   paidAt: Date,

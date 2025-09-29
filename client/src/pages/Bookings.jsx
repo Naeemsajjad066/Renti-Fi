@@ -9,42 +9,15 @@ import {
   Check,
   Clock,
   Star,
+  ExternalLink,
+  MessageSquare,
+  Phone
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
-
-// Mock data
-const mockBookings = [
-  {
-    id: 1,
-    propertyId: 1,
-    propertyName: 'Modern Apartment in Downtown',
-    propertyImage: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    location: 'Karachi, Sindh',
-    hostName: 'Sarah Johnson',
-    hostImage: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
-    checkIn: '2023-09-15',
-    checkOut: '2023-09-20',
-    guests: 2,
-    totalPrice: 600,
-    status: 'upcoming',
-  },
-  {
-    id: 2,
-    propertyId: 2,
-    propertyName: 'Cozy Beach House',
-    propertyImage: 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    location: 'Lahore, Punjab',
-    hostName: 'Michael Davis',
-    hostImage: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
-    checkIn: '2023-08-01',
-    checkOut: '2023-08-05',
-    guests: 4,
-    totalPrice: 800,
-    status: 'completed',
-  },
-];
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const StatusBadge = ({ status }) => {
   const styles = {
@@ -66,47 +39,120 @@ const Bookings = () => {
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
+  const [error, setError] = useState(null);
 
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [reviewText, setReviewText] = useState('');
   const [rating, setRating] = useState(0);
   const [reviewedBookings, setReviewedBookings] = useState([]);
-  const [successMessage, setSuccessMessage] = useState('');
-
 
   useEffect(() => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setBookings(mockBookings);
-      setIsLoading(false);
-    }, 1000);
+    fetchBookings();
   }, []);
 
-  const filteredBookings = activeTab === 'all'
-    ? bookings
-    : bookings.filter(b => b.status === activeTab);
+  const fetchBookings = async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Please log in to view your bookings');
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await fetch('http://localhost:5000/api/bookings?type=guest', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+      console.log('Bookings response:', data);
+      
+      if (data.success) {
+        setBookings(data.bookings || []);
+      } else {
+        setError(data.message || 'Failed to fetch bookings');
+      }
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getStatusFromDates = (booking) => {
+    const today = new Date();
+    const checkIn = new Date(booking.checkIn);
+    const checkOut = new Date(booking.checkOut);
+    
+    if (booking.status === 'cancelled') return 'cancelled';
+    if (today < checkIn) return 'upcoming';
+    if (today >= checkIn && today <= checkOut) return 'active';
+    if (today > checkOut) return 'completed';
+    
+    return booking.status;
+  };
 
   const formatDate = (date) =>
     new Date(date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 
+  const cancelBooking = async (bookingId) => {
+    if (!window.confirm('Are you sure you want to cancel this booking?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          reason: 'Cancelled by guest'
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('Booking cancelled successfully');
+        fetchBookings(); // Refresh bookings
+      } else {
+        toast.error(data.message || 'Failed to cancel booking');
+      }
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      toast.error('Something went wrong. Please try again.');
+    }
+  };
+
   const handleReviewSubmit = () => {
-    console.log('Review for Booking ID:', selectedBooking.id);
-    console.log('Rating:', rating);
-    console.log('Review:', reviewText);
+    if (rating === 0) {
+      toast.error('Please select a rating');
+      return;
+    }
 
     // Mark booking as reviewed
-    setReviewedBookings(prev => [...prev, selectedBooking.id]);
+    setReviewedBookings(prev => [...prev, selectedBooking._id]);
 
     setShowReviewModal(false);
     setSelectedBooking(null);
     setRating(0);
     setReviewText('');
 
-    // Show success message
-    setSuccessMessage('Review submitted!');
-    setTimeout(() => setSuccessMessage(''), 3000);
+    toast.success('Review submitted successfully!');
+    // Here would be API call to submit review
   };
+
+  const filteredBookings = activeTab === 'all'
+    ? bookings.map(booking => ({ ...booking, status: getStatusFromDates(booking) }))
+    : bookings.map(booking => ({ ...booking, status: getStatusFromDates(booking) })).filter(b => b.status === activeTab);
 
 
   return (
@@ -141,11 +187,16 @@ const Bookings = () => {
                 ) : filteredBookings.length > 0 ? (
                   <div className="divide-y">
                     {filteredBookings.map(booking => (
-                      <motion.div key={booking.id} className="p-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                      <motion.div key={booking._id || booking.id} className="p-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                         <div className="flex flex-col md:flex-row">
                           <div className="mb-4 md:mb-0 md:mr-6">
                             <div className="relative w-full md:w-48 h-32 rounded-lg overflow-hidden">
-                              <img src={booking.propertyImage} alt={booking.propertyName} className="w-full h-full object-cover" />
+                              <img 
+                                src={booking.property?.images?.[0] || booking.propertyImage || '/placeholder.svg'} 
+                                alt={booking.property?.title || booking.propertyName || 'Property'} 
+                                className="w-full h-full object-cover"
+                                onError={(e) => { e.target.src = '/placeholder.svg'; }}
+                              />
                               <div className="absolute top-2 right-2">
                                 <StatusBadge status={booking.status} />
                               </div>
@@ -155,57 +206,136 @@ const Bookings = () => {
                           <div className="flex-1">
                             <div className="flex flex-col md:flex-row md:items-start md:justify-between">
                               <div>
-                                <Link to={`/property/${booking.propertyId}`} className="text-xl font-semibold hover:text-primary">
-                                  {booking.propertyName}
+                                <Link 
+                                  to={`/properties/${booking.property?._id || booking.propertyId}`} 
+                                  className="text-xl font-semibold hover:text-primary transition-colors"
+                                >
+                                  {booking.property?.title || booking.propertyName || 'Property'}
                                 </Link>
                                 <div className="flex items-center mt-1 text-gray-600 text-sm">
                                   <MapPin size={14} className="mr-1" />
-                                  {booking.location}
+                                  {booking.property?.city && booking.property?.state 
+                                    ? `${booking.property.city}, ${booking.property.state}`
+                                    : booking.location || 'Location not specified'}
                                 </div>
                               </div>
                               <div className="mt-3 md:mt-0 text-right">
-                                <div className="text-xl font-semibold">${booking.totalPrice}</div>
+                                <div className="text-xl font-semibold">Rs {booking.totalPrice?.toLocaleString()}</div>
                                 <div className="text-sm text-gray-600">Total</div>
                               </div>
                             </div>
 
                             <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <div><div className="text-sm text-gray-500">Check-in</div><div className="font-medium"><Calendar size={14} className="mr-1 inline" /> {formatDate(booking.checkIn)}</div></div>
-                              <div><div className="text-sm text-gray-500">Check-out</div><div className="font-medium"><Calendar size={14} className="mr-1 inline" /> {formatDate(booking.checkOut)}</div></div>
-                              <div><div className="text-sm text-gray-500">Guests</div><div className="font-medium"><User size={14} className="mr-1 inline" /> {booking.guests} {booking.guests === 1 ? 'Guest' : 'Guests'}</div></div>
+                              <div>
+                                <div className="text-sm text-gray-500">Check-in</div>
+                                <div className="font-medium">
+                                  <Calendar size={14} className="mr-1 inline" /> 
+                                  {formatDate(booking.checkIn)}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-sm text-gray-500">Check-out</div>
+                                <div className="font-medium">
+                                  <Calendar size={14} className="mr-1 inline" /> 
+                                  {formatDate(booking.checkOut)}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-sm text-gray-500">Guests</div>
+                                <div className="font-medium">
+                                  <User size={14} className="mr-1 inline" /> 
+                                  {booking.guests?.adults || booking.guests || 1} {(booking.guests?.adults || booking.guests || 1) === 1 ? 'Guest' : 'Guests'}
+                                </div>
+                              </div>
                             </div>
 
-                            <div className="mt-6 flex items-center justify-between">
+                            <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                               <div className="flex items-center">
-                                <img src={booking.hostImage} alt={booking.hostName} className="w-8 h-8 rounded-full object-cover mr-2" />
-                                <div><div className="text-sm text-gray-500">Host</div><div className="font-medium">{booking.hostName}</div></div>
+                                <Link 
+                                  to={`/host/${booking.host?._id || booking.hostId}`}
+                                  className="flex items-center hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                                >
+                                  <img 
+                                    src={booking.host?.profilePic || booking.host?.profilePicture || booking.host?.image || booking.hostImage || '/placeholder.svg'} 
+                                    alt={booking.host?.fullName || booking.hostName || 'Host'} 
+                                    className="w-10 h-10 rounded-full object-cover mr-3"
+                                    onError={(e) => {
+                                      console.log('Host image failed to load:', e.target.src);
+                                      console.log('Host data:', booking.host);
+                                      if (e.target.src !== '/placeholder.svg') {
+                                        e.target.src = '/placeholder.svg';
+                                      }
+                                    }}
+                                  />
+                                  <div>
+                                    <div className="text-sm text-gray-500">Host</div>
+                                    <div className="font-medium hover:text-primary transition-colors">
+                                      {booking.host?.fullName || booking.hostName || 'Host'}
+                                    </div>
+                                  </div>
+                                </Link>
                               </div>
-                              <div className="space-x-2">
-                                {booking.status === 'upcoming' && (
-                                  <button className="text-red-600 hover:text-red-800 text-sm">Cancel Booking</button>
-                                )}
-{booking.status === 'completed' && !reviewedBookings.includes(booking.id) ? (
-  <>
-    <button
-      onClick={() => {
-        setSelectedBooking(booking);
-        setShowReviewModal(true);
-      }}
-      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
-    >
-      Give Review
-    </button>
-    <Link
-      to={`/property/${booking.propertyId}`}
-      className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm"
-    >
-      Book Again
-    </Link>
-  </>
-) : booking.status === 'completed' && reviewedBookings.includes(booking.id) ? (
-  <div className="text-sm text-green-600 font-medium">Review submitted ✅</div>
-) : null}
+                              
+                              <div className="flex flex-wrap gap-2">
+                                {/* View Property Button */}
+                                <Link
+                                  to={`/properties/${booking.property?._id || booking.propertyId}`}
+                                  className="inline-flex items-center px-3 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-md text-sm transition-colors"
+                                >
+                                  <ExternalLink size={14} className="mr-1" />
+                                  View Property
+                                </Link>
 
+                                {/* Contact Host Button */}
+                                {booking.host?.phone && (
+                                  <a
+                                    href={`tel:${booking.host.phone}`}
+                                    className="inline-flex items-center px-3 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-md text-sm transition-colors"
+                                  >
+                                    <Phone size={14} className="mr-1" />
+                                    Call Host
+                                  </a>
+                                )}
+
+                                {/* Status-specific Actions */}
+                                {booking.status === 'upcoming' && (
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => cancelBooking(booking._id)}
+                                    className="text-sm"
+                                  >
+                                    Cancel Booking
+                                  </Button>
+                                )}
+
+                                {booking.status === 'completed' && !reviewedBookings.includes(booking._id) && (
+                                  <>
+                                    <Button
+                                      onClick={() => {
+                                        setSelectedBooking(booking);
+                                        setShowReviewModal(true);
+                                      }}
+                                      className="text-sm bg-blue-600 hover:bg-blue-700"
+                                    >
+                                      <Star size={14} className="mr-1" />
+                                      Give Review
+                                    </Button>
+                                    <Link
+                                      to={`/properties/${booking.property?._id || booking.propertyId}`}
+                                      className="inline-flex items-center px-3 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm transition-colors"
+                                    >
+                                      Book Again
+                                    </Link>
+                                  </>
+                                )}
+
+                                {booking.status === 'completed' && reviewedBookings.includes(booking._id) && (
+                                  <div className="inline-flex items-center text-sm text-green-600 font-medium bg-green-50 px-3 py-2 rounded-md">
+                                    <Check size={14} className="mr-1" />
+                                    Review submitted
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>

@@ -86,15 +86,40 @@ export const emailTemplates = {
   bookingConfirmation: (booking, property, user) => ({
     subject: 'Booking Confirmation - Rentifi',
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Booking Confirmed!</h2>
-        <p>Hello ${user.fullName},</p>
-        <p>Your booking for <strong>${property.title}</strong> has been confirmed.</p>
-        <p><strong>Check-in:</strong> ${new Date(booking.checkIn).toLocaleDateString()}</p>
-        <p><strong>Check-out:</strong> ${new Date(booking.checkOut).toLocaleDateString()}</p>
-        <p><strong>Total:</strong> $${booking.totalPrice}</p>
-        <br>
-        <p>Thank you for choosing Rentifi!</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #A0937D; font-size: 32px; margin: 0;">Rentifi</h1>
+            <p style="color: #666; margin: 5px 0;">Your trusted rental platform</p>
+          </div>
+          
+          <h2 style="color: #333; margin-bottom: 20px;">Booking Confirmed!</h2>
+          <p style="color: #666; font-size: 16px; line-height: 1.5;">
+            Hello ${user.fullName}, your booking for <strong>${property.title}</strong> has been confirmed.
+          </p>
+          
+          <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="color: #A0937D; margin-top: 0;">Booking Details</h3>
+            <p><strong>Property:</strong> ${property.title}</p>
+            <p><strong>Location:</strong> ${property.city || property.address}</p>
+            <p><strong>Check-in:</strong> ${new Date(booking.checkIn).toLocaleDateString()}</p>
+            <p><strong>Check-out:</strong> ${new Date(booking.checkOut).toLocaleDateString()}</p>
+            <p><strong>Guests:</strong> ${booking.guests?.adults || booking.guests}</p>
+            <p><strong>Nights:</strong> ${booking.nights}</p>
+            <p style="font-size: 18px; color: #A0937D;"><strong>Total Amount:</strong> Rs ${booking.totalPrice?.toLocaleString()}</p>
+          </div>
+          
+          <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+            <p style="color: #856404; margin: 0; font-size: 14px;">
+              <strong>Important:</strong> Please save this confirmation email for your records. You may need to show it during check-in.
+            </p>
+          </div>
+          
+          <p style="color: #666; font-size: 14px; margin-top: 30px;">
+            Thank you for choosing Rentifi!<br>
+            <strong>The Rentifi Team</strong>
+          </p>
+        </div>
       </div>
     `
   }),

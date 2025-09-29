@@ -143,20 +143,196 @@ const BookingForm = ({ property }) => {
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [pricing, setPricing] = useState(null);
+  const [isAvailable, setIsAvailable] = useState(true);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState(null);
 
-  const handleSubmit = (e) => {
+  // Get today's date in YYYY-MM-DD format for min date restriction
+  const today = new Date().toISOString().split('T')[0];
+
+  // Calculate pricing dynamically
+  useEffect(() => {
+    if (checkIn && checkOut && property) {
+      const checkInDate = new Date(checkIn);
+      const checkOutDate = new Date(checkOut);
+      const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+      
+      if (nights > 0) {
+        const basePrice = property.price * nights;
+        const cleaningFee = Math.round(basePrice * 0.1);
+        const serviceFee = Math.round(basePrice * 0.05);
+        const taxes = Math.round((basePrice + cleaningFee + serviceFee) * 0.12);
+        const totalPrice = basePrice + cleaningFee + serviceFee + taxes;
+        
+        setPricing({
+          nights,
+          basePrice,
+          cleaningFee,
+          serviceFee,
+          taxes,
+          totalPrice
+        });
+
+        // Check availability
+        checkPropertyAvailability();
+      } else {
+        setPricing(null);
+      }
+    }
+  }, [checkIn, checkOut, property]);
+
+  const checkPropertyAvailability = async () => {
+    if (!property?._id || !checkIn || !checkOut) {
+      setIsAvailable(true);
+      return;
+    }
+    
+    // Basic date validation first
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (checkInDate < today || checkOutDate <= checkInDate) {
+      setIsAvailable(false);
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      
+      // If no token, assume available (user not logged in)
+      if (!token) {
+        console.log('No auth token, assuming available');
+        setIsAvailable(true);
+        return;
+      }
+      
+      const response = await fetch(`http://localhost:5000/api/bookings/availability/${property._id}?checkIn=${checkIn}&checkOut=${checkOut}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        // If API fails, default to available
+        console.warn('Availability check failed, status:', response.status);
+        setIsAvailable(true);
+        return;
+      }
+      
+      const data = await response.json();
+      console.log('Availability response:', data);
+      setIsAvailable(data.success ? data.available : true);
+    } catch (error) {
+      console.error('Error checking availability:', error);
+      // Default to available if there's an error
+      setIsAvailable(true);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ propertyId: property._id, checkIn, checkOut, guests });
-    // Here you would typically send the booking request to your backend
+    setIsLoading(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in to make a booking');
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await fetch('http://localhost:5000/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          propertyId: property._id,
+          checkIn,
+          checkOut,
+          guests
+        })
+      });
+
+      const data = await response.json();
+      console.log('Booking response:', data);
+
+      if (data.success) {
+        setBookingDetails(data.booking);
+        setShowSuccess(true);
+        // Reset form
+        setCheckIn('');
+        setCheckOut('');
+        setGuests(1);
+        setPricing(null);
+      } else {
+        alert(`Booking failed: ${data.message}`);
+      }
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      alert('Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!property) return null;
+
+  // Success Modal
+  if (showSuccess && bookingDetails) {
+    return (
+      <div className="bg-white rounded-lg shadow-lg p-6 sticky top-24">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle size={32} className="text-green-600" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            Booking Confirmed!
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Your reservation has been successfully created.
+          </p>
+          
+          <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+            <h4 className="font-medium text-gray-900 mb-2">Booking Details</h4>
+            <div className="space-y-1 text-sm text-gray-600">
+              <p><span className="font-medium">Check-in:</span> {new Date(bookingDetails.checkIn).toLocaleDateString()}</p>
+              <p><span className="font-medium">Check-out:</span> {new Date(bookingDetails.checkOut).toLocaleDateString()}</p>
+              <p><span className="font-medium">Guests:</span> {bookingDetails.guests.adults}</p>
+              <p><span className="font-medium">Total:</span> Rs {bookingDetails.totalPrice.toLocaleString()}</p>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            <Button 
+              onClick={() => window.location.href = '/bookings'} 
+              className="w-full bg-primary hover:bg-primary/90"
+            >
+              View My Bookings
+            </Button>
+            <button 
+              onClick={() => setShowSuccess(false)}
+              className="w-full py-2 text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              Book Another Stay
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 sticky top-24">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <span className="text-2xl font-semibold">Rs {property.price}</span>
+          <span className="text-2xl font-semibold">Rs {property.price?.toLocaleString()}</span>
           <span className="text-gray-600">/night</span>
         </div>
         <div className="flex items-center">
@@ -176,6 +352,7 @@ const BookingForm = ({ property }) => {
               id="checkIn"
               type="date"
               value={checkIn}
+              min={today}
               onChange={(e) => setCheckIn(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               required
@@ -189,6 +366,7 @@ const BookingForm = ({ property }) => {
               id="checkOut"
               type="date"
               value={checkOut}
+              min={checkIn || today}
               onChange={(e) => setCheckOut(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               required
@@ -213,33 +391,59 @@ const BookingForm = ({ property }) => {
             ))}
           </select>
         </div>
+
+        {!isAvailable && checkIn && checkOut && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-3">
+            <p className="text-red-700 text-sm">
+              Property is not available for selected dates. Please choose different dates.
+            </p>
+          </div>
+        )}
         
         <button
           type="submit"
-          className="w-full py-3 bg-primary hover:bg-primary/90 text-white rounded-md transition-colors"
+          disabled={isLoading || !isAvailable || !checkIn || !checkOut}
+          className="w-full py-3 bg-primary hover:bg-primary/90 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-md transition-colors flex items-center justify-center"
         >
-          Book Now
+          {isLoading ? (
+            <>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
+              />
+              Processing...
+            </>
+          ) : (
+            'Book Now'
+          )}
         </button>
       </form>
       
-      <div className="mt-6">
-        <div className="flex items-center justify-between py-2 border-b">
-          <span className="text-gray-600">Rs {property.price} x 5 nights</span>
-          <span>Rs {property.price * 5}</span>
+      {pricing && (
+        <div className="mt-6">
+          <div className="flex items-center justify-between py-2 border-b">
+            <span className="text-gray-600">Rs {property.price?.toLocaleString()} x {pricing.nights} nights</span>
+            <span>Rs {pricing.basePrice?.toLocaleString()}</span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b">
+            <span className="text-gray-600">Cleaning fee</span>
+            <span>Rs {pricing.cleaningFee?.toLocaleString()}</span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b">
+            <span className="text-gray-600">Service fee</span>
+            <span>Rs {pricing.serviceFee?.toLocaleString()}</span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b">
+            <span className="text-gray-600">Taxes</span>
+            <span>Rs {pricing.taxes?.toLocaleString()}</span>
+          </div>
+          <div className="flex items-center justify-between py-4 font-semibold">
+            <span>Total</span>
+            <span>Rs {pricing.totalPrice?.toLocaleString()}</span>
+          </div>
         </div>
-        <div className="flex items-center justify-between py-2 border-b">
-          <span className="text-gray-600">Cleaning fee</span>
-          <span>Rs 5,000</span>
-        </div>
-        <div className="flex items-center justify-between py-2 border-b">
-          <span className="text-gray-600">Service fee</span>
-          <span>Rs 3,000</span>
-        </div>
-        <div className="flex items-center justify-between py-4 font-semibold">
-          <span>Total</span>
-          <span>Rs {property.price * 5 + 8000}</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
@@ -353,11 +557,11 @@ const PropertyDetails = () => {
                         </span>
                       </div>
                     </div>
-                    <Link to={"/"} className="flex-shrink-0">
+                    <Link to={`/host/${property.host?._id || property.host}`} className="flex-shrink-0">
                       <img
                         src={property.host?.profilePicture || property.host?.image || '/placeholder.svg'}
                         alt={property.host?.name || property.host?.fullName || 'Host'}
-                        className="w-12 h-12 rounded-full object-cover cursor-pointer"
+                        className="w-12 h-12 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
                         onError={(e) => {
                           e.target.src = '/placeholder.svg';
                         }}

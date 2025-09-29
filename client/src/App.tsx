@@ -9,6 +9,7 @@ import { Toaster } from "react-hot-toast"
 
 import Home from "./pages/Home";
 import HostDetails from "./pages/HostDetails";
+import HostProfile from "./pages/HostProfile";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -46,9 +47,11 @@ const AnimatedRoutes = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-email" element={<EmailVerification />} />
-        <Route path="/host/:hostId" element={<HostDetails />} />
+        <Route path="/host/:hostId" element={<HostProfile />} />
+        <Route path="/host-details/:hostId" element={<HostDetails />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/property/:id" element={<PropertyDetails />} />
+        <Route path="/properties/:id" element={<PropertyDetails />} />
         <Route path="/host/dashboard" element={<HostDashboard />} />
         <Route path="/host/add-listing" element={<AddListing />} />
         <Route path="/host/properties" element={<AllProperties />} />
