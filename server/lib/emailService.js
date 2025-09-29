@@ -8,13 +8,6 @@ export const generateVerificationCode = () => {
 // Send verification email
 export const sendVerificationEmail = async (email, code, fullName) => {
     try {
-        console.log('📧 Attempting to send verification email to:', email);
-        console.log('🔑 Using email config:', {
-            user: process.env.EMAIL_USER ? 'Set' : 'Missing',
-            password: process.env.EMAIL_APP_PASSWORD ? 'Set' : 'Missing',
-            service: 'gmail'
-        });
-
         const template = emailTemplates.verification(code, fullName);
         
         const mailOptions = {
@@ -24,24 +17,11 @@ export const sendVerificationEmail = async (email, code, fullName) => {
             html: template.html
         };
 
-        console.log('📨 Mail options:', {
-            from: mailOptions.from,
-            to: mailOptions.to,
-            subject: mailOptions.subject
-        });
-
         const result = await transporter.sendMail(mailOptions);
-        console.log('✅ Verification email sent successfully to:', email);
-        console.log('📬 Send result:', result.messageId);
+        console.log('📧 Verification email sent to:', email);
         return result;
     } catch (error) {
-        console.error('❌ Failed to send verification email:', {
-            message: error.message,
-            code: error.code,
-            command: error.command,
-            response: error.response,
-            stack: error.stack
-        });
+        console.error('❌ Email send failed:', error.message);
         throw new Error(`Failed to send verification email: ${error.message}`);
     }
 };
@@ -49,8 +29,6 @@ export const sendVerificationEmail = async (email, code, fullName) => {
 // Send password reset email
 export const sendPasswordResetEmail = async (email, resetCode, fullName) => {
     try {
-        console.log('🔒 Attempting to send password reset email to:', email);
-
         const template = emailTemplates.passwordReset(resetCode, fullName);
         
         const mailOptions = {
@@ -61,15 +39,10 @@ export const sendPasswordResetEmail = async (email, resetCode, fullName) => {
         };
 
         const result = await transporter.sendMail(mailOptions);
-        console.log('✅ Password reset email sent successfully to:', email);
+        console.log('🔒 Password reset email sent to:', email);
         return result;
     } catch (error) {
-        console.error('❌ Failed to send password reset email:', {
-            message: error.message,
-            code: error.code,
-            command: error.command,
-            response: error.response
-        });
+        console.error('❌ Reset email failed:', error.message);
         throw new Error(`Failed to send password reset email: ${error.message}`);
     }
 };
@@ -87,9 +60,9 @@ export const sendWelcomeEmail = async (email, user) => {
         };
 
         await transporter.sendMail(mailOptions);
-        console.log('✅ Welcome email sent successfully to:', email);
+        console.log('🎉 Welcome email sent to:', email);
     } catch (error) {
-        console.error('❌ Failed to send welcome email:', error);
+        console.error('❌ Welcome email failed:', error.message);
         // Don't throw error for welcome email failure
     }
 };
