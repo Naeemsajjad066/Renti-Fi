@@ -3,7 +3,7 @@ import User from "../models/User.js"
 import VerificationCode from "../models/VerificationCode.js"
 import bcrypt from "bcryptjs"
 import cloudinary from "../lib/cloudinary.js"
-import { generateVerificationCode, sendVerificationEmail, sendWelcomeEmail } from "../lib/emailService.js"
+import { generateVerificationCode, sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "../lib/emailService.js"
 
 export const Signup = async (req, res) => {
     const { fullName, phoneNumber, idCard, email, password } = req.body;
@@ -67,6 +67,117 @@ export const Signup = async (req, res) => {
         } else {
             res.json({ success: false, message: error.message });
         }
+    }
+};
+
+// Forgot Password
+export const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    
+    try {
+        if (!email) {
+            return res.json({ success: false, message: "Email is required" });
+        }
+
+        // Check if user exists
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.json({ success: false, message: "No account found with this email address" });
+        }
+
+        // Generate reset code (6 digits)
+        const resetCode = generateVerificationCode();
+        
+        // Delete any existing reset codes for this email
+        await VerificationCode.deleteMany({ email, type: 'password_reset' });
+        
+        // Create new reset code record (expires in 15 minutes)
+        await VerificationCode.create({
+            email,
+            code: resetCode,
+            type: 'password_reset',
+            expiresAt: new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
+        });
+
+        // Send reset email
+        await sendPasswordResetEmail(email, resetCode, user.fullName);
+
+        res.json({
+            success: true,
+            message: "Password reset code sent to your email",
+            email
+        });
+
+    } catch (error) {
+        console.error("Forgot password error:", {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
+        
+        if (error.message.includes('Failed to send')) {
+            res.json({ success: false, message: "Failed to send reset email. Please check your email address and try again." });
+        } else if (error.message.includes('sendPasswordResetEmail')) {
+            res.json({ success: false, message: "Email service temporarily unavailable. Please try again later." });
+        } else {
+            res.json({ success: false, message: `Error: ${error.message}` });
+        }
+    }
+};
+
+// Reset Password
+export const resetPassword = async (req, res) => {
+    const { email, code, newPassword } = req.body;
+    
+    try {
+        if (!email || !code || !newPassword) {
+            return res.json({ success: false, message: "All fields are required" });
+        }
+
+        if (newPassword.length < 6) {
+            return res.json({ success: false, message: "Password must be at least 6 characters" });
+        }
+
+        // Find valid reset code
+        const resetRecord = await VerificationCode.findOne({
+            email,
+            code,
+            type: 'password_reset',
+            expiresAt: { $gt: new Date() }
+        });
+
+        if (!resetRecord) {
+            return res.json({ success: false, message: "Invalid or expired reset code" });
+        }
+
+        // Find user
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.json({ success: false, message: "User not found" });
+        }
+
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Update user password
+        await User.findOneAndUpdate(
+            { email },
+            { password: hashedPassword },
+            { new: true }
+        );
+
+        // Delete used reset code
+        await VerificationCode.deleteMany({ email, type: 'password_reset' });
+
+        res.json({
+            success: true,
+            message: "Password reset successfully. You can now login with your new password."
+        });
+
+    } catch (error) {
+        console.log("Reset password error:", error.message);
+        res.json({ success: false, message: "Something went wrong. Please try again." });
     }
 };
 

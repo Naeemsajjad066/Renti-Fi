@@ -17,6 +17,25 @@ axios.interceptors.request.use((config) => {
   return config;
 });
 
+// ✅ Handle 401 responses globally
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Don't show toast for 401 on auth check requests
+      const isAuthCheck = error.config?.url?.includes('/api/auth/check');
+      if (!isAuthCheck) {
+        console.error('Unauthorized request:', error.config?.url);
+      }
+      
+      // Clear invalid tokens
+      localStorage.removeItem("token");
+      delete axios.defaults.headers.common["Authorization"];
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const PropertyProvider = ({ children }) => {
   const [properties, setProperties] = useState([]);
   const [featuredProperties, setFeaturedProperties] = useState([]);

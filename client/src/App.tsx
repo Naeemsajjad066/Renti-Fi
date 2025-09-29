@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import HostDetails from "./pages/HostDetails";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
 import EmailVerification from "./pages/EmailVerification";
 import PropertyDetails from "./pages/PropertyDetails";
 import HostDashboard from "./pages/HostDashboard";
@@ -43,6 +44,7 @@ const AnimatedRoutes = () => {
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-email" element={<EmailVerification />} />
         <Route path="/host/:hostId" element={<HostDetails />} />
         <Route path="/profile" element={<UserProfile />} />

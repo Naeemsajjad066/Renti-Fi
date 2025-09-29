@@ -22,7 +22,17 @@ export const AuthProvider = ({ children }) => {
         setAuthUsr(data.user);
       }
     } catch (error) {
-      toast.error(error.message);
+      // Silently handle auth check failures
+      if (error.response?.status === 401) {
+        // Clear invalid tokens without logging error
+        localStorage.removeItem("token");
+        setToken(null);
+        setAuthUsr(null);
+        delete axios.defaults.headers.common["Authorization"];
+      } else {
+        // Only log non-401 errors
+        console.error("Auth check error:", error.response?.data?.message || error.message);
+      }
     }
   };
 
@@ -138,6 +148,52 @@ export const AuthProvider = ({ children }) => {
     toast.success("Logged out successfully");
   };
 
+  // forgot password function
+  const forgotPassword = async (email) => {
+    showLoading("Sending reset code...");
+    try {
+      const { data } = await axios.post("/api/auth/forgot-password", { email });
+      if (data.success) {
+        toast.success(data.message);
+        return { success: true, email: data.email };
+      } else {
+        toast.error(data.message);
+        return { success: false, message: data.message };
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || "Failed to send reset code";
+      toast.error(errorMessage);
+      return { success: false, message: errorMessage };
+    } finally {
+      hideLoading();
+    }
+  };
+
+  // reset password function
+  const resetPassword = async (email, code, newPassword) => {
+    showLoading("Resetting password...");
+    try {
+      const { data } = await axios.post("/api/auth/reset-password", {
+        email,
+        code,
+        newPassword
+      });
+      if (data.success) {
+        toast.success(data.message);
+        return { success: true };
+      } else {
+        toast.error(data.message);
+        return { success: false, message: data.message };
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || "Failed to reset password";
+      toast.error(errorMessage);
+      return { success: false, message: errorMessage };
+    } finally {
+      hideLoading();
+    }
+  };
+
   // update profile function
   const updateProfile = async (body) => {
     showLoading("Updating profile...");
@@ -161,10 +217,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (token) {
+    if (token && token !== 'null' && token !== 'undefined') {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      checkAuth();
+    } else {
+      // Clear any existing auth data if no valid token
+      setAuthUsr(null);
+      setToken(null);
+      localStorage.removeItem("token");
+      delete axios.defaults.headers.common["Authorization"];
     }
-    checkAuth();
   }, []);
 
   const value = {
@@ -175,6 +237,8 @@ export const AuthProvider = ({ children }) => {
     register,
     verifyEmail,
     resendVerificationCode,
+    forgotPassword,
+    resetPassword,
     logout,
     updateProfile,
   };

@@ -125,20 +125,42 @@ export const emailTemplates = {
       </div>
     `
   }),
-  passwordReset: (user, resetToken) => ({
+  passwordReset: (resetCode, fullName) => ({
     subject: 'Password Reset Request - Rentifi',
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Password Reset</h2>
-        <p>Hello ${user.fullName},</p>
-        <p>You requested to reset your password. Click the link below to proceed:</p>
-        <p><a href="${process.env.FRONTEND_URL}/reset-password?token=${resetToken}" 
-             style="background-color: #A0937D; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-          Reset Password
-        </a></p>
-        <p>This link will expire in 1 hour.</p>
-        <br>
-        <p>If you didn't request this, please ignore this email.</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #A0937D; font-size: 32px; margin: 0;">Rentifi</h1>
+            <p style="color: #666; margin: 5px 0;">Your trusted rental platform</p>
+          </div>
+          
+          <h2 style="color: #333; margin-bottom: 20px;">Password Reset Request</h2>
+          <p style="color: #666; font-size: 16px; line-height: 1.5;">
+            Hello ${fullName}, you requested to reset your password. Use the code below to reset your password:
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <div style="background-color: #f8f9fa; border: 2px dashed #A0937D; padding: 20px; border-radius: 8px; display: inline-block;">
+              <h1 style="color: #A0937D; font-size: 36px; font-weight: bold; margin: 0; letter-spacing: 8px;">${resetCode}</h1>
+            </div>
+          </div>
+          
+          <p style="color: #666; font-size: 14px; text-align: center; margin: 20px 0;">
+            This code will expire in <strong>15 minutes</strong>
+          </p>
+          
+          <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+            <p style="color: #856404; margin: 0; font-size: 14px;">
+              <strong>Security Note:</strong> If you didn't request this password reset, please ignore this email and your password will remain unchanged.
+            </p>
+          </div>
+          
+          <p style="color: #666; font-size: 14px; margin-top: 30px;">
+            Best regards,<br>
+            <strong>The Rentifi Team</strong>
+          </p>
+        </div>
       </div>
     `
   })

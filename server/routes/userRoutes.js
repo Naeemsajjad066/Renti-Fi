@@ -1,5 +1,5 @@
 import express from "express";
-import { checkAuth, login, Signup, updateProfile, verifyEmail, resendVerificationCode } from "../controllers/userController.js";
+import { checkAuth, login, Signup, updateProfile, verifyEmail, resendVerificationCode, forgotPassword, resetPassword } from "../controllers/userController.js";
 import { protectRoute } from "../controllers/auth.js";
 
 
@@ -10,6 +10,8 @@ userRouter.post("/signup",Signup)
 userRouter.post("/verify-email", verifyEmail)
 userRouter.post("/resend-verification", resendVerificationCode)
 userRouter.post("/login",login)
+userRouter.post("/forgot-password", forgotPassword)
+userRouter.post("/reset-password", resetPassword)
 userRouter.get("/profile", protectRoute, checkAuth)
 userRouter.put("/update-profile",protectRoute,updateProfile)
 userRouter.get("/check",protectRoute,checkAuth)

@@ -46,6 +46,34 @@ export const sendVerificationEmail = async (email, code, fullName) => {
     }
 };
 
+// Send password reset email
+export const sendPasswordResetEmail = async (email, resetCode, fullName) => {
+    try {
+        console.log('🔒 Attempting to send password reset email to:', email);
+
+        const template = emailTemplates.passwordReset(resetCode, fullName);
+        
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+            to: email,
+            subject: template.subject,
+            html: template.html
+        };
+
+        const result = await transporter.sendMail(mailOptions);
+        console.log('✅ Password reset email sent successfully to:', email);
+        return result;
+    } catch (error) {
+        console.error('❌ Failed to send password reset email:', {
+            message: error.message,
+            code: error.code,
+            command: error.command,
+            response: error.response
+        });
+        throw new Error(`Failed to send password reset email: ${error.message}`);
+    }
+};
+
 // Send welcome email
 export const sendWelcomeEmail = async (email, user) => {
     try {
