@@ -17,20 +17,43 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_APP_PASSWORD
-  }
+  },
+  debug: process.env.NODE_ENV === 'development',
+  logger: process.env.NODE_ENV === 'development'
 });
 
 // Only verify if credentials are available
 if (process.env.EMAIL_USER && process.env.EMAIL_APP_PASSWORD) {
+  console.log('🔍 Verifying email transporter with credentials:', {
+    user: process.env.EMAIL_USER,
+    passwordLength: process.env.EMAIL_APP_PASSWORD?.length || 0
+  });
+  
   transporter.verify((error) => {
     if (error) {
-      console.error('❌ Email transporter verification failed:', error.message);
+      console.error('❌ Email transporter verification failed:');
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      console.error('Error response:', error.response);
+      
+      // Specific error messages for common issues
+      if (error.code === 'EAUTH') {
+        console.error('🔐 Authentication failed. Check your email and app password.');
+        console.error('💡 Make sure you have:');
+        console.error('   - Enabled 2-factor authentication on Gmail');
+        console.error('   - Generated an app-specific password (not your regular password)');
+        console.error('   - Used the correct email address');
+      }
     } else {
       console.log('✅ Email transporter is ready to send messages');
     }
   });
 } else {
   console.warn('⚠️ Email credentials not found. Email functionality will be disabled.');
+  console.warn('Missing:', {
+    EMAIL_USER: !process.env.EMAIL_USER,
+    EMAIL_APP_PASSWORD: !process.env.EMAIL_APP_PASSWORD
+  });
 }
 
 // Email templates

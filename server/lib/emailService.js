@@ -8,6 +8,13 @@ export const generateVerificationCode = () => {
 // Send verification email
 export const sendVerificationEmail = async (email, code, fullName) => {
     try {
+        console.log('📧 Attempting to send verification email to:', email);
+        console.log('🔑 Using email config:', {
+            user: process.env.EMAIL_USER ? 'Set' : 'Missing',
+            password: process.env.EMAIL_APP_PASSWORD ? 'Set' : 'Missing',
+            service: 'gmail'
+        });
+
         const template = emailTemplates.verification(code, fullName);
         
         const mailOptions = {
@@ -17,12 +24,25 @@ export const sendVerificationEmail = async (email, code, fullName) => {
             html: template.html
         };
 
+        console.log('📨 Mail options:', {
+            from: mailOptions.from,
+            to: mailOptions.to,
+            subject: mailOptions.subject
+        });
+
         const result = await transporter.sendMail(mailOptions);
         console.log('✅ Verification email sent successfully to:', email);
+        console.log('📬 Send result:', result.messageId);
         return result;
     } catch (error) {
-        console.error('❌ Failed to send verification email:', error);
-        throw new Error('Failed to send verification email');
+        console.error('❌ Failed to send verification email:', {
+            message: error.message,
+            code: error.code,
+            command: error.command,
+            response: error.response,
+            stack: error.stack
+        });
+        throw new Error(`Failed to send verification email: ${error.message}`);
     }
 };
 
