@@ -176,8 +176,20 @@ export const createBooking = async (req, res) => {
 // Get user bookings (both as guest and host)
 export const getUserBookings = async (req, res) => {
   try {
-    const userId = req.user._id;
+    // Use userId from params if provided, otherwise use authenticated user ID
+    const userId = req.params.userId || req.user._id;
     const { type = 'guest' } = req.query; // 'guest' or 'host'
+
+    // If accessing another user's bookings, ensure they have permission
+    if (req.params.userId && req.params.userId !== req.user._id.toString()) {
+      // Only allow if requesting host bookings (for host dashboard)
+      if (type !== 'host') {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied'
+        });
+      }
+    }
 
     let query = {};
     if (type === 'guest') {
@@ -193,8 +205,8 @@ export const getUserBookings = async (req, res) => {
 
     const bookings = await Booking.find(query)
       .populate('property', 'title images city address price')
-      .populate('guest', 'fullName email profilePicture')
-      .populate('host', 'fullName email profilePicture')
+      .populate('guest', 'fullName email profilePic')
+      .populate('host', 'fullName email profilePic')
       .sort({ createdAt: -1 });
 
     res.json({

@@ -19,6 +19,7 @@ router.post('/', createBooking);
 router.get('/', getUserBookings);
 router.get('/stats', getBookingStats);
 router.get('/availability/:propertyId', checkAvailability);
+router.get('/user/:userId', getUserBookings); // Route for getting bookings by user ID
 router.get('/:id', getBooking);
 router.put('/:id/status', updateBookingStatus);
 router.post('/:id/cancel', cancelBooking);

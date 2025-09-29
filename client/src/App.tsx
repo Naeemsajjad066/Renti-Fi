@@ -18,6 +18,7 @@ import PropertyDetails from "./pages/PropertyDetails";
 import HostDashboard from "./pages/HostDashboard";
 import AddListing from "./pages/AddListing";
 import Bookings from "./pages/Bookings";
+import HostBookings from "./pages/HostBookings";
 import UserProfile from './pages/UserProfile';
 import NotFound from "./pages/NotFound";
 import AllProperties from "./pages/AllProperties";
@@ -56,7 +57,7 @@ const AnimatedRoutes = () => {
         <Route path="/host/add-listing" element={<AddListing />} />
         <Route path="/host/properties" element={<AllProperties />} />
         <Route path="/host/properties/:id" element={<PropertyDetails />} />
-        <Route path="/host/bookings" element={<Bookings />} />
+        <Route path="/host/bookings" element={<HostBookings />} />
         <Route path="/host/messages" element={<NotFound />} />
         <Route path="/host/support" element={<NotFound />} />
         <Route path="/bookings" element={<Bookings />} />
