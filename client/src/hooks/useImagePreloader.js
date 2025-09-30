@@ -23,7 +23,6 @@ export const useImagePreloader = (imageUrls) => {
           resolve(src);
         };
         img.onerror = () => {
-          console.warn(`Failed to load image: ${src}`);
           reject(src);
         };
         img.src = src;

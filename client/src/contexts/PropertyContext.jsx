@@ -25,7 +25,7 @@ axios.interceptors.response.use(
       // Don't show toast for 401 on auth check requests
       const isAuthCheck = error.config?.url?.includes('/api/auth/check');
       if (!isAuthCheck) {
-        console.error('Unauthorized request:', error.config?.url);
+        // Unauthorized request handled silently
       }
       
       // Clear invalid tokens

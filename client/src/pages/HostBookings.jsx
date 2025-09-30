@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -23,7 +23,7 @@ import {
   Download,
   RefreshCw
 } from 'lucide-react';
-import { AuthContext } from '../contexts/AuthContext';
+import { useBooking } from '../contexts/BookingContext';
 import PageTransition from '@/components/PageTransition';
 import HostSidebar from '@/components/HostSidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -48,158 +48,34 @@ import {
 const HostBookings = () => {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { authUser } = useContext(AuthContext);
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [filter, setFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [refreshing, setRefreshing] = useState(false);
-
-  // Fetch bookings on component mount
-  useEffect(() => {
-    fetchHostBookings();
-  }, [authUser]);
-
-  const fetchHostBookings = async () => {
-    if (!authUser?._id) return;
-    
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/bookings/user/${authUser._id}?type=host`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch bookings: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setBookings(data.bookings || []);
-      } else {
-        throw new Error(data.message || 'Failed to fetch bookings');
-      }
-    } catch (error) {
-      console.error('Error fetching host bookings:', error);
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const refreshBookings = async () => {
-    setRefreshing(true);
-    await fetchHostBookings();
-    setRefreshing(false);
-  };
-
-  // Handle booking status update (accept/decline)
-  const updateBookingStatus = async (bookingId, status) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status })
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        // Update the booking in the local state
-        setBookings(prevBookings => 
-          prevBookings.map(booking => 
-            booking._id === bookingId 
-              ? { ...booking, status } 
-              : booking
-          )
-        );
-        
-        // Show success message
-        const actionText = status === 'confirmed' ? 'accepted' : 'declined';
-        console.log(`✅ Booking ${actionText} successfully`);
-      } else {
-        console.error('❌ Failed to update booking status:', data.message);
-      }
-    } catch (error) {
-      console.error('❌ Error updating booking status:', error);
-    }
-  };
+  
+  // Use the booking context
+  const {
+    hostBookings,
+    loading,
+    error,
+    refreshing,
+    filter,
+    setFilter,
+    searchTerm,
+    setSearchTerm,
+    updateBookingStatus,
+    refreshBookings,
+    getStatusBadge,
+    formatCurrency,
+    formatDate,
+    getTotalGuests,
+    getBookingStats,
+    getFilteredBookings
+  } = useBooking();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Filter bookings based on status and search term
-  const filteredBookings = bookings.filter(booking => {
-    const matchesFilter = filter === 'all' || booking.status === filter;
-    const matchesSearch = !searchTerm || 
-      booking.guest?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.property?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.property?.city?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    return matchesFilter && matchesSearch;
-  });
-
-  // Get status badge variant
-  const getStatusBadge = (status) => {
-    const statusConfig = {
-      confirmed: { variant: 'default', icon: CheckCircle2, className: 'bg-green-100 text-green-800 border-green-200' },
-      pending: { variant: 'secondary', icon: Clock, className: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-      cancelled: { variant: 'destructive', icon: XCircle, className: 'bg-red-100 text-red-800 border-red-200' },
-      completed: { variant: 'outline', icon: CheckCircle2, className: 'bg-blue-100 text-blue-800 border-blue-200' }
-    };
-    
-    return statusConfig[status] || statusConfig.pending;
-  };
-
-  // Format currency
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-PK', {
-      style: 'currency',
-      currency: 'PKR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
-
-  // Format date
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  // Calculate total guests from guest object or return simple number
-  const getTotalGuests = (guests) => {
-    if (typeof guests === 'object' && guests) {
-      return (guests.adults || 0) + (guests.children || 0) + (guests.infants || 0);
-    }
-    return guests || 1;
-  };
-
-  // Calculate booking statistics
-  const stats = {
-    total: bookings.length,
-    confirmed: bookings.filter(b => b.status === 'confirmed').length,
-    pending: bookings.filter(b => b.status === 'pending').length,
-    cancelled: bookings.filter(b => b.status === 'cancelled').length,
-    totalRevenue: bookings
-      .filter(b => b.status === 'confirmed')
-      .reduce((sum, b) => sum + (b.totalAmount || 0), 0)
-  };
+  // Get filtered bookings and stats
+  const filteredBookings = getFilteredBookings(hostBookings);
+  const stats = getBookingStats(hostBookings);
 
   return (
     <PageTransition>
@@ -222,7 +98,7 @@ const HostBookings = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={refreshBookings}
+                  onClick={() => refreshBookings('host')}
                   disabled={refreshing}
                   className="border-earth-brown/30 text-earth-brown hover:bg-earth-brown/5"
                 >
@@ -358,7 +234,7 @@ const HostBookings = () => {
                     <div className="p-8 text-center">
                       <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
                       <p className="text-red-600 mb-4">{error}</p>
-                      <Button onClick={fetchHostBookings} variant="outline">
+                      <Button onClick={() => refreshBookings('host')} variant="outline">
                         Try Again
                       </Button>
                     </div>
@@ -366,17 +242,34 @@ const HostBookings = () => {
                     <div className="p-8 text-center">
                       <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-600 mb-2">
-                        {bookings.length === 0 ? 'No bookings found' : 'No bookings match your search criteria'}
+                        {hostBookings.length === 0 ? 'No bookings found' : 'No bookings match your search criteria'}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {bookings.length === 0 ? 'Bookings will appear here when guests book your properties.' : 'Try adjusting your filters or search terms.'}
+                        {hostBookings.length === 0 ? 'Bookings will appear here when guests book your properties.' : 'Try adjusting your filters or search terms.'}
                       </p>
                     </div>
                   ) : (
                     <div className="divide-y divide-gray-200">
                       {filteredBookings.map((booking, index) => {
                         const statusConfig = getStatusBadge(booking.status);
-                        const StatusIcon = statusConfig.icon;
+                        
+                        // Get appropriate icon for status
+                        const getStatusIcon = (status) => {
+                          switch (status) {
+                            case 'confirmed':
+                              return CheckCircle2;
+                            case 'pending':
+                              return Clock;
+                            case 'cancelled':
+                              return XCircle;
+                            case 'completed':
+                              return CheckCircle2;
+                            default:
+                              return Clock;
+                          }
+                        };
+                        
+                        const StatusIcon = getStatusIcon(booking.status);
                         
                         return (
                           <motion.div
@@ -419,7 +312,7 @@ const HostBookings = () => {
                                     <div className="flex items-center gap-2">
                                       <Badge className={statusConfig.className}>
                                         <StatusIcon size={12} className="mr-1" />
-                                        {booking.status?.charAt(0).toUpperCase() + booking.status?.slice(1)}
+                                        {statusConfig.label}
                                       </Badge>
                                       
                                       <DropdownMenu>

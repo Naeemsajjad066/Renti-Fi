@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -17,142 +17,77 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import { useBooking } from '../contexts/BookingContext';
 
-const StatusBadge = ({ status }) => {
-  const styles = {
-    upcoming: ['bg-blue-100', 'text-blue-800', 'Upcoming', <Clock size={14} className="mr-1" />],
-    active: ['bg-green-100', 'text-green-800', 'Active', <Check size={14} className="mr-1" />],
-    completed: ['bg-gray-100', 'text-gray-800', 'Completed', <Check size={14} className="mr-1" />],
-    cancelled: ['bg-red-100', 'text-red-800', 'Cancelled', <X size={14} className="mr-1" />],
-  }[status] || ['bg-gray-100', 'text-gray-800', status, null];
+const StatusBadge = ({ status, getStatusBadge }) => {
+  const statusConfig = getStatusBadge(status);
+  const icons = {
+    upcoming: <Clock size={14} className="mr-1" />,
+    active: <Check size={14} className="mr-1" />,
+    completed: <Check size={14} className="mr-1" />,
+    cancelled: <X size={14} className="mr-1" />,
+    confirmed: <Check size={14} className="mr-1" />,
+    pending: <Clock size={14} className="mr-1" />
+  };
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${styles[0]} ${styles[1]}`}>
-      {styles[3]}
-      {styles[2]}
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig.className}`}>
+      {icons[status]}
+      {statusConfig.label}
     </span>
   );
 };
 
 const Bookings = () => {
-  const [bookings, setBookings] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('all');
-  const [error, setError] = useState(null);
+  // Use the booking context
+  const {
+    loading: isLoading,
+    error,
+    activeTab,
+    setActiveTab,
+    showReviewModal,
+    setShowReviewModal,
+    reviewText,
+    setReviewText,
+    rating,
+    setRating,
+    reviewedBookings,
+    setReviewedBookings,
+    cancelBooking,
+    submitReview,
+    getStatusFromDates,
+    formatDate,
+    getStatusBadge,
+    getBookingsByTab
+  } = useBooking();
 
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState(null);
-  const [reviewText, setReviewText] = useState('');
-  const [rating, setRating] = useState(0);
-  const [reviewedBookings, setReviewedBookings] = useState([]);
-
-  useEffect(() => {
-    fetchBookings();
-  }, []);
-
-  const fetchBookings = async () => {
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('Please log in to view your bookings');
-        setIsLoading(false);
-        return;
-      }
-
-      const response = await fetch('http://localhost:5000/api/bookings?type=guest', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const data = await response.json();
-      console.log('Bookings response:', data);
-      
-      if (data.success) {
-        setBookings(data.bookings || []);
-      } else {
-        setError(data.message || 'Failed to fetch bookings');
-      }
-    } catch (error) {
-      console.error('Error fetching bookings:', error);
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setIsLoading(false);
+  const handleReviewSubmit = async () => {
+    if (rating === 0) {
+      // Using context's toast handling
+      return;
     }
+
+    if (!showReviewModal?.selectedBooking) return;
+
+    const reviewData = {
+      rating,
+      review: reviewText,
+      propertyId: showReviewModal.selectedBooking.property?._id,
+      hostId: showReviewModal.selectedBooking.host?._id
+    };
+
+    await submitReview(showReviewModal.selectedBooking._id, reviewData);
   };
 
-  const getStatusFromDates = (booking) => {
-    const today = new Date();
-    const checkIn = new Date(booking.checkIn);
-    const checkOut = new Date(booking.checkOut);
-    
-    if (booking.status === 'cancelled') return 'cancelled';
-    if (today < checkIn) return 'upcoming';
-    if (today >= checkIn && today <= checkOut) return 'active';
-    if (today > checkOut) return 'completed';
-    
-    return booking.status;
-  };
-
-  const formatDate = (date) =>
-    new Date(date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-
-  const cancelBooking = async (bookingId) => {
+  const handleCancelBooking = async (bookingId) => {
     if (!window.confirm('Are you sure you want to cancel this booking?')) {
       return;
     }
 
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/cancel`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          reason: 'Cancelled by guest'
-        })
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        toast.success('Booking cancelled successfully');
-        fetchBookings(); // Refresh bookings
-      } else {
-        toast.error(data.message || 'Failed to cancel booking');
-      }
-    } catch (error) {
-      console.error('Error cancelling booking:', error);
-      toast.error('Something went wrong. Please try again.');
-    }
+    await cancelBooking(bookingId);
   };
 
-  const handleReviewSubmit = () => {
-    if (rating === 0) {
-      toast.error('Please select a rating');
-      return;
-    }
-
-    // Mark booking as reviewed
-    setReviewedBookings(prev => [...prev, selectedBooking._id]);
-
-    setShowReviewModal(false);
-    setSelectedBooking(null);
-    setRating(0);
-    setReviewText('');
-
-    toast.success('Review submitted successfully!');
-    // Here would be API call to submit review
-  };
-
-  const filteredBookings = activeTab === 'all'
-    ? bookings.map(booking => ({ ...booking, status: getStatusFromDates(booking) }))
-    : bookings.map(booking => ({ ...booking, status: getStatusFromDates(booking) })).filter(b => b.status === activeTab);
+  const filteredBookings = getBookingsByTab(activeTab);
 
 
   return (
@@ -198,7 +133,7 @@ const Bookings = () => {
                                 onError={(e) => { e.target.src = '/placeholder.svg'; }}
                               />
                               <div className="absolute top-2 right-2">
-                                <StatusBadge status={booking.status} />
+                                <StatusBadge status={booking.status} getStatusBadge={getStatusBadge} />
                               </div>
                             </div>
                           </div>
@@ -302,7 +237,7 @@ const Bookings = () => {
                                   <Button
                                     variant="destructive"
                                     size="sm"
-                                    onClick={() => cancelBooking(booking._id)}
+                                    onClick={() => handleCancelBooking(booking._id)}
                                     className="text-sm"
                                   >
                                     Cancel Booking
@@ -313,8 +248,7 @@ const Bookings = () => {
                                   <>
                                     <Button
                                       onClick={() => {
-                                        setSelectedBooking(booking);
-                                        setShowReviewModal(true);
+                                        setShowReviewModal({ show: true, selectedBooking: booking });
                                       }}
                                       className="text-sm bg-blue-600 hover:bg-blue-700"
                                     >
@@ -353,7 +287,7 @@ const Bookings = () => {
 
         <Footer />
 
-        {showReviewModal && (
+        {showReviewModal?.show && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center px-4">
             <div className="bg-white rounded-lg w-full max-w-md p-6 relative">
               <h2 className="text-xl font-semibold mb-4">Leave a Review</h2>
@@ -375,7 +309,7 @@ const Bookings = () => {
                 ))}
               </div>
               <div className="flex justify-end gap-2">
-                <button onClick={() => setShowReviewModal(false)} className="text-gray-600 hover:underline">
+                <button onClick={() => setShowReviewModal({ show: false, selectedBooking: null })} className="text-gray-600 hover:underline">
                   Cancel
                 </button>
                 <button

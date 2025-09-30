@@ -3,67 +3,6 @@ import Property from "../models/Property.js";
 import cloudinary from "../lib/cloudinary.js";
 
 // CREATE Property
-// export const createProperty = async (req, res) => {
-//   try {
-//     const {
-//       title,
-//       description,
-//       address,
-//       city,
-//       state,
-//       zipCode,
-//       country,
-//       propertyType,
-//       bedrooms,
-//       bathrooms,
-//       maxGuests,
-//       price,
-//       selectedAmenities,
-//     } = req.body;
-
-//     // Upload multiple images
-//     let uploadedImages = [];
-//     if (req.files && req.files.length > 0) {
-//       const uploadPromises = req.files.map((file) =>
-//         cloudinary.uploader.upload(file.path, {
-//           folder: "properties",
-//         })
-//       );
-//       const results = await Promise.all(uploadPromises);
-//       uploadedImages = results.map((result) => result.secure_url);
-//     }
-
-//     const newProperty = await Property.create({
-//       host: req.user._id,
-//       title,
-//       description,
-//       address,
-//       city,
-//       state,
-//       zipCode,
-//       country,
-//       propertyType,
-//       bedrooms,
-//       bathrooms,
-//       maxGuests,
-//       price,
-//       amenities: selectedAmenities ? JSON.parse(selectedAmenities) : [],
-//       images: uploadedImages,
-//     });
-
-//     return res.json({
-//       success: true,
-//       message: "Property created successfully",
-//       property: newProperty,
-//     });
-//   } catch (error) {
-//     console.error("Error creating property:", error.message);
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Error creating property" });
-//   }
-// };
-// CREATE Property
 export const createProperty = async (req, res) => {
   try {
     const {
@@ -134,7 +73,7 @@ export const createProperty = async (req, res) => {
       property: newProperty,
     });
   } catch (error) {
-    console.error("❌ Error creating property:", error);
+    console.error("Error creating property:", error.message);
     res.status(500).json({ success: false, message: error.message });
   }
 };

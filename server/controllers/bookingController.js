@@ -8,15 +8,14 @@ import { sendBookingConfirmationEmail } from '../lib/emailService.js';
 // Create a new booking
 export const createBooking = async (req, res) => {
   try {
-    console.log('📝 Creating booking request:', req.body);
-    console.log('👤 User:', req.user?._id);
+    // Creating booking request
 
     const { propertyId, checkIn, checkOut, guests, specialRequests } = req.body;
     const guestId = req.user._id;
 
     // Validate required fields
     if (!propertyId || !checkIn || !checkOut || !guests) {
-      console.log('❌ Missing required fields');
+      // Missing required fields
       return res.status(400).json({
         success: false,
         message: 'All fields are required'
@@ -92,15 +91,7 @@ export const createBooking = async (req, res) => {
     const totalPrice = basePrice + cleaningFee + serviceFee + taxes;
 
     // Create booking
-    console.log('✅ Creating booking with data:', {
-      property: propertyId,
-      guest: guestId,
-      host: property.host._id,
-      checkIn: checkInDate,
-      checkOut: checkOutDate,
-      nights,
-      totalPrice
-    });
+    // Creating booking with calculated data
 
     const booking = await Booking.create({
       property: propertyId,
@@ -126,7 +117,7 @@ export const createBooking = async (req, res) => {
       status: 'confirmed' // Auto-confirm for now (will change to 'pending' when payment is required)
     });
 
-    console.log('✅ Booking created successfully:', booking._id);
+    // Booking created successfully
 
     // Populate booking details
     const populatedBooking = await Booking.findById(booking._id)
@@ -142,11 +133,11 @@ export const createBooking = async (req, res) => {
         populatedBooking.guest
       );
     } catch (emailError) {
-      console.error('❌ Failed to send booking confirmation email:', emailError);
+      console.error('Failed to send booking confirmation email:', emailError.message);
       // Don't fail the booking if email fails
     }
 
-    console.log('✅ Booking response ready');
+    // Booking response ready
     
     res.status(201).json({
       success: true,
@@ -155,7 +146,7 @@ export const createBooking = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error creating booking:', error);
+    console.error('Error creating booking:', error.message);
     
     // Provide more specific error messages
     let errorMessage = 'Failed to create booking';
@@ -215,7 +206,7 @@ export const getUserBookings = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error fetching user bookings:', error);
+    console.error('Error fetching user bookings:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch bookings'
@@ -256,7 +247,7 @@ export const getBooking = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error fetching booking:', error);
+    console.error('Error fetching booking:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch booking'
@@ -306,7 +297,7 @@ export const updateBookingStatus = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error updating booking status:', error);
+    console.error('Error updating booking status:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to update booking status'
@@ -361,7 +352,7 @@ export const cancelBooking = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error cancelling booking:', error);
+    console.error('Error cancelling booking:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to cancel booking'
@@ -406,7 +397,7 @@ export const getBookingStats = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error fetching booking stats:', error);
+    console.error('Error fetching booking stats:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch booking statistics'
@@ -468,7 +459,7 @@ export const checkAvailability = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error checking availability:', error);
+    console.error('Error checking availability:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to check availability',

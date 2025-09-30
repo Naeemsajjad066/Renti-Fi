@@ -20,7 +20,7 @@ import AddListing from "./pages/AddListing";
 import Bookings from "./pages/Bookings";
 import HostBookings from "./pages/HostBookings";
 import UserProfile from './pages/UserProfile';
-import NotFound from "./pages/NotFound";
+import NotFound from "./pages/NotFound.jsx";
 import AllProperties from "./pages/AllProperties";
 import AdminPanel from "./components/AdminPanel";
 import Settings from "./pages/Settings";

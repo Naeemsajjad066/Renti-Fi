@@ -18,10 +18,10 @@ export const sendVerificationEmail = async (email, code, fullName) => {
         };
 
         const result = await transporter.sendMail(mailOptions);
-        console.log('📧 Verification email sent to:', email);
+        console.log('Verification email sent to:', email);
         return result;
     } catch (error) {
-        console.error('❌ Email send failed:', error.message);
+        console.error('Email send failed:', error.message);
         throw new Error(`Failed to send verification email: ${error.message}`);
     }
 };
@@ -39,10 +39,10 @@ export const sendPasswordResetEmail = async (email, resetCode, fullName) => {
         };
 
         const result = await transporter.sendMail(mailOptions);
-        console.log('🔒 Password reset email sent to:', email);
+        console.log('Password reset email sent to:', email);
         return result;
     } catch (error) {
-        console.error('❌ Reset email failed:', error.message);
+        console.error('Reset email failed:', error.message);
         throw new Error(`Failed to send password reset email: ${error.message}`);
     }
 };
@@ -60,9 +60,9 @@ export const sendWelcomeEmail = async (email, user) => {
         };
 
         await transporter.sendMail(mailOptions);
-        console.log('🎉 Welcome email sent to:', email);
+        console.log('Welcome email sent to:', email);
     } catch (error) {
-        console.error('❌ Welcome email failed:', error.message);
+        console.error('Welcome email failed:', error.message);
         // Don't throw error for welcome email failure
     }
 };
@@ -80,9 +80,9 @@ export const sendBookingConfirmationEmail = async (booking, property, user) => {
         };
 
         await transporter.sendMail(mailOptions);
-        console.log('✅ Booking confirmation email sent to:', user.email);
+        console.log('Booking confirmation email sent to:', user.email);
     } catch (error) {
-        console.error('❌ Booking confirmation email failed:', error.message);
+        console.error('Booking confirmation email failed:', error.message);
         throw new Error(`Failed to send booking confirmation email: ${error.message}`);
     }
 };

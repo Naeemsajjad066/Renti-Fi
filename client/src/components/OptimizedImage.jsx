@@ -1,5 +1,5 @@
 // components/OptimizedImage.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useOptimizedImage } from '../hooks/useImagePreloader';
 
 const OptimizedImage = ({ 

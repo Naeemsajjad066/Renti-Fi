@@ -1,5 +1,5 @@
 // components/LocationCapture.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, AlertTriangle, CheckCircle, Loader, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';

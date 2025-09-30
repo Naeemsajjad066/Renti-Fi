@@ -33,7 +33,6 @@ app.use(cors({
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      // console.log(`CORS blocked origin: ${origin}`);
       callback(null, true); // Allow all origins in development
     }
   },
@@ -102,7 +101,7 @@ await connectDB();
 // start server only after DB is connected
 if(process.env.NODE_ENV !=="production"){
   server.listen(PORT, () => {
-    console.log("✅ Server is running on port: " + PORT);
+    console.log("Server is running on port: " + PORT);
   });
 }
 //export server for vercel
