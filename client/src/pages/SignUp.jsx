@@ -157,7 +157,7 @@ const SignUp = () => {
                 value={formData.fullName}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
-                placeholder="John Doe"
+                placeholder="Naeem Sajjad"
               />
             </motion.div>
 
@@ -172,7 +172,7 @@ const SignUp = () => {
                 value={formData.idCard}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
-                placeholder="ID123456789"
+                placeholder="3120399248231"
               />
             </motion.div>
 
@@ -187,7 +187,7 @@ const SignUp = () => {
                 value={formData.phoneNumber}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
-                placeholder="+1 (555) 123-4567"
+                placeholder="03058765423"
               />
             </motion.div>
 
@@ -202,7 +202,7 @@ const SignUp = () => {
                 value={formData.email}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
-                placeholder="john.doe@example.com"
+                placeholder="naeem99@example.com"
               />
             </motion.div>
 
