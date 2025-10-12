@@ -3,10 +3,11 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { ThemeProvider } from "./hooks/use-theme.jsx";
-import { AuthProvider } from "./contexts/AuthContext.jsx"; // ✅ fixed relative path
+import { AuthProvider } from "./contexts/AuthContext.jsx";
 import { PropertyProvider } from './contexts/PropertyContext.jsx';
 import { LoadingProvider } from './contexts/LoadingContext.jsx';
 import { BookingProvider } from './contexts/BookingContext.jsx';
+import { ReviewProvider } from './contexts/ReviewContext.jsx';
 
 const rootElement = document.getElementById("root");
 
@@ -23,7 +24,9 @@ root.render(
         <AuthProvider>
           <PropertyProvider>
             <BookingProvider>
-              <App />   {/* ✅ App is now wrapped inside all providers */}
+              <ReviewProvider>
+                <App />
+              </ReviewProvider>
             </BookingProvider>
           </PropertyProvider>
         </AuthProvider>

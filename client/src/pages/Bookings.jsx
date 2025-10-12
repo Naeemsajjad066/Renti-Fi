@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -18,6 +18,8 @@ import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
 import { Button } from '@/components/ui/button';
 import { useBooking } from '../contexts/BookingContext';
+import { useReview } from '../contexts/ReviewContext';
+import ReviewForm from '../components/ReviewForm';
 
 const StatusBadge = ({ status, getStatusBadge }) => {
   const statusConfig = getStatusBadge(status);
@@ -45,38 +47,38 @@ const Bookings = () => {
     error,
     activeTab,
     setActiveTab,
-    showReviewModal,
-    setShowReviewModal,
-    reviewText,
-    setReviewText,
-    rating,
-    setRating,
-    reviewedBookings,
-    setReviewedBookings,
     cancelBooking,
-    submitReview,
     getStatusFromDates,
     formatDate,
     getStatusBadge,
     getBookingsByTab
   } = useBooking();
 
-  const handleReviewSubmit = async () => {
-    if (rating === 0) {
-      // Using context's toast handling
-      return;
-    }
+  const { userReviews, getUserReviews } = useReview();
 
-    if (!showReviewModal?.selectedBooking) return;
+  const [selectedBookingForReview, setSelectedBookingForReview] = useState(null);
+  const [reviewedBookingIds, setReviewedBookingIds] = useState(new Set());
 
-    const reviewData = {
-      rating,
-      review: reviewText,
-      propertyId: showReviewModal.selectedBooking.property?._id,
-      hostId: showReviewModal.selectedBooking.host?._id
+  // Fetch user reviews on mount to track which bookings have been reviewed
+  useEffect(() => {
+    const loadReviews = async () => {
+      const result = await getUserReviews();
+      if (result.success) {
+        const reviewedIds = new Set(result.data.map(review => review.booking));
+        setReviewedBookingIds(reviewedIds);
+      }
     };
+    loadReviews();
+  }, []);
 
-    await submitReview(showReviewModal.selectedBooking._id, reviewData);
+  const handleReviewSuccess = () => {
+    // Refresh reviews after successful submission
+    getUserReviews().then(result => {
+      if (result.success) {
+        const reviewedIds = new Set(result.data.map(review => review.booking));
+        setReviewedBookingIds(reviewedIds);
+      }
+    });
   };
 
   const handleCancelBooking = async (bookingId) => {
@@ -244,16 +246,14 @@ const Bookings = () => {
                                   </Button>
                                 )}
 
-                                {booking.status === 'completed' && !reviewedBookings.includes(booking._id) && (
+                                {booking.status === 'completed' && !reviewedBookingIds.has(booking._id) && (
                                   <>
                                     <Button
-                                      onClick={() => {
-                                        setShowReviewModal({ show: true, selectedBooking: booking });
-                                      }}
-                                      className="text-sm bg-blue-600 hover:bg-blue-700"
+                                      onClick={() => setSelectedBookingForReview(booking)}
+                                      className="text-sm bg-[#A0937D] hover:bg-[#8a7d6b]"
                                     >
                                       <Star size={14} className="mr-1" />
-                                      Give Review
+                                      Write Review
                                     </Button>
                                     <Link
                                       to={`/properties/${booking.property?._id || booking.propertyId}`}
@@ -264,7 +264,7 @@ const Bookings = () => {
                                   </>
                                 )}
 
-                                {booking.status === 'completed' && reviewedBookings.includes(booking._id) && (
+                                {booking.status === 'completed' && reviewedBookingIds.has(booking._id) && (
                                   <div className="inline-flex items-center text-sm text-green-600 font-medium bg-green-50 px-3 py-2 rounded-md">
                                     <Check size={14} className="mr-1" />
                                     Review submitted
@@ -287,40 +287,12 @@ const Bookings = () => {
 
         <Footer />
 
-        {showReviewModal?.show && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center px-4">
-            <div className="bg-white rounded-lg w-full max-w-md p-6 relative">
-              <h2 className="text-xl font-semibold mb-4">Leave a Review</h2>
-              <textarea
-                className="w-full border rounded p-2 mb-4"
-                rows="4"
-                placeholder="Write your experience..."
-                value={reviewText}
-                onChange={(e) => setReviewText(e.target.value)}
-              />
-              <div className="flex items-center mb-4">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    size={24}
-                    className={`cursor-pointer mr-1 ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                    onClick={() => setRating(star)}
-                  />
-                ))}
-              </div>
-              <div className="flex justify-end gap-2">
-                <button onClick={() => setShowReviewModal({ show: false, selectedBooking: null })} className="text-gray-600 hover:underline">
-                  Cancel
-                </button>
-                <button
-                  onClick={handleReviewSubmit}
-                  className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
-                >
-                  Submit
-                </button>
-              </div>
-            </div>
-          </div>
+        {selectedBookingForReview && (
+          <ReviewForm
+            booking={selectedBookingForReview}
+            onClose={() => setSelectedBookingForReview(null)}
+            onSuccess={handleReviewSuccess}
+          />
         )}
       </div>
     </PageTransition>

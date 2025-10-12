@@ -6,6 +6,7 @@ import { MapPin, Star, Heart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import OptimizedImage from './OptimizedImage';
+import StarRating from './StarRating';
 
 const PropertyCard = ({ property }) => {
   const [isLiked, setIsLiked] = React.useState(false);
@@ -23,7 +24,8 @@ const PropertyCard = ({ property }) => {
   const propertyLocation = property.city && property.state 
     ? `${property.city}, ${property.state}` 
     : property.location;
-  const propertyRating = property.rating || 4.5;
+  const propertyRating = property.rating || 0;
+  const totalReviews = property.totalReviews || 0;
   const propertyType = property.propertyType || property.type || 'Property';
   const isFeatured = property.featured || property.isActive;
 
@@ -63,19 +65,27 @@ const PropertyCard = ({ property }) => {
         </div>
         
         <div className="p-4 bg-white dark:bg-gray-800">
-          <div className="flex items-start justify-between">
-            <div>
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1">
               <h3 className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-earth-brown dark:group-hover:text-cream-beige transition-colors">{propertyTitle}</h3>
               <div className="flex items-center mt-1 text-sm text-gray-600 dark:text-gray-400">
                 <MapPin size={14} className="mr-1" />
                 <span>{propertyLocation}</span>
               </div>
             </div>
-            <div className="flex items-center bg-earth-brown/10 dark:bg-cream-beige/10 px-2 py-1 rounded">
-              <Star size={14} className="text-earth-brown dark:text-cream-beige mr-1" />
-              <span className="text-sm font-medium text-earth-brown dark:text-cream-beige">{propertyRating}</span>
-            </div>
           </div>
+          
+          {propertyRating > 0 && (
+            <div className="flex items-center gap-2 mb-3">
+              <StarRating rating={propertyRating} size="sm" showNumber={false} />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {propertyRating.toFixed(1)}
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                ({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})
+              </span>
+            </div>
+          )}
           
           <div className="mt-4 flex items-center justify-between">
             <div>

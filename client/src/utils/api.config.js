@@ -1,6 +1,6 @@
 // src/utils/api.config.js
 
-const BASE_URL = "http://localhost:5000/api";
+export const BASE_URL = "http://localhost:5000/api";
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -16,3 +16,5 @@ export const API_CONFIG = {
     "Content-Type": "application/json",
   },
 };
+
+ 

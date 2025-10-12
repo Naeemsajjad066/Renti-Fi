@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Users, 
-  AlertTriangle, 
-  UserCheck, 
-  Search, 
-  Eye, 
-  Pause, 
-  Trash2, 
-  Check, 
-  X, 
+import {
+  Users,
+  AlertTriangle,
+  UserCheck,
+  Search,
+  Eye,
+  Pause,
+  Trash2,
+  Check,
+  X,
   MoreHorizontal,
   TrendingUp,
   Shield,
@@ -33,44 +33,44 @@ const AdminPanel = () => {
 
   // Enhanced sample data with more fields
   const users = [
-    { 
-      id: 1, 
-      name: 'John Doe', 
-      email: 'john@example.com', 
-      status: 'Active', 
+    {
+      id: 1,
+      name: 'John Doe',
+      email: 'john@example.com',
+      status: 'Active',
       avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
       joinDate: '2024-01-15',
       bookings: 12,
       earnings: 2400,
       type: 'Host'
     },
-    { 
-      id: 2, 
-      name: 'Jane Smith', 
-      email: 'jane@example.com', 
-      status: 'Suspended', 
+    {
+      id: 2,
+      name: 'Jane Smith',
+      email: 'jane@example.com',
+      status: 'Suspended',
       avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
       joinDate: '2024-02-20',
       bookings: 8,
       earnings: 0,
       type: 'Guest'
     },
-    { 
-      id: 3, 
-      name: 'Robert Johnson', 
-      email: 'robert@example.com', 
-      status: 'Active', 
+    {
+      id: 3,
+      name: 'Robert Johnson',
+      email: 'robert@example.com',
+      status: 'Active',
       avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
       joinDate: '2024-03-10',
       bookings: 5,
       earnings: 1200,
       type: 'Host'
     },
-    { 
-      id: 4, 
-      name: 'Emily Davis', 
-      email: 'emily@example.com', 
-      status: 'Active', 
+    {
+      id: 4,
+      name: 'Emily Davis',
+      email: 'emily@example.com',
+      status: 'Active',
       avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
       joinDate: '2024-04-05',
       bookings: 15,
@@ -80,31 +80,31 @@ const AdminPanel = () => {
   ];
 
   const complaints = [
-    { 
-      id: 1, 
-      from: 'john@example.com', 
-      against: 'Property #123', 
-      message: 'The host was not responsive to messages and the property was not as described...', 
+    {
+      id: 1,
+      from: 'john@example.com',
+      against: 'Property #123',
+      message: 'The host was not responsive to messages and the property was not as described...',
       status: 'Pending',
       priority: 'High',
       date: '2024-09-28',
       category: 'Communication'
     },
-    { 
-      id: 2, 
-      from: 'jane@example.com', 
-      against: 'User: Robert Johnson', 
-      message: 'Inappropriate behavior during the stay, making other guests uncomfortable...', 
+    {
+      id: 2,
+      from: 'jane@example.com',
+      against: 'User: Robert Johnson',
+      message: 'Inappropriate behavior during the stay, making other guests uncomfortable...',
       status: 'Resolved',
       priority: 'Medium',
       date: '2024-09-25',
       category: 'Behavior'
     },
-    { 
-      id: 3, 
-      from: 'mike@example.com', 
-      against: 'Property #456', 
-      message: 'The place was not clean and had maintenance issues that were not disclosed...', 
+    {
+      id: 3,
+      from: 'mike@example.com',
+      against: 'Property #456',
+      message: 'The place was not clean and had maintenance issues that were not disclosed...',
       status: 'Pending',
       priority: 'Low',
       date: '2024-09-30',
@@ -113,22 +113,22 @@ const AdminPanel = () => {
   ];
 
   const hostRequests = [
-    { 
-      id: 1, 
-      name: 'Alex Morgan', 
-      avatar: 'https://randomuser.me/api/portraits/men/3.jpg', 
-      idCard: 'https://via.placeholder.com/150', 
+    {
+      id: 1,
+      name: 'Alex Morgan',
+      avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
+      idCard: 'https://via.placeholder.com/150',
       date: '2024-09-15',
       email: 'alex@example.com',
       phone: '+1 234 567 8900',
       properties: 2,
       experience: '3 years'
     },
-    { 
-      id: 2, 
-      name: 'Sarah Williams', 
-      avatar: 'https://randomuser.me/api/portraits/women/3.jpg', 
-      idCard: 'https://via.placeholder.com/150', 
+    {
+      id: 2,
+      name: 'Sarah Williams',
+      avatar: 'https://randomuser.me/api/portraits/women/3.jpg',
+      idCard: 'https://via.placeholder.com/150',
       date: '2024-09-18',
       email: 'sarah@example.com',
       phone: '+1 234 567 8901',
@@ -146,8 +146,8 @@ const AdminPanel = () => {
     pendingHostRequests: 8
   };
 
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -156,7 +156,7 @@ const AdminPanel = () => {
       <div className="min-h-screen bg-gradient-to-br from-light-beige to-cream-beige">
         <div className="flex flex-col md:flex-row min-h-screen">
           {/* Modern Sidebar */}
-          <motion.div 
+          <motion.div
             initial={{ x: -300 }}
             animate={{ x: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
@@ -193,11 +193,10 @@ const AdminPanel = () => {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setActiveTab(item.id)}
-                        className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl w-full transition-all duration-300 ${
-                          activeTab === item.id 
-                            ? 'bg-gradient-to-r from-earth-brown to-earth-brown/90 text-white shadow-lg' 
+                        className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl w-full transition-all duration-300 ${activeTab === item.id
+                            ? 'bg-gradient-to-r from-earth-brown to-earth-brown/90 text-white shadow-lg'
                             : 'text-gray-700 hover:bg-soft-peach/50 hover:text-earth-brown'
-                        }`}
+                          }`}
                       >
                         <Icon className="mr-3 w-5 h-5" />
                         {item.label}
@@ -247,11 +246,10 @@ const AdminPanel = () => {
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: index * 0.1 }}
                     onClick={() => setActiveTab(item.id)}
-                    className={`p-3 rounded-full transition-all duration-200 ${
-                      activeTab === item.id 
-                        ? 'bg-earth-brown text-white shadow-md' 
+                    className={`p-3 rounded-full transition-all duration-200 ${activeTab === item.id
+                        ? 'bg-earth-brown text-white shadow-md'
                         : 'text-gray-700 hover:bg-earth-brown/10'
-                    }`}
+                      }`}
                     title={item.label}
                   >
                     <Icon className="w-4 h-4" />
@@ -264,7 +262,7 @@ const AdminPanel = () => {
           {/* Main Content */}
           <div className="flex-1 flex flex-col w-full md:w-auto overflow-hidden">
             {/* Header */}
-            <motion.header 
+            <motion.header
               initial={{ y: -50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -282,7 +280,7 @@ const AdminPanel = () => {
                     {activeTab === 'hostRequests' && 'Approve new host applications'}
                   </p>
                 </div>
-                
+
                 <div className="flex items-center space-x-2 sm:space-x-3">
                   <Button variant="outline" size="sm" className="border-earth-brown/20 text-earth-brown hover:bg-earth-brown hover:text-white hidden sm:flex">
                     <Download className="w-4 h-4 mr-2" />
@@ -297,7 +295,7 @@ const AdminPanel = () => {
             </motion.header>
 
             {/* Main Content */}
-            <motion.main 
+            <motion.main
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -309,31 +307,31 @@ const AdminPanel = () => {
                   {/* Stats Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                     {[
-                      { 
-                        label: 'Total Users', 
-                        value: dashboardStats.totalUsers.toLocaleString(), 
-                        icon: Users, 
+                      {
+                        label: 'Total Users',
+                        value: dashboardStats.totalUsers.toLocaleString(),
+                        icon: Users,
                         color: 'from-blue-500 to-blue-600',
                         change: '+12%'
                       },
-                      { 
-                        label: 'Total Bookings', 
-                        value: dashboardStats.totalBookings.toLocaleString(), 
-                        icon: Calendar, 
+                      {
+                        label: 'Total Bookings',
+                        value: dashboardStats.totalBookings.toLocaleString(),
+                        icon: Calendar,
                         color: 'from-green-500 to-green-600',
                         change: '+8%'
                       },
-                      { 
-                        label: 'Revenue', 
-                        value: `$${(dashboardStats.totalRevenue / 1000).toFixed(0)}K`, 
-                        icon: DollarSign, 
+                      {
+                        label: 'Revenue',
+                        value: `$${(dashboardStats.totalRevenue / 1000).toFixed(0)}K`,
+                        icon: DollarSign,
                         color: 'from-earth-brown to-earth-brown/80',
                         change: '+15%'
                       },
-                      { 
-                        label: 'Active Hosts', 
-                        value: dashboardStats.activeHosts.toString(), 
-                        icon: Home, 
+                      {
+                        label: 'Active Hosts',
+                        value: dashboardStats.activeHosts.toString(),
+                        icon: Home,
                         color: 'from-purple-500 to-purple-600',
                         change: '+5%'
                       }
@@ -382,11 +380,10 @@ const AdminPanel = () => {
                           { action: 'New booking created', user: 'Emma Davis', time: '2 hours ago', type: 'booking' }
                         ].map((activity, index) => (
                           <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                            <div className={`w-2 h-2 rounded-full ${
-                              activity.type === 'user' ? 'bg-blue-500' :
-                              activity.type === 'host' ? 'bg-green-500' :
-                              activity.type === 'complaint' ? 'bg-red-500' : 'bg-earth-brown'
-                            }`}></div>
+                            <div className={`w-2 h-2 rounded-full ${activity.type === 'user' ? 'bg-blue-500' :
+                                activity.type === 'host' ? 'bg-green-500' :
+                                  activity.type === 'complaint' ? 'bg-red-500' : 'bg-earth-brown'
+                              }`}></div>
                             <div className="flex-1">
                               <p className="text-sm font-medium text-gray-900">{activity.action}</p>
                               <p className="text-xs text-gray-500">{activity.user} • {activity.time}</p>
@@ -475,10 +472,10 @@ const AdminPanel = () => {
                           <CardContent className="p-6">
                             <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 gap-3">
                               <div className="flex items-center space-x-3 flex-1 min-w-0">
-                                <img 
-                                  className="w-12 h-12 rounded-full object-cover border-2 border-earth-brown/20 flex-shrink-0" 
-                                  src={user.avatar} 
-                                  alt={user.name} 
+                                <img
+                                  className="w-12 h-12 rounded-full object-cover border-2 border-earth-brown/20 flex-shrink-0"
+                                  src={user.avatar}
+                                  alt={user.name}
                                 />
                                 <div className="min-w-0 flex-1">
                                   <h3 className="font-semibold text-gray-900 truncate">{user.name}</h3>
@@ -489,7 +486,7 @@ const AdminPanel = () => {
                                 {user.status}
                               </Badge>
                             </div>
-                            
+
                             <div className="space-y-2 mb-4">
                               <div className="flex justify-between text-sm">
                                 <span className="text-gray-600">User Type:</span>
@@ -551,7 +548,7 @@ const AdminPanel = () => {
                                 <div className="flex items-center space-x-3 mb-2">
                                   <Badge variant={
                                     complaint.priority === 'High' ? 'destructive' :
-                                    complaint.priority === 'Medium' ? 'secondary' : 'default'
+                                      complaint.priority === 'Medium' ? 'secondary' : 'default'
                                   }>
                                     {complaint.priority} Priority
                                   </Badge>
@@ -569,7 +566,7 @@ const AdminPanel = () => {
                                 <p className="text-gray-700 leading-relaxed">{complaint.message}</p>
                               </div>
                             </div>
-                            
+
                             <div className="flex flex-col sm:flex-row justify-end gap-2 sm:space-x-3 pt-4 border-t border-gray-100">
                               <Button variant="outline" size="sm" className="w-full sm:w-auto">
                                 <Eye className="w-4 h-4 mr-2" />
@@ -609,10 +606,10 @@ const AdminPanel = () => {
                         <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
                           <CardContent className="p-6">
                             <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
-                              <img 
-                                className="w-16 h-16 rounded-full object-cover border-4 border-earth-brown/20 mx-auto sm:mx-0" 
-                                src={request.avatar} 
-                                alt={request.name} 
+                              <img
+                                className="w-16 h-16 rounded-full object-cover border-4 border-earth-brown/20 mx-auto sm:mx-0"
+                                src={request.avatar}
+                                alt={request.name}
                               />
                               <div className="text-center sm:text-left">
                                 <h3 className="text-lg sm:text-xl font-bold text-gray-900">{request.name}</h3>
@@ -639,10 +636,10 @@ const AdminPanel = () => {
                                   ID Verification Document
                                 </h4>
                                 <div className="relative group">
-                                  <img 
-                                    className="w-full h-40 object-cover rounded-lg border-2 border-gray-200 group-hover:border-earth-brown transition-colors" 
-                                    src={request.idCard} 
-                                    alt="ID Card" 
+                                  <img
+                                    className="w-full h-40 object-cover rounded-lg border-2 border-gray-200 group-hover:border-earth-brown transition-colors"
+                                    src={request.idCard}
+                                    alt="ID Card"
                                   />
                                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg flex items-center justify-center">
                                     <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -656,14 +653,14 @@ const AdminPanel = () => {
                             </div>
 
                             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 className="flex-1 border-red-200 text-red-700 hover:bg-red-50"
                               >
                                 <X className="w-4 h-4 mr-2" />
                                 Reject
                               </Button>
-                              <Button 
+                              <Button
                                 className="flex-1 bg-earth-brown hover:bg-earth-brown/90"
                               >
                                 <Check className="w-4 h-4 mr-2" />

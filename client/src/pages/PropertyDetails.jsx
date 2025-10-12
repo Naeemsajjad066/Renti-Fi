@@ -6,6 +6,7 @@ import { PropertyContext } from '../contexts/PropertyContext';
 import { useBooking } from '../contexts/BookingContext';
 import OptimizedImage from '../components/OptimizedImage';
 import { useImagePreloader } from '../hooks/useImagePreloader';
+import ReviewList from '../components/ReviewList';
 import { 
   MapPin, 
   Wifi, 
@@ -925,11 +926,21 @@ const PropertyDetails = () => {
                     </div>
                   </motion.div>
                   
-                  {/* Host details section */}
+                  {/* Reviews section */}
                   <motion.div 
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.7 }}
+                    className="mb-8"
+                  >
+                    <ReviewList propertyId={property._id} />
+                  </motion.div>
+                  
+                  {/* Host details section */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
                     className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8"
                   >
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Meet your host</h2>
