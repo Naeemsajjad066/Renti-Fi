@@ -82,7 +82,6 @@ export const ReviewProvider = ({ children }) => {
         return { success: true, data: propertyReviews[propertyId] };
       }
 
-      showLoading('Loading reviews...');
       setError(null);
 
       const response = await axios.get(
@@ -104,10 +103,8 @@ export const ReviewProvider = ({ children }) => {
       const message = err.response?.data?.message || 'Failed to fetch reviews';
       setError(message);
       return { success: false, message };
-    } finally {
-      hideLoading();
     }
-  }, [token, getAuthHeader, showLoading, hideLoading, propertyReviews]);
+  }, [token, getAuthHeader, propertyReviews]);
 
   // Get property review statistics
   const getPropertyStats = useCallback(async (propertyId) => {
@@ -132,7 +129,6 @@ export const ReviewProvider = ({ children }) => {
   // Get user's reviews
   const getUserReviews = useCallback(async (userId = null) => {
     try {
-      showLoading('Loading reviews...');
       setError(null);
 
       const endpoint = userId 
@@ -153,15 +149,12 @@ export const ReviewProvider = ({ children }) => {
       const message = err.response?.data?.message || 'Failed to fetch user reviews';
       setError(message);
       return { success: false, message };
-    } finally {
-      hideLoading();
     }
-  }, [token, getAuthHeader, showLoading, hideLoading]);
+  }, [token, getAuthHeader]);
 
   // Update a review
   const updateReview = useCallback(async (reviewId, updateData) => {
     try {
-      showLoading('Updating review...');
       setError(null);
 
       const response = await axios.put(
@@ -197,15 +190,12 @@ export const ReviewProvider = ({ children }) => {
       const message = err.response?.data?.message || 'Failed to update review';
       setError(message);
       return { success: false, message };
-    } finally {
-      hideLoading();
     }
-  }, [token, getAuthHeader, showLoading, hideLoading, propertyReviews]);
+  }, [token, getAuthHeader, propertyReviews]);
 
   // Delete a review
   const deleteReview = useCallback(async (reviewId, propertyId) => {
     try {
-      showLoading('Deleting review...');
       setError(null);
 
       const response = await axios.delete(
@@ -233,15 +223,12 @@ export const ReviewProvider = ({ children }) => {
       const message = err.response?.data?.message || 'Failed to delete review';
       setError(message);
       return { success: false, message };
-    } finally {
-      hideLoading();
     }
-  }, [token, getAuthHeader, showLoading, hideLoading, propertyReviews]);
+  }, [token, getAuthHeader, propertyReviews]);
 
   // Add host response to a review
   const addHostResponse = useCallback(async (reviewId, responseText) => {
     try {
-      showLoading('Adding response...');
       setError(null);
 
       const response = await axios.post(
@@ -272,10 +259,8 @@ export const ReviewProvider = ({ children }) => {
       const message = err.response?.data?.message || 'Failed to add response';
       setError(message);
       return { success: false, message };
-    } finally {
-      hideLoading();
     }
-  }, [token, getAuthHeader, showLoading, hideLoading, propertyReviews]);
+  }, [token, getAuthHeader, propertyReviews]);
 
   // Mark review as helpful
   const markHelpful = useCallback(async (reviewId, propertyId) => {

@@ -100,141 +100,156 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         onClick={onClose}
       >
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
+          initial={{ scale: 0.95, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.95, opacity: 0, y: 20 }}
+          transition={{ type: "spring", duration: 0.5 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          className="w-full max-w-3xl max-h-[85vh] overflow-hidden rounded-2xl shadow-2xl"
         >
-          <Card className="p-6 md:p-8">
-            {/* Header */}
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  Write a Review
-                </h2>
-                <p className="text-gray-600">
-                  Share your experience at {booking.property.title}
-                </p>
-              </div>
-              <button
-                onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Overall Rating */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Overall Rating *
-                </label>
-                <StarRating
-                  rating={formData.rating}
-                  onRatingChange={(value) => handleRatingChange('rating', value)}
-                  interactive
-                  size="xl"
-                  showNumber
-                />
-                {errors.rating && (
-                  <p className="text-sm text-red-600 mt-1">{errors.rating}</p>
-                )}
-              </div>
-
-              {/* Written Review */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Your Review *
-                </label>
-                <textarea
-                  value={formData.comment}
-                  onChange={(e) => {
-                    setFormData(prev => ({ ...prev, comment: e.target.value }));
-                    if (errors.comment) {
-                      setErrors(prev => ({ ...prev, comment: null }));
-                    }
-                  }}
-                  placeholder="Tell us about your stay..."
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A0937D] focus:border-transparent resize-none"
-                  rows="5"
-                />
-                <div className="flex items-center justify-between mt-1">
-                  {errors.comment ? (
-                    <p className="text-sm text-red-600">{errors.comment}</p>
-                  ) : (
-                    <p className="text-sm text-gray-500">
-                      Minimum 10 characters
-                    </p>
-                  )}
-                  <p className="text-sm text-gray-500">
-                    {formData.comment.length}/1000
+          <div className="bg-white overflow-y-auto max-h-[85vh]">
+            <div className="sticky top-0 z-10 bg-gradient-to-r from-[#A0937D] to-[#8a7d6b] px-6 py-4 border-b border-gray-200">
+              {/* Header */}
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-1">
+                    Write a Review
+                  </h2>
+                  <p className="text-white/90 text-sm line-clamp-1">
+                    {booking.property.title}
                   </p>
                 </div>
-              </div>
-
-              {/* Detailed Ratings */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-4">
-                  Rate Your Experience (Optional)
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {ratingCategories.map((category) => (
-                    <div
-                      key={category.key}
-                      className="p-4 bg-[#F6E6CB] rounded-lg hover:bg-[#E7D4B5] transition-colors"
-                    >
-                      <p className="font-medium text-gray-900 mb-1">
-                        {category.label}
-                      </p>
-                      <p className="text-xs text-gray-600 mb-2">
-                        {category.description}
-                      </p>
-                      <StarRating
-                        rating={formData[category.key]}
-                        onRatingChange={(value) => handleRatingChange(category.key, value)}
-                        interactive
-                        size="md"
-                        showNumber={false}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Submit Error */}
-              {errors.submit && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-600">{errors.submit}</p>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-3 pt-4 border-t border-gray-200">
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 bg-[#A0937D] hover:bg-[#8a7d6b] text-white"
-                >
-                  {isSubmitting ? 'Submitting...' : 'Submit Review'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
+                <button
                   onClick={onClose}
-                  disabled={isSubmitting}
-                  className="px-6"
+                  className="text-white/80 hover:text-white hover:bg-white/20 rounded-full p-1 transition-all"
                 >
-                  Cancel
-                </Button>
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-            </form>
-          </Card>
+            </div>
+
+            <div className="px-6 py-5">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Overall Rating */}
+                <div className="bg-gradient-to-br from-[#F6E6CB] to-white p-4 rounded-xl border border-[#E7D4B5]">
+                  <label className="block text-sm font-semibold text-gray-900 mb-3">
+                    Overall Rating *
+                  </label>
+                  <div className="flex items-center justify-center">
+                    <StarRating
+                      rating={formData.rating}
+                      onRatingChange={(value) => handleRatingChange('rating', value)}
+                      interactive
+                      size="xl"
+                      showNumber
+                    />
+                  </div>
+                  {errors.rating && (
+                    <p className="text-sm text-red-600 mt-2 text-center">{errors.rating}</p>
+                  )}
+                </div>
+
+                {/* Written Review */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Your Review *
+                  </label>
+                  <textarea
+                    value={formData.comment}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, comment: e.target.value }));
+                      if (errors.comment) {
+                        setErrors(prev => ({ ...prev, comment: null }));
+                      }
+                    }}
+                    placeholder="Tell us about your stay..."
+                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#A0937D] focus:border-transparent resize-none bg-gray-50/50 hover:bg-white transition-colors"
+                    rows="4"
+                  />
+                  <div className="flex items-center justify-between mt-1.5">
+                    {errors.comment ? (
+                      <p className="text-sm text-red-600">{errors.comment}</p>
+                    ) : (
+                      <p className="text-xs text-gray-500">
+                        Minimum 10 characters
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500">
+                      {formData.comment.length}/1000
+                    </p>
+                  </div>
+                </div>
+
+                {/* Detailed Ratings */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                    Rate Your Experience (Optional)
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {ratingCategories.map((category) => (
+                      <div
+                        key={category.key}
+                        className="p-3 bg-gradient-to-br from-[#F6E6CB] to-white rounded-xl border border-[#E7D4B5] hover:shadow-md transition-all"
+                      >
+                        <p className="font-medium text-gray-900 text-sm mb-0.5">
+                          {category.label}
+                        </p>
+                        <p className="text-xs text-gray-600 mb-2">
+                          {category.description}
+                        </p>
+                        <StarRating
+                          rating={formData[category.key]}
+                          onRatingChange={(value) => handleRatingChange(category.key, value)}
+                          interactive
+                          size="sm"
+                          showNumber={false}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Submit Error */}
+                {errors.submit && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
+                    <p className="text-sm text-red-600">{errors.submit}</p>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 bg-gradient-to-r from-[#A0937D] to-[#8a7d6b] hover:from-[#8a7d6b] hover:to-[#75685a] text-white font-semibold py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all"
+                  >
+                    {isSubmitting ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Submitting...
+                      </span>
+                    ) : 'Submit Review'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onClose}
+                    disabled={isSubmitting}
+                    className="px-6 border-2 border-gray-300 hover:bg-gray-100 rounded-xl font-medium"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
