@@ -109,9 +109,14 @@ reviewSchema.index({ booking: 1 }, { unique: true });
 
 // Calculate average ratings for a property
 reviewSchema.statics.calculatePropertyRating = async function(propertyId) {
+  // Convert string to ObjectId if needed
+  const objectId = mongoose.Types.ObjectId.isValid(propertyId) 
+    ? new mongoose.Types.ObjectId(propertyId) 
+    : propertyId;
+    
   const stats = await this.aggregate([
     {
-      $match: { property: propertyId }
+      $match: { property: objectId }
     },
     {
       $group: {

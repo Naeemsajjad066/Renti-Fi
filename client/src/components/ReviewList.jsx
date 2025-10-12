@@ -101,7 +101,7 @@ const ReviewList = ({ propertyId }) => {
                 </span>
               </div>
               <p className="text-sm text-gray-600">
-                Based on {stats.totalReviews} {stats.totalReviews === 1 ? 'review' : 'reviews'}
+                Based on {stats.totalReviews || reviews.length} {(stats.totalReviews || reviews.length) === 1 ? 'review' : 'reviews'}
               </p>
             </div>
 
