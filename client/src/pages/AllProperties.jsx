@@ -21,7 +21,7 @@ const AllProperties = () => {
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [activeType, setActiveType] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [priceRange, setPriceRange] = useState([0, 500]);
+  const [priceRange, setPriceRange] = useState([0, 50000]);
   const [sortBy, setSortBy] = useState('');
 
   const propertyTypeOptions = ['All', 'Apartment', 'House', 'Villa', 'Cabin', 'Cottage', 'Loft', 'Condo', 'Townhouse'];
@@ -171,8 +171,8 @@ const AllProperties = () => {
                         className="mb-2"
                       />
                       <div className="flex justify-between text-sm text-gray-600">
-                        <span>${priceRange[0]}</span>
-                        <span>${priceRange[1]}</span>
+                        <span>Rs {priceRange[0]}</span>
+                        <span>Rs {priceRange[1]}</span>
                       </div>
                     </div>
                     
