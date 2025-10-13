@@ -41,6 +41,19 @@ const userSchema=new mongoose.Schema({
     emailVerificationExpires: {
         type: Date,
         default: null
+    },
+    role: {
+        type: String,
+        enum: ['user', 'host', 'admin'],
+        default: 'user'
+    },
+    isHost: {
+        type: Boolean,
+        default: false
+    },
+    isActive: {
+        type: Boolean,
+        default: true
     }
 },{
     timestamps:true
