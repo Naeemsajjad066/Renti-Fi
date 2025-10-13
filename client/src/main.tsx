@@ -8,6 +8,8 @@ import { PropertyProvider } from './contexts/PropertyContext.jsx';
 import { LoadingProvider } from './contexts/LoadingContext.jsx';
 import { BookingProvider } from './contexts/BookingContext.jsx';
 import { ReviewProvider } from './contexts/ReviewContext.jsx';
+import { PropertyVerificationProvider } from './contexts/PropertyVerificationContext.jsx';
+import { AdminProvider } from './contexts/AdminContext.jsx';
 
 const rootElement = document.getElementById("root");
 
@@ -25,7 +27,11 @@ root.render(
           <PropertyProvider>
             <BookingProvider>
               <ReviewProvider>
-                <App />
+                <PropertyVerificationProvider>
+                  <AdminProvider>
+                    <App />
+                  </AdminProvider>
+                </PropertyVerificationProvider>
               </ReviewProvider>
             </BookingProvider>
           </PropertyProvider>

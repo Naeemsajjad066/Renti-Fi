@@ -26,129 +26,42 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import PageTransition from '@/components/PageTransition';
+import PropertyVerificationPanel from './PropertyVerificationPanel';
+import { usePropertyVerification } from '../contexts/PropertyVerificationContext';
+import { useAdmin } from '../contexts/AdminContext';
+import { useEffect } from 'react';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
+  const { pendingProperties, getPendingProperties } = usePropertyVerification();
+  const { 
+    dashboardStats, 
+    users, 
+    bookings,
+    getDashboardStats, 
+    getAllUsers, 
+    getAllBookings,
+    loading
+  } = useAdmin();
 
-  // Enhanced sample data with more fields
-  const users = [
-    {
-      id: 1,
-      name: 'John Doe',
-      email: 'john@example.com',
-      status: 'Active',
-      avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-      joinDate: '2024-01-15',
-      bookings: 12,
-      earnings: 2400,
-      type: 'Host'
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      status: 'Suspended',
-      avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
-      joinDate: '2024-02-20',
-      bookings: 8,
-      earnings: 0,
-      type: 'Guest'
-    },
-    {
-      id: 3,
-      name: 'Robert Johnson',
-      email: 'robert@example.com',
-      status: 'Active',
-      avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
-      joinDate: '2024-03-10',
-      bookings: 5,
-      earnings: 1200,
-      type: 'Host'
-    },
-    {
-      id: 4,
-      name: 'Emily Davis',
-      email: 'emily@example.com',
-      status: 'Active',
-      avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
-      joinDate: '2024-04-05',
-      bookings: 15,
-      earnings: 0,
-      type: 'Guest'
-    },
-  ];
+  useEffect(() => {
+    getPendingProperties();
+    getDashboardStats();
+    if (activeTab === 'users') {
+      getAllUsers();
+    } else if (activeTab === 'bookings') {
+      getAllBookings();
+    }
+  }, [getPendingProperties, getDashboardStats, getAllUsers, getAllBookings, activeTab]);
 
-  const complaints = [
-    {
-      id: 1,
-      from: 'john@example.com',
-      against: 'Property #123',
-      message: 'The host was not responsive to messages and the property was not as described...',
-      status: 'Pending',
-      priority: 'High',
-      date: '2024-09-28',
-      category: 'Communication'
-    },
-    {
-      id: 2,
-      from: 'jane@example.com',
-      against: 'User: Robert Johnson',
-      message: 'Inappropriate behavior during the stay, making other guests uncomfortable...',
-      status: 'Resolved',
-      priority: 'Medium',
-      date: '2024-09-25',
-      category: 'Behavior'
-    },
-    {
-      id: 3,
-      from: 'mike@example.com',
-      against: 'Property #456',
-      message: 'The place was not clean and had maintenance issues that were not disclosed...',
-      status: 'Pending',
-      priority: 'Low',
-      date: '2024-09-30',
-      category: 'Property'
-    },
-  ];
+  // Placeholder data for features not yet implemented
+  const complaints = [];
+  const hostRequests = [];
 
-  const hostRequests = [
-    {
-      id: 1,
-      name: 'Alex Morgan',
-      avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
-      idCard: 'https://via.placeholder.com/150',
-      date: '2024-09-15',
-      email: 'alex@example.com',
-      phone: '+1 234 567 8900',
-      properties: 2,
-      experience: '3 years'
-    },
-    {
-      id: 2,
-      name: 'Sarah Williams',
-      avatar: 'https://randomuser.me/api/portraits/women/3.jpg',
-      idCard: 'https://via.placeholder.com/150',
-      date: '2024-09-18',
-      email: 'sarah@example.com',
-      phone: '+1 234 567 8901',
-      properties: 1,
-      experience: '1 year'
-    },
-  ];
-
-  const dashboardStats = {
-    totalUsers: 1247,
-    totalBookings: 8932,
-    totalRevenue: 125000,
-    activeHosts: 324,
-    pendingComplaints: 12,
-    pendingHostRequests: 8
-  };
-
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = (users || []).filter(user =>
+    (user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -183,6 +96,7 @@ const AdminPanel = () => {
                   {[
                     { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
                     { id: 'users', label: 'User Management', icon: Users },
+                    { id: 'verification', label: 'Property Verification', icon: Shield },
                     { id: 'complaints', label: 'Complaints', icon: AlertTriangle },
                     { id: 'hostRequests', label: 'Host Requests', icon: UserCheck },
                   ].map((item) => {
@@ -217,11 +131,15 @@ const AdminPanel = () => {
                   <div className="space-y-2 text-xs text-gray-600">
                     <div className="flex justify-between">
                       <span>Active Users</span>
-                      <span className="font-medium text-earth-brown">{dashboardStats.totalUsers}</span>
+                      <span className="font-medium text-earth-brown">{dashboardStats?.totalUsers || 0}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Pending Requests</span>
-                      <span className="font-medium text-orange-600">{dashboardStats.pendingHostRequests}</span>
+                      <span>Pending Verification</span>
+                      <span className="font-medium text-orange-600">{pendingProperties?.length || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Total Bookings</span>
+                      <span className="font-medium text-blue-600">{dashboardStats?.totalBookings || 0}</span>
                     </div>
                   </div>
                 </div>
@@ -235,6 +153,7 @@ const AdminPanel = () => {
               {[
                 { id: 'dashboard', icon: TrendingUp, label: 'Dashboard' },
                 { id: 'users', icon: Users, label: 'Users' },
+                { id: 'verification', icon: Shield, label: 'Verify' },
                 { id: 'complaints', icon: AlertTriangle, label: 'Issues' },
                 { id: 'hostRequests', icon: UserCheck, label: 'Hosts' },
               ].map((item, index) => {
@@ -271,11 +190,12 @@ const AdminPanel = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 py-4 gap-4">
                 <div className="flex-1">
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-900 capitalize">
-                    {activeTab === 'hostRequests' ? 'Host Requests' : activeTab}
+                    {activeTab === 'hostRequests' ? 'Host Requests' : activeTab === 'verification' ? 'Property Verification' : activeTab}
                   </h2>
                   <p className="text-sm text-gray-600 mt-1 hidden sm:block">
                     {activeTab === 'dashboard' && 'Overview of your platform'}
                     {activeTab === 'users' && 'Manage all users and their activities'}
+                    {activeTab === 'verification' && 'Review and verify property listings with documents'}
                     {activeTab === 'complaints' && 'Review and resolve user complaints'}
                     {activeTab === 'hostRequests' && 'Approve new host applications'}
                   </p>
@@ -304,33 +224,39 @@ const AdminPanel = () => {
               {/* Dashboard */}
               {activeTab === 'dashboard' && (
                 <div className="space-y-6">
+                  {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-earth-brown"></div>
+                    </div>
+                  ) : (
+                    <>
                   {/* Stats Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                     {[
                       {
                         label: 'Total Users',
-                        value: dashboardStats.totalUsers.toLocaleString(),
+                        value: dashboardStats?.totalUsers?.toLocaleString() || '0',
                         icon: Users,
                         color: 'from-blue-500 to-blue-600',
                         change: '+12%'
                       },
                       {
                         label: 'Total Bookings',
-                        value: dashboardStats.totalBookings.toLocaleString(),
+                        value: dashboardStats?.totalBookings?.toLocaleString() || '0',
                         icon: Calendar,
                         color: 'from-green-500 to-green-600',
                         change: '+8%'
                       },
                       {
                         label: 'Revenue',
-                        value: `$${(dashboardStats.totalRevenue / 1000).toFixed(0)}K`,
+                        value: `₹${(dashboardStats?.totalRevenue ? dashboardStats.totalRevenue / 1000 : 0).toFixed(0)}K`,
                         icon: DollarSign,
                         color: 'from-earth-brown to-earth-brown/80',
                         change: '+15%'
                       },
                       {
-                        label: 'Active Hosts',
-                        value: dashboardStats.activeHosts.toString(),
+                        label: 'Active Properties',
+                        value: dashboardStats?.activeProperties?.toString() || '0',
                         icon: Home,
                         color: 'from-purple-500 to-purple-600',
                         change: '+5%'
@@ -373,23 +299,19 @@ const AdminPanel = () => {
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        {[
-                          { action: 'New user registered', user: 'John Doe', time: '2 minutes ago', type: 'user' },
-                          { action: 'Host request submitted', user: 'Sarah Wilson', time: '15 minutes ago', type: 'host' },
-                          { action: 'Complaint resolved', user: 'Mike Johnson', time: '1 hour ago', type: 'complaint' },
-                          { action: 'New booking created', user: 'Emma Davis', time: '2 hours ago', type: 'booking' }
-                        ].map((activity, index) => (
-                          <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                            <div className={`w-2 h-2 rounded-full ${activity.type === 'user' ? 'bg-blue-500' :
-                                activity.type === 'host' ? 'bg-green-500' :
-                                  activity.type === 'complaint' ? 'bg-red-500' : 'bg-earth-brown'
-                              }`}></div>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                              <p className="text-xs text-gray-500">{activity.user} • {activity.time}</p>
+                        {dashboardStats?.recentUsers?.length > 0 ? (
+                          dashboardStats.recentUsers.map((user, index) => (
+                            <div key={user._id || index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-900">New user registered</p>
+                                <p className="text-xs text-gray-500">{user.name} • {new Date(user.createdAt).toLocaleDateString()}</p>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))
+                        ) : (
+                          <p className="text-sm text-gray-500 text-center py-4">No recent activity</p>
+                        )}
                       </CardContent>
                     </Card>
 
@@ -401,37 +323,44 @@ const AdminPanel = () => {
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="font-medium text-red-800">High Priority Complaints</p>
-                              <p className="text-sm text-red-600">3 complaints need immediate attention</p>
-                            </div>
-                            <Badge variant="destructive">3</Badge>
-                          </div>
-                        </div>
                         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                           <div className="flex justify-between items-center">
                             <div>
-                              <p className="font-medium text-yellow-800">Host Requests</p>
-                              <p className="text-sm text-yellow-600">8 requests awaiting approval</p>
+                              <p className="font-medium text-yellow-800">Property Verifications</p>
+                              <p className="text-sm text-yellow-600">{pendingProperties?.length || 0} properties awaiting approval</p>
                             </div>
-                            <Badge variant="secondary">8</Badge>
+                            <Badge variant="secondary">{pendingProperties?.length || 0}</Badge>
                           </div>
                         </div>
                         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                           <div className="flex justify-between items-center">
                             <div>
-                              <p className="font-medium text-blue-800">User Verifications</p>
-                              <p className="text-sm text-blue-600">12 users need verification</p>
+                              <p className="font-medium text-blue-800">Recent Bookings</p>
+                              <p className="text-sm text-blue-600">{dashboardStats?.recentBookings?.length || 0} new bookings this week</p>
                             </div>
-                            <Badge>12</Badge>
+                            <Badge>{dashboardStats?.recentBookings?.length || 0}</Badge>
+                          </div>
+                        </div>
+                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="font-medium text-green-800">Active Properties</p>
+                              <p className="text-sm text-green-600">{dashboardStats?.activeProperties || 0} properties currently active</p>
+                            </div>
+                            <Badge variant="default">{dashboardStats?.activeProperties || 0}</Badge>
                           </div>
                         </div>
                       </CardContent>
                     </Card>
                   </div>
+                </>
+                  )}
                 </div>
+              )}
+
+              {/* Property Verification Tab */}
+              {activeTab === 'verification' && (
+                <PropertyVerificationPanel />
               )}
 
               {/* Users Tab */}
@@ -461,6 +390,18 @@ const AdminPanel = () => {
                   </Card>
 
                   {/* Users Grid */}
+                  {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-earth-brown"></div>
+                    </div>
+                  ) : filteredUsers.length === 0 ? (
+                    <Card className="border-0 shadow-lg">
+                      <CardContent className="p-12 text-center">
+                        <Users className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                        <p className="text-gray-600">No users found</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {filteredUsers.map((user) => (
                       <motion.div
@@ -472,38 +413,36 @@ const AdminPanel = () => {
                           <CardContent className="p-6">
                             <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 gap-3">
                               <div className="flex items-center space-x-3 flex-1 min-w-0">
-                                <img
-                                  className="w-12 h-12 rounded-full object-cover border-2 border-earth-brown/20 flex-shrink-0"
-                                  src={user.avatar}
-                                  alt={user.name}
-                                />
+                                <div className="w-12 h-12 rounded-full bg-earth-brown/20 flex items-center justify-center text-earth-brown font-bold flex-shrink-0">
+                                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                                </div>
                                 <div className="min-w-0 flex-1">
-                                  <h3 className="font-semibold text-gray-900 truncate">{user.name}</h3>
+                                  <h3 className="font-semibold text-gray-900 truncate">{user.name || 'Unknown User'}</h3>
                                   <p className="text-sm text-gray-600 truncate">{user.email}</p>
                                 </div>
                               </div>
-                              <Badge variant={user.status === 'Active' ? 'default' : 'destructive'}>
-                                {user.status}
+                              <Badge variant={user.isActive ? 'default' : 'destructive'}>
+                                {user.isActive ? 'Active' : 'Inactive'}
                               </Badge>
                             </div>
 
                             <div className="space-y-2 mb-4">
                               <div className="flex justify-between text-sm">
                                 <span className="text-gray-600">User Type:</span>
-                                <span className="font-medium text-earth-brown">{user.type}</span>
+                                <span className="font-medium text-earth-brown">{user.isHost ? 'Host' : 'Guest'}</span>
                               </div>
                               <div className="flex justify-between text-sm">
                                 <span className="text-gray-600">Joined:</span>
-                                <span className="font-medium">{user.joinDate}</span>
+                                <span className="font-medium">{new Date(user.createdAt).toLocaleDateString()}</span>
                               </div>
                               <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Bookings:</span>
-                                <span className="font-medium">{user.bookings}</span>
+                                <span className="text-gray-600">Email Verified:</span>
+                                <span className="font-medium">{user.isEmailVerified ? '✓' : '✗'}</span>
                               </div>
-                              {user.earnings > 0 && (
+                              {user.phoneNumber && (
                                 <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600">Earnings:</span>
-                                  <span className="font-medium text-green-600">${user.earnings}</span>
+                                  <span className="text-gray-600">Phone:</span>
+                                  <span className="font-medium">{user.phoneNumber}</span>
                                 </div>
                               )}
                             </div>
@@ -526,6 +465,7 @@ const AdminPanel = () => {
                       </motion.div>
                     ))}
                   </div>
+                  )}
                 </div>
               )}
 

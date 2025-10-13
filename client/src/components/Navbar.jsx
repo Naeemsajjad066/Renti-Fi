@@ -1,10 +1,10 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { User, LogOut, Settings, Calendar, ChevronDown, Home, Menu, X, Sun, Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/use-theme';
-import { AuthContext } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -13,8 +13,8 @@ const Navbar = () => {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
-  const { logout,authUser } = useContext(AuthContext);
-  const isLoggedIn=!!authUser
+  const { logout, authUser } = useAuth();
+  const isLoggedIn = !!authUser
 
   // Mock authentication state
   // const [isLoggedIn, setIsLoggedIn] = useState(true); // Changed to true to show settings link

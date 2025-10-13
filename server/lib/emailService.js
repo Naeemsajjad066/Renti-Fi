@@ -86,3 +86,43 @@ export const sendBookingConfirmationEmail = async (booking, property, user) => {
         throw new Error(`Failed to send booking confirmation email: ${error.message}`);
     }
 };
+
+// Send property approval email
+export const sendPropertyApprovalEmail = async (email, data) => {
+    try {
+        const template = emailTemplates.propertyApproval(data);
+        
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+            to: email,
+            subject: template.subject,
+            html: template.html
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log('Property approval email sent to:', email);
+    } catch (error) {
+        console.error('Property approval email failed:', error.message);
+        throw new Error(`Failed to send property approval email: ${error.message}`);
+    }
+};
+
+// Send property rejection email
+export const sendPropertyRejectionEmail = async (email, data) => {
+    try {
+        const template = emailTemplates.propertyRejection(data);
+        
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+            to: email,
+            subject: template.subject,
+            html: template.html
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log('Property rejection email sent to:', email);
+    } catch (error) {
+        console.error('Property rejection email failed:', error.message);
+        throw new Error(`Failed to send property rejection email: ${error.message}`);
+    }
+};

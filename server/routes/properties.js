@@ -11,7 +11,7 @@ import {
   getFeaturedProperties
 } from '../controllers/propertyController.js';
 import { protect } from '../middleware/auth.js';
-import { uploadMultiple } from '../middleware/upload.js';
+import { uploadFields } from '../middleware/upload.js';
 
 const propertyRouter = express.Router();
 
@@ -25,10 +25,16 @@ propertyRouter.get('/:id', getProperty);
 propertyRouter.use(protect);
 propertyRouter.get('/user/:userId?', getUserProperties);
 
-// Host routes
+// Host routes - Accept images, ID card, and property documents
 // propertyRouter.use(hostProtect);
-propertyRouter.post('/', uploadMultiple('images', 10), createProperty);
-propertyRouter.put('/:id', uploadMultiple('images', 10), updateProperty);
+propertyRouter.post('/', uploadFields([
+  { name: 'images', maxCount: 10 },
+  { name: 'idCard', maxCount: 1 },
+  { name: 'propertyDocuments', maxCount: 5 }
+]), createProperty);
+propertyRouter.put('/:id', uploadFields([
+  { name: 'images', maxCount: 10 }
+]), updateProperty);
 propertyRouter.delete('/:id', deleteProperty);
 
 export default propertyRouter;

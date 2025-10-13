@@ -7,14 +7,14 @@ const storage = multer.memoryStorage();
 
 // File filter
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|webp/; // ✅ keep it simple for Cloudinary
+  const allowedTypes = /jpeg|jpg|png|gif|webp|pdf/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
+  const mimetype = allowedTypes.test(file.mimetype) || file.mimetype === 'application/pdf';
 
   if (mimetype && extname) {
     cb(null, true);
   } else {
-    cb(new Error("Invalid file type. Only images are allowed."));
+    cb(new Error("Invalid file type. Only images and PDF files are allowed."));
   }
 };
 

@@ -70,11 +70,39 @@ const propertySchema = new mongoose.Schema({
   isLocationVerified: { type: Boolean, default: false },
   locationAccuracy: { type: Number, required: false }, // GPS accuracy in meters
 
+  // Verification documents
+  hostIdCard: {
+    url: { type: String, required: false },
+    publicId: { type: String, required: false },
+    uploadedAt: { type: Date, required: false }
+  },
+  propertyDocuments: [{
+    url: { type: String, required: true },
+    publicId: { type: String, required: true },
+    name: { type: String, required: false },
+    uploadedAt: { type: Date, default: Date.now }
+  }],
+
+  // Verification status and workflow
+  verificationStatus: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected', 'resubmitted'],
+    default: 'pending'
+  },
+  verifiedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: false
+  },
+  verifiedAt: { type: Date, required: false },
+  rejectionReason: { type: String, required: false },
+  adminNotes: { type: String, required: false },
+
   rating: { type: Number, default: 0 },
   totalReviews: { type: Number, default: 0 },
 
   isActive: { type: Boolean, default: true },
-  isVerified: { type: Boolean, default: true }
+  isVerified: { type: Boolean, default: false } // Changed default to false
 },
 {
   timestamps: true

@@ -72,6 +72,8 @@ const AddListing = () => {
   const {createProperty} = useContext(PropertyContext);
   // Form state
   const [images, setImages] = useState([]);
+  const [idCardImage, setIdCardImage] = useState(null);
+  const [propertyDocuments, setPropertyDocuments] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -162,6 +164,44 @@ const AddListing = () => {
     });
   };
 
+  // ID Card upload handler
+  const handleIdCardUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setIdCardImage({
+        file,
+        preview: URL.createObjectURL(file),
+      });
+    }
+  };
+
+  const removeIdCard = () => {
+    if (idCardImage) {
+      URL.revokeObjectURL(idCardImage.preview);
+      setIdCardImage(null);
+    }
+  };
+
+  // Property documents upload handler
+  const handleDocumentUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const newDocuments = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file),
+      name: file.name,
+    }));
+    setPropertyDocuments(prev => [...prev, ...newDocuments]);
+  };
+
+  const removeDocument = (index) => {
+    setPropertyDocuments(prev => {
+      const newDocs = [...prev];
+      URL.revokeObjectURL(newDocs[index].preview);
+      newDocs.splice(index, 1);
+      return newDocs;
+    });
+  };
+
 
   
   const nextStep = () => {
@@ -196,15 +236,27 @@ const AddListing = () => {
           formDataToSend.append("images", img.file); // ✅ multiple images support
         });
       }
+
+      // Append ID card
+      if (idCardImage) {
+        formDataToSend.append("idCard", idCardImage.file);
+      }
+
+      // Append property documents
+      if (propertyDocuments.length > 0) {
+        propertyDocuments.forEach((doc) => {
+          formDataToSend.append("propertyDocuments", doc.file);
+        });
+      }
   
       // Call context function
       const result = await createProperty(formDataToSend);
   
       if (result.success) {
         toast({
-          title: "Success!",
+          title: "Property Submitted for Verification!",
           description:
-            result.message || "Your property has been listed successfully.",
+            "Your property has been submitted and is pending admin verification. You'll receive an email once it's reviewed.",
           variant: "success",
         });
   
@@ -227,6 +279,9 @@ const AddListing = () => {
           minimumStay: "1",
         });
         setImages([]);
+        setIdCardImage(null);
+        setPropertyDocuments([]);
+        setLocationCaptured(false);
   
         // Redirect to dashboard
         window.location.href = "/host/dashboard";
@@ -277,7 +332,7 @@ const AddListing = () => {
               {/* Progress steps */}
               <div className="mb-8">
                 <div className="flex items-center justify-between">
-                  {[1, 2, 3, 4].map((step) => (
+                  {[1, 2, 3, 4, 5, 6].map((step) => (
                     <div key={step} className="flex flex-col items-center">
                       <div 
                         className={cn(
@@ -289,21 +344,24 @@ const AddListing = () => {
                       >
                         {step}
                       </div>
-                      <div className="text-xs text-gray-600">
+                      <div className="text-xs text-gray-600 text-center">
                         {step === 1 && "Basic Info"}
-                        {step === 2 && "Details & selectedAmenities"}
-                        {step === 3 && "Photos"}
-                        {step === 4 && "Prices"}
+                        {step === 2 && "Location"}
+                        {step === 3 && "Details"}
+                        {step === 4 && "Photos"}
+                        {step === 5 && "Documents"}
+                        {step === 6 && "Price"}
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="mt-2 grid grid-cols-5 gap-1">
-                  <div className={`h-1 rounded-l ${activeStep >= 2 ? 'bg-primary' : 'bg-gray-200'}`}></div>
-                  <div className={`h-1 ${activeStep >= 3 ? 'bg-primary' : 'bg-gray-200'}`}></div>
-                  <div className={`h-1 ${activeStep >= 4 ? 'bg-primary' : 'bg-gray-200'}`}></div>
-                  <div className={`h-1 ${activeStep >= 5 ? 'bg-primary' : 'bg-gray-200'}`}></div>
-                  <div className={`h-1 rounded-r ${activeStep >= 6 ? 'bg-primary' : 'bg-gray-200'}`}></div>
+                <div className="mt-2 flex gap-1">
+                  <div className={`flex-1 h-1 rounded-l ${activeStep >= 2 ? 'bg-primary' : 'bg-gray-200'}`}></div>
+                  <div className={`flex-1 h-1 ${activeStep >= 3 ? 'bg-primary' : 'bg-gray-200'}`}></div>
+                  <div className={`flex-1 h-1 ${activeStep >= 4 ? 'bg-primary' : 'bg-gray-200'}`}></div>
+                  <div className={`flex-1 h-1 ${activeStep >= 5 ? 'bg-primary' : 'bg-gray-200'}`}></div>
+                  <div className={`flex-1 h-1 ${activeStep >= 6 ? 'bg-primary' : 'bg-gray-200'}`}></div>
+                  <div className={`flex-1 h-1 rounded-r ${activeStep >= 7 ? 'bg-primary' : 'bg-gray-200'}`}></div>
                 </div>
               </div>
               
@@ -740,8 +798,167 @@ const AddListing = () => {
                   </motion.div>
                 )}
                 
-                {/* Step 4: Availability & Price */}
+                {/* Step 5: Verification Documents */}
                 {activeStep === 5 && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="bg-white p-6 rounded-lg shadow-sm"
+                  >
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Verification Documents</h2>
+                    
+                    <div className="mb-6">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <p className="text-sm text-blue-800">
+                          <strong>Why do we need these documents?</strong> To ensure the safety and authenticity of all listings, 
+                          we require verification documents. Your information is kept secure and will only be used for verification purposes.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-8">
+                      {/* ID Card Upload */}
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700 block mb-3">
+                          Host ID Card/Passport * <span className="text-red-500">(Required)</span>
+                        </Label>
+                        <p className="text-xs text-gray-600 mb-3">
+                          Upload a clear photo of your government-issued ID card or passport for identity verification.
+                        </p>
+                        
+                        {!idCardImage ? (
+                          <label className="block">
+                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer">
+                              <Upload className="mx-auto h-10 w-10 text-gray-400 mb-2" />
+                              <p className="text-sm text-gray-600 mb-1">Click to upload ID card</p>
+                              <p className="text-xs text-gray-500">JPG, PNG (max. 10MB)</p>
+                              <input 
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleIdCardUpload}
+                              />
+                            </div>
+                          </label>
+                        ) : (
+                          <div className="relative inline-block">
+                            <div className="w-64 h-40 rounded-lg overflow-hidden border-2 border-green-500">
+                              <img 
+                                src={idCardImage.preview} 
+                                alt="ID Card" 
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={removeIdCard}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-md"
+                            >
+                              <X size={16} />
+                            </button>
+                            <div className="absolute bottom-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
+                              <Check size={12} className="inline mr-1" />
+                              Uploaded
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Property Documents Upload */}
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700 block mb-3">
+                          Property Documents * <span className="text-red-500">(Required - At least 1 document)</span>
+                        </Label>
+                        <p className="text-xs text-gray-600 mb-3">
+                          Upload proof of ownership or authorization (e.g., property deed, rental agreement, authorization letter, utility bills).
+                        </p>
+                        
+                        <label className="block">
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer">
+                            <Upload className="mx-auto h-10 w-10 text-gray-400 mb-2" />
+                            <p className="text-sm text-gray-600 mb-1">Click to upload property documents</p>
+                            <p className="text-xs text-gray-500">JPG, PNG, PDF (max. 10MB each)</p>
+                            <input 
+                              type="file"
+                              multiple
+                              accept="image/*,.pdf"
+                              className="hidden"
+                              onChange={handleDocumentUpload}
+                            />
+                          </div>
+                        </label>
+
+                        {propertyDocuments.length > 0 && (
+                          <div className="mt-4">
+                            <h3 className="text-sm font-medium text-gray-700 mb-2">Uploaded Documents ({propertyDocuments.length})</h3>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                              {propertyDocuments.map((doc, index) => (
+                                <div key={index} className="relative group">
+                                  <div className="aspect-video rounded-lg overflow-hidden border-2 border-gray-200">
+                                    {doc.file.type === 'application/pdf' ? (
+                                      <div className="w-full h-full bg-red-50 flex flex-col items-center justify-center">
+                                        <svg className="w-12 h-12 text-red-500 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                                          <path d="M4 18h12V6h-4V2H4v16zm-2 1V0h12l4 4v16H2v-1z"/>
+                                        </svg>
+                                        <span className="text-xs text-gray-600 px-2 text-center truncate w-full">
+                                          {doc.name}
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <img 
+                                        src={doc.preview} 
+                                        alt={`Document ${index + 1}`} 
+                                        className="w-full h-full object-cover"
+                                      />
+                                    )}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeDocument(index)}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                                  >
+                                    <X size={14} />
+                                  </button>
+                                </div>
+                              ))}
+                              
+                              <label className="aspect-video rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
+                                <Plus size={20} className="text-gray-400 mb-1" />
+                                <span className="text-xs text-gray-500">Add More</span>
+                                <input 
+                                  type="file"
+                                  multiple
+                                  accept="image/*,.pdf"
+                                  className="hidden"
+                                  onChange={handleDocumentUpload}
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="mt-8 flex justify-between">
+                      <Button type="button" variant="outline" onClick={prevStep}>
+                        Back
+                      </Button>
+                      <Button 
+                        type="button" 
+                        onClick={nextStep}
+                        disabled={!idCardImage || propertyDocuments.length === 0}
+                        className={(!idCardImage || propertyDocuments.length === 0) ? 'opacity-50 cursor-not-allowed' : ''}
+                      >
+                        Next <ArrowRight size={16} className="ml-2" />
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Step 6: Pricing */}
+                {activeStep === 6 && (
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}

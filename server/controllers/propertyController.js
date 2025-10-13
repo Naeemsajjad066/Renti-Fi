@@ -24,10 +24,15 @@ export const createProperty = async (req, res) => {
       locationAccuracy,
     } = req.body;
 
-    // Upload multiple images from memory
+    // Separate files by field name - uploadFields returns an object
+    const imageFiles = req.files?.['images'] || [];
+    const idCardFile = req.files?.['idCard']?.[0]; // Single file
+    const docFiles = req.files?.['propertyDocuments'] || [];
+
+    // Upload property images
     let uploadedImages = [];
-    if (req.files && req.files.length > 0) {
-      const uploadPromises = req.files.map(
+    if (imageFiles.length > 0) {
+      const uploadPromises = imageFiles.map(
         (file) =>
           new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
@@ -37,11 +42,54 @@ export const createProperty = async (req, res) => {
                 else resolve(result.secure_url);
               }
             );
-            stream.end(file.buffer); // 👈 use buffer, not path
+            stream.end(file.buffer);
           })
       );
-
       uploadedImages = await Promise.all(uploadPromises);
+    }
+
+    // Upload ID card
+    let idCardData = null;
+    if (idCardFile) {
+      const idCardUpload = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "verification/id-cards" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(idCardFile.buffer);
+      });
+      idCardData = {
+        url: idCardUpload.secure_url,
+        publicId: idCardUpload.public_id,
+        uploadedAt: new Date()
+      };
+    }
+
+    // Upload property documents
+    let propertyDocumentsData = [];
+    if (docFiles.length > 0) {
+      const docUploadPromises = docFiles.map(
+        (file) =>
+          new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+              { folder: "verification/property-docs" },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve({
+                  url: result.secure_url,
+                  publicId: result.public_id,
+                  name: file.originalname,
+                  uploadedAt: new Date()
+                });
+              }
+            );
+            stream.end(file.buffer);
+          })
+      );
+      propertyDocumentsData = await Promise.all(docUploadPromises);
     }
 
     const newProperty = await Property.create({
@@ -65,11 +113,16 @@ export const createProperty = async (req, res) => {
       locationAccuracy: locationAccuracy ? parseFloat(locationAccuracy) : null,
       locationCapturedAt: latitude && longitude ? new Date() : null,
       isLocationVerified: !!(latitude && longitude),
+      hostIdCard: idCardData,
+      propertyDocuments: propertyDocumentsData,
+      verificationStatus: 'pending',
+      isVerified: false,
+      isActive: false // Property won't be shown until approved
     });
 
     return res.json({
       success: true,
-      message: "Property created successfully",
+      message: "Property submitted for verification. You'll receive an email once it's reviewed.",
       property: newProperty,
     });
   } catch (error) {
@@ -82,7 +135,14 @@ export const createProperty = async (req, res) => {
 // GET all properties
 export const getProperties = async (req, res) => {
   try {
-    const properties = await Property.find().populate("host", "fullName email profilePicture");
+    // Only show approved properties to regular users
+    // Admins and hosts can see their own properties regardless of status
+    const filter = { 
+      isActive: true, 
+      verificationStatus: 'approved' 
+    };
+    
+    const properties = await Property.find(filter).populate("host", "fullName email profilePicture");
     
     // Add caching headers for better performance
     res.set({
@@ -200,7 +260,7 @@ export const getUserProperties = async (req, res) => {
 // GET featured properties (latest 5 for example)
 export const getFeaturedProperties = async (req, res) => {
   try {
-    const properties = await Property.find({ isActive: true })
+    const properties = await Property.find({ isActive: true, verificationStatus: 'approved' })
       .populate("host", "fullName email profilePicture")
       .sort({ createdAt: -1 })
       .limit(6);
@@ -214,5 +274,120 @@ export const getFeaturedProperties = async (req, res) => {
     res.json({ success: true, properties });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error fetching featured properties" });
+  }
+};
+
+// GET pending properties for admin verification
+export const getPendingProperties = async (req, res) => {
+  try {
+    const properties = await Property.find({ 
+      verificationStatus: { $in: ['pending', 'resubmitted'] } 
+    })
+      .populate("host", "fullName email profilePicture phone")
+      .sort({ createdAt: -1 });
+    
+    res.json({ success: true, properties, count: properties.length });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error fetching pending properties" });
+  }
+};
+
+// APPROVE property (Admin only)
+export const approveProperty = async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const { adminNotes } = req.body;
+
+    const property = await Property.findById(propertyId).populate("host", "fullName email");
+
+    if (!property) {
+      return res.status(404).json({ success: false, message: "Property not found" });
+    }
+
+    // Update property status
+    property.verificationStatus = 'approved';
+    property.isVerified = true;
+    property.isActive = true;
+    property.verifiedBy = req.user._id;
+    property.verifiedAt = new Date();
+    property.adminNotes = adminNotes || '';
+    property.rejectionReason = null; // Clear any previous rejection reason
+
+    await property.save();
+
+    // Send approval email to host
+    try {
+      const { sendPropertyApprovalEmail } = await import('../lib/emailService.js');
+      await sendPropertyApprovalEmail(property.host.email, {
+        hostName: property.host.fullName,
+        propertyTitle: property.title,
+        propertyId: property._id,
+        verifiedAt: property.verifiedAt
+      });
+    } catch (emailError) {
+      console.error("Error sending approval email:", emailError);
+      // Continue even if email fails
+    }
+
+    res.json({ 
+      success: true, 
+      message: "Property approved successfully",
+      property 
+    });
+  } catch (error) {
+    console.error("Error approving property:", error);
+    res.status(500).json({ success: false, message: "Error approving property" });
+  }
+};
+
+// REJECT property (Admin only)
+export const rejectProperty = async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const { rejectionReason, adminNotes } = req.body;
+
+    if (!rejectionReason) {
+      return res.status(400).json({ success: false, message: "Rejection reason is required" });
+    }
+
+    const property = await Property.findById(propertyId).populate("host", "fullName email");
+
+    if (!property) {
+      return res.status(404).json({ success: false, message: "Property not found" });
+    }
+
+    // Update property status
+    property.verificationStatus = 'rejected';
+    property.isVerified = false;
+    property.isActive = false;
+    property.verifiedBy = req.user._id;
+    property.verifiedAt = new Date();
+    property.rejectionReason = rejectionReason;
+    property.adminNotes = adminNotes || '';
+
+    await property.save();
+
+    // Send rejection email to host
+    try {
+      const { sendPropertyRejectionEmail } = await import('../lib/emailService.js');
+      await sendPropertyRejectionEmail(property.host.email, {
+        hostName: property.host.fullName,
+        propertyTitle: property.title,
+        rejectionReason,
+        propertyId: property._id
+      });
+    } catch (emailError) {
+      console.error("Error sending rejection email:", emailError);
+      // Continue even if email fails
+    }
+
+    res.json({ 
+      success: true, 
+      message: "Property rejected",
+      property 
+    });
+  } catch (error) {
+    console.error("Error rejecting property:", error);
+    res.status(500).json({ success: false, message: "Error rejecting property" });
   }
 };
