@@ -7,21 +7,24 @@ import {
   updateBookingStatus,
   cancelBooking,
   getBookingStats,
-  checkAvailability
+  checkAvailability,
+  getBookedRanges
 } from '../controllers/bookingController.js';
 import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.use(protect);
-
-router.post('/', createBooking);
-router.get('/', getUserBookings);
-router.get('/stats', getBookingStats);
+// Public endpoints
 router.get('/availability/:propertyId', checkAvailability);
-router.get('/user/:userId', getUserBookings); // Route for getting bookings by user ID
-router.get('/:id', getBooking);
-router.put('/:id/status', updateBookingStatus);
-router.post('/:id/cancel', cancelBooking);
+router.get('/property/:propertyId/booked', getBookedRanges);
+
+// Protected endpoints
+router.post('/', protect, createBooking);
+router.get('/', protect, getUserBookings);
+router.get('/stats', protect, getBookingStats);
+router.get('/user/:userId', protect, getUserBookings); // Route for getting bookings by user ID
+router.get('/:id', protect, getBooking);
+router.put('/:id/status', protect, updateBookingStatus);
+router.post('/:id/cancel', protect, cancelBooking);
 
 export default router;

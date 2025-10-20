@@ -30,6 +30,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
 import { Button } from '@/components/ui/button';
+import { useToast } from '../hooks/use-toast';
 
 // Default amenities mapping for display
 const amenityIcons = {
@@ -304,6 +305,8 @@ const BookingForm = ({ property }) => {
   const [isAvailable, setIsAvailable] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
   const [bookingDetails, setBookingDetails] = useState(null);
+  const [bookedRanges, setBookedRanges] = useState([]);
+  const { toast } = useToast();
   
   // Use booking context
   const { createBooking, loading: isLoading } = useBooking();
@@ -341,6 +344,30 @@ const BookingForm = ({ property }) => {
       }
     }
   }, [checkIn, checkOut, property]);
+
+  // Fetch booked ranges for the property to disable dates in calendar
+  useEffect(() => {
+    let mounted = true;
+    const fetchBooked = async () => {
+      if (!property?._id) return;
+      try {
+        const res = await fetch(`http://localhost:5000/api/bookings/property/${property._id}/booked`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!mounted) return;
+        if (data.success && Array.isArray(data.ranges)) {
+          // Convert to DayPicker range objects (Date instances)
+          const ranges = data.ranges.map(r => ({ from: new Date(r.from), to: new Date(r.to) }));
+          setBookedRanges(ranges);
+        }
+      } catch (err) {
+        // ignore
+      }
+    };
+
+    fetchBooked();
+    return () => { mounted = false; };
+  }, [property?._id]);
 
   const checkPropertyAvailability = async () => {
     if (!property?._id || !checkIn || !checkOut) {
@@ -501,7 +528,17 @@ const BookingForm = ({ property }) => {
                 type="date"
                 value={checkIn}
                 min={today}
-                onChange={(e) => setCheckIn(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const selDate = new Date(val);
+                  // check overlap with bookedRanges
+                  const overlaps = bookedRanges.some(br => selDate >= new Date(br.from) && selDate <= new Date(br.to));
+                  if (overlaps) {
+                    toast({ title: 'Date unavailable', description: 'Selected check-in date falls within an existing booking.' });
+                    return;
+                  }
+                  setCheckIn(val);
+                }}
                 className="w-full text-lg font-medium text-gray-900 bg-transparent border-none outline-none [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:hover:opacity-100"
                 required
               />
@@ -515,13 +552,41 @@ const BookingForm = ({ property }) => {
                 type="date"
                 value={checkOut}
                 min={checkIn || today}
-                onChange={(e) => setCheckOut(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const selDate = new Date(val);
+                  // For check-out ensure range doesn't overlap any booked range
+                  const start = checkIn ? new Date(checkIn) : null;
+                  // invalid if any day in [start, selDate] intersects bookedRanges
+                  if (start && selDate > start) {
+                    const intersects = bookedRanges.some(br => !(selDate < new Date(br.from) || start > new Date(br.to)));
+                    if (intersects) {
+                      toast({ title: 'Dates unavailable', description: 'Selected range overlaps existing bookings. Please choose different dates.' });
+                      return;
+                    }
+                  }
+                  setCheckOut(val);
+                }}
                 className="w-full text-lg font-medium text-gray-900 bg-transparent border-none outline-none [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:hover:opacity-100"
                 required
               />
             </div>
           </div>
         </div>
+
+        {/* Show booked ranges as a list and prevent selection that overlaps them */}
+        {bookedRanges.length > 0 && (
+          <div className="mt-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Unavailable dates</h4>
+            <div className="flex flex-col gap-1 text-sm text-gray-600">
+              {bookedRanges.map((r, idx) => (
+                <div key={idx} className="text-sm">
+                  {new Date(r.from).toLocaleDateString()} — {new Date(r.to).toLocaleDateString()}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         <div className="border border-gray-200 rounded-xl p-4 hover:border-gray-300 transition-colors relative">
           <label htmlFor="guests" className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
@@ -775,11 +840,12 @@ const PropertyDetails = () => {
                       <Link to={`/host/${property.host?._id || property.host}`} className="flex-shrink-0 ml-6">
                         <div className="relative group">
                           <img
-                            src={property.host?.profilePic || property.host?.image || '/placeholder.svg'}
+                            src={property.host?.profilePic || property.host?.profilePicture || property.host?.image || property.hostImage || '/placeholder.svg'}
                             alt={property.host?.name || property.host?.fullName || 'Host'}
                             className="w-16 h-16 rounded-full object-cover ring-4 ring-gray-100 group-hover:ring-primary/20 transition-all duration-300 shadow-md"
                             onError={(e) => {
-                              e.target.src = '/placeholder.svg';
+                              console.warn('PropertyDetails: host image failed to load', property.host);
+                              if (e.target.src !== '/placeholder.svg') e.target.src = '/placeholder.svg';
                             }}
                           />
                           <div className="absolute inset-0 rounded-full bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -948,11 +1014,12 @@ const PropertyDetails = () => {
                       <div className="flex items-start gap-6 p-6 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 group-hover:from-primary/10 group-hover:to-primary/20 transition-all duration-300">
                         <div className="relative">
                           <img
-                            src={property.host?.profilePic || property.host?.image || '/placeholder.svg'}
+                            src={property.host?.profilePic || property.host?.profilePicture || property.host?.image || property.hostImage || '/placeholder.svg'}
                             alt={property.host?.name || property.host?.fullName || 'Host'}
                             className="w-20 h-20 rounded-2xl object-cover ring-4 ring-white shadow-lg group-hover:scale-105 transition-transform duration-300"
                             onError={(e) => {
-                              e.target.src = '/placeholder.svg';
+                              console.warn('PropertyDetails: host image failed to load', property.host);
+                              if (e.target.src !== '/placeholder.svg') e.target.src = '/placeholder.svg';
                             }}
                           />
                           <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center ring-4 ring-white">

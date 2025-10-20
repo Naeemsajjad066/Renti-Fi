@@ -10,7 +10,7 @@ export const createBooking = async (req, res) => {
   try {
     // Creating booking request
 
-    const { propertyId, checkIn, checkOut, guests, specialRequests } = req.body;
+  const { propertyId, checkIn, checkOut, guests, specialRequests } = req.body;
     const guestId = req.user._id;
 
     // Validate required fields
@@ -60,8 +60,48 @@ export const createBooking = async (req, res) => {
       });
     }
 
-    // Check guest capacity
-    if (guests > property.maxGuests) {
+    // Normalize guests: allow clients to send either a number (adults) or an object {adults, children, infants, pets}
+    let guestsObj;
+    if (guests == null) {
+      return res.status(400).json({ success: false, message: 'Guests information is required' });
+    }
+
+    if (typeof guests === 'number' || typeof guests === 'string') {
+      // treat as adults count
+      const adultsCount = Number(guests);
+      if (isNaN(adultsCount) || adultsCount < 1) {
+        return res.status(400).json({ success: false, message: 'Invalid guests value' });
+      }
+      guestsObj = { adults: adultsCount, children: 0, infants: 0, pets: 0 };
+    } else if (typeof guests === 'object') {
+      // copy and coerce numeric fields
+      const adults = Number(guests.adults ?? guests.adult ?? 0);
+      const children = Number(guests.children ?? guests.child ?? 0);
+      const infants = Number(guests.infants ?? 0);
+      const pets = Number(guests.pets ?? 0);
+
+      if (isNaN(adults) || adults < 0) {
+        return res.status(400).json({ success: false, message: 'Invalid adults count' });
+      }
+
+      guestsObj = {
+        adults: adults || 0,
+        children: isNaN(children) ? 0 : children,
+        infants: isNaN(infants) ? 0 : infants,
+        pets: isNaN(pets) ? 0 : pets
+      };
+
+      // require at least one adult
+      if (guestsObj.adults < 1) {
+        return res.status(400).json({ success: false, message: 'At least one adult is required' });
+      }
+    } else {
+      return res.status(400).json({ success: false, message: 'Invalid guests format' });
+    }
+
+    // Check guest capacity (total people excluding pets)
+    const totalPeople = (guestsObj.adults || 0) + (guestsObj.children || 0) + (guestsObj.infants || 0);
+    if (totalPeople > property.maxGuests) {
       return res.status(400).json({
         success: false,
         message: `Property can accommodate maximum ${property.maxGuests} guests`
@@ -101,9 +141,10 @@ export const createBooking = async (req, res) => {
       checkOut: checkOutDate,
       nights,
       guests: {
-        adults: guests,
-        children: 0,
-        infants: 0
+        adults: guestsObj.adults,
+        children: guestsObj.children,
+        infants: guestsObj.infants,
+        pets: guestsObj.pets
       },
       basePrice,
       cleaningFee,
@@ -465,5 +506,29 @@ export const checkAvailability = async (req, res) => {
       message: 'Failed to check availability',
       available: true // Default to available on error
     });
+  }
+};
+
+// Get booked date ranges for a property (public)
+export const getBookedRanges = async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+
+    if (!propertyId) {
+      return res.status(400).json({ success: false, message: 'Property ID is required' });
+    }
+
+    // Fetch bookings that are confirmed or pending (these block dates)
+    const bookings = await Booking.find({
+      property: propertyId,
+      status: { $in: ['confirmed', 'pending'] }
+    }).select('checkIn checkOut status').sort({ checkIn: 1 });
+
+    const ranges = bookings.map(b => ({ from: b.checkIn, to: b.checkOut }));
+
+    res.json({ success: true, ranges });
+  } catch (error) {
+    console.error('Error fetching booked ranges:', error.message);
+    res.status(500).json({ success: false, message: 'Failed to fetch booked ranges', ranges: [] });
   }
 };
