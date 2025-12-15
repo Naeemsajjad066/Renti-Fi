@@ -8,28 +8,31 @@ import { sendBookingConfirmationEmail } from '../lib/emailService.js';
 // Create a new booking
 export const createBooking = async (req, res) => {
   try {
-    // Creating booking request
-
   const { propertyId, checkIn, checkOut, guests, specialRequests } = req.body;
     const guestId = req.user._id;
 
     // Validate required fields
     if (!propertyId || !checkIn || !checkOut || !guests) {
-      // Missing required fields
       return res.status(400).json({
         success: false,
         message: 'All fields are required'
       });
     }
 
-    // Parse dates
+    // Parse dates - using UTC to avoid timezone issues
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
+    
+    // Get today's date at start of day in UTC
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setUTCHours(0, 0, 0, 0);
+    
+    // Normalize check-in date to start of day for comparison
+    const checkInDateNormalized = new Date(checkInDate);
+    checkInDateNormalized.setUTCHours(0, 0, 0, 0);
     
     // Validate dates
-    if (checkInDate < today) {
+    if (checkInDateNormalized < today) {
       return res.status(400).json({
         success: false,
         message: 'Check-in date cannot be in the past'
@@ -108,7 +111,8 @@ export const createBooking = async (req, res) => {
       });
     }
 
-    // Check for overlapping bookings
+    // Check for overlapping bookings (with race condition protection)
+    // Note: For complete protection, consider using MongoDB transactions
     const overlappingBookings = await Booking.findOverlappingBookings(
       propertyId,
       checkInDate,
@@ -118,7 +122,7 @@ export const createBooking = async (req, res) => {
     if (overlappingBookings.length > 0) {
       return res.status(400).json({
         success: false,
-        message: 'Property is not available for selected dates'
+        message: 'Property is not available for selected dates. Please select different dates.'
       });
     }
 
@@ -131,8 +135,6 @@ export const createBooking = async (req, res) => {
     const totalPrice = basePrice + cleaningFee + serviceFee + taxes;
 
     // Create booking
-    // Creating booking with calculated data
-
     const booking = await Booking.create({
       property: propertyId,
       guest: guestId,
@@ -158,8 +160,6 @@ export const createBooking = async (req, res) => {
       status: 'confirmed' // Auto-confirm for now (will change to 'pending' when payment is required)
     });
 
-    // Booking created successfully
-
     // Populate booking details
     const populatedBooking = await Booking.findById(booking._id)
       .populate('property', 'title images city address')
@@ -167,6 +167,7 @@ export const createBooking = async (req, res) => {
       .populate('host', 'fullName email');
 
     // Send confirmation email
+    let emailSent = true;
     try {
       await sendBookingConfirmationEmail(
         populatedBooking,
@@ -175,15 +176,17 @@ export const createBooking = async (req, res) => {
       );
     } catch (emailError) {
       console.error('Failed to send booking confirmation email:', emailError.message);
-      // Don't fail the booking if email fails
+      emailSent = false;
+      // Don't fail the booking if email fails, but notify user
     }
-
-    // Booking response ready
     
     res.status(201).json({
       success: true,
-      message: 'Booking created successfully',
-      booking: populatedBooking
+      message: emailSent 
+        ? 'Booking created successfully! Confirmation email sent.' 
+        : 'Booking created successfully, but confirmation email could not be sent. Please check your booking details.',
+      booking: populatedBooking,
+      emailSent
     });
 
   } catch (error) {

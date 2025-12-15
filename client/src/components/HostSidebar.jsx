@@ -4,13 +4,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   Home, 
   PlusCircle, 
-  Settings,
   LogOut,
   User,
   Menu,
   X,
   Calendar,
-  MessageSquare,
   BarChart2,
   HelpCircle,
 } from 'lucide-react';
@@ -40,16 +38,6 @@ const HostSidebar = ({ isMobile, isOpen, onToggle }) => {
       title: 'Bookings',
       icon: Calendar,
       path: '/host/bookings',
-    },
-    {
-      title: 'Messages',
-      icon: MessageSquare,
-      path: '/host/messages',
-    },
-    {
-      title: 'Settings',
-      icon: Settings,
-      path: '/settings',
     },
     {
       title: 'Help & Support',

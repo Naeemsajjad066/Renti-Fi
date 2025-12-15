@@ -11,7 +11,6 @@ export const getDashboardStats = async (req, res) => {
     const totalUsers = await User.countDocuments();
     const totalProperties = await Property.countDocuments();
     const totalBookings = await Booking.countDocuments();
-    const pendingHostRequests = await User.countDocuments({ role: 'host', isVerified: false });
     const pendingProperties = await Property.countDocuments({ verificationStatus: 'pending' });
 
     // Calculate revenue
@@ -33,7 +32,6 @@ export const getDashboardStats = async (req, res) => {
         totalProperties,
         totalBookings,
         totalRevenue,
-        pendingHostRequests,
         pendingProperties,
         recentUsers,
         recentBookings,

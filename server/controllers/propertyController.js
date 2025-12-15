@@ -142,9 +142,7 @@ export const getProperties = async (req, res) => {
       verificationStatus: 'approved' 
     };
     
-    console.log('🔍 Fetching properties with filter:', filter);
     const properties = await Property.find(filter).populate("host", "fullName email profilePicture");
-    console.log(`✅ Found ${properties.length} approved properties`);
     
     // Add caching headers for better performance
     res.set({
@@ -165,12 +163,6 @@ export const getProperty = async (req, res) => {
     if (!property) {
       return res.status(404).json({ success: false, message: "Property not found" });
     }
-    console.log(`📄 Property ${property._id}:`, {
-      title: property.title,
-      isActive: property.isActive,
-      verificationStatus: property.verificationStatus,
-      isVerified: property.isVerified
-    });
     
     // Add caching headers for better performance
     res.set({

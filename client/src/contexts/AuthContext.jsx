@@ -217,7 +217,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (token && token !== 'null' && token !== 'undefined') {
+    // Check if token exists and is a valid non-empty string (not null, undefined, or string literals)
+    if (token && typeof token === 'string' && token.trim().length > 0 && token !== 'null' && token !== 'undefined') {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       checkAuth();
     } else {

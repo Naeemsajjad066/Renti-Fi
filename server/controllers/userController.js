@@ -14,6 +14,35 @@ export const Signup = async (req, res) => {
             return res.json({ success: false, message: "Missing required details" });
         }
 
+        // Validate full name format (only letters and spaces)
+        const nameRegex = /^[a-zA-Z\s]+$/;
+        if (!nameRegex.test(fullName.trim())) {
+            return res.json({ success: false, message: "Full name can only contain letters and spaces" });
+        }
+
+        // Validate name length
+        if (fullName.trim().length < 3) {
+            return res.json({ success: false, message: "Full name must be at least 3 characters long" });
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.json({ success: false, message: "Please enter a valid email address" });
+        }
+
+        // Validate phone number format
+        const phoneRegex = /^(\+92|0)?[0-9]{10}$/;
+        if (!phoneRegex.test(phoneNumber.replace(/\s/g, ''))) {
+            return res.json({ success: false, message: "Please enter a valid phone number" });
+        }
+
+        // Validate ID card format (13 digits for Pakistani CNIC)
+        const idCardRegex = /^[0-9]{13}$/;
+        if (!idCardRegex.test(idCard.replace(/[-\s]/g, ''))) {
+            return res.json({ success: false, message: "Please enter a valid 13-digit ID card number" });
+        }
+
         // Validate password length
         if (password.length < 6) {
             return res.json({ success: false, message: "Password must be at least 6 characters" });
@@ -191,6 +220,12 @@ export const login = async (req, res) => {
 
       if (!email || !password) {
         return res.json({ success: false, message: "Email and password are required" });
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.json({ success: false, message: "Please enter a valid email address" });
       }
   
       const userData = await User.findOne({ email });
@@ -405,6 +440,34 @@ export const updateProfile = async (req, res) => {
                 success: false,
                 message: 'User not found',
             });
+        }
+
+        // Validate full name if provided
+        if (fullName && fullName.trim()) {
+            const nameRegex = /^[a-zA-Z\s]+$/;
+            if (!nameRegex.test(fullName.trim())) {
+                return res.json({
+                    success: false,
+                    message: 'Full name can only contain letters and spaces',
+                });
+            }
+            if (fullName.trim().length < 3) {
+                return res.json({
+                    success: false,
+                    message: 'Full name must be at least 3 characters long',
+                });
+            }
+        }
+
+        // Validate phone number if provided
+        if (phoneNumber && phoneNumber.trim()) {
+            const phoneRegex = /^(\+92|0)?[0-9]{10}$/;
+            if (!phoneRegex.test(phoneNumber.replace(/\s/g, ''))) {
+                return res.json({
+                    success: false,
+                    message: 'Please enter a valid phone number',
+                });
+            }
         }
 
         // Prepare update object

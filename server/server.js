@@ -2,6 +2,7 @@ import express from "express";
 import "dotenv/config";
 import cors from "cors";
 import http from "http";
+import mongoSanitize from 'express-mongo-sanitize';
 import { connectDB } from "./lib/db.js";
 import userRouter from "./routes/userRoutes.js";
 import propertyRouter from "./routes/properties.js";
@@ -16,6 +17,9 @@ const server = http.createServer(app);
 
 // middleware setup
 app.use(express.json({ limit: "4mb" }));
+
+// Security middleware - sanitize data to prevent NoSQL injection
+app.use(mongoSanitize());
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)

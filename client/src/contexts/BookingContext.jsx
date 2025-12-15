@@ -75,23 +75,22 @@ export const BookingProvider = ({ children }) => {
         axios.get(`/api/bookings/user/${authUser._id}?type=host`)
       ]);
 
-      if (guestResponse.data.success) {
+      if (guestResponse?.data?.success) {
         setGuestBookings(guestResponse.data.bookings || []);
       }
 
-      if (hostResponse.data.success) {
+      if (hostResponse?.data?.success) {
         setHostBookings(hostResponse.data.bookings || []);
       }
 
       // Combine all bookings
       const allBookings = [
-        ...(guestResponse.data.bookings || []),
-        ...(hostResponse.data.bookings || [])
+        ...(guestResponse?.data?.bookings || []),
+        ...(hostResponse?.data?.bookings || [])
       ];
       setBookings(allBookings);
 
     } catch (error) {
-      // Error fetching bookings
       setError(error.response?.data?.message || 'Failed to fetch bookings');
     } finally {
       setLoading(false);
@@ -108,13 +107,12 @@ export const BookingProvider = ({ children }) => {
       
       const response = await axios.get('/api/bookings?type=guest');
       
-      if (response.data.success) {
+      if (response?.data?.success) {
         setGuestBookings(response.data.bookings || []);
       } else {
-        throw new Error(response.data.message || 'Failed to fetch guest bookings');
+        throw new Error(response?.data?.message || 'Failed to fetch guest bookings');
       }
     } catch (error) {
-      // Error fetching guest bookings
       setError(error.response?.data?.message || 'Failed to fetch bookings');
     } finally {
       setLoading(false);
@@ -131,13 +129,12 @@ export const BookingProvider = ({ children }) => {
       
       const response = await axios.get(`/api/bookings/user/${authUser._id}?type=host`);
 
-      if (response.data.success) {
+      if (response?.data?.success) {
         setHostBookings(response.data.bookings || []);
       } else {
-        throw new Error(response.data.message || 'Failed to fetch host bookings');
+        throw new Error(response?.data?.message || 'Failed to fetch host bookings');
       }
     } catch (error) {
-      // Error fetching host bookings
       setError(error.response?.data?.message || 'Failed to fetch bookings');
     } finally {
       setLoading(false);
@@ -181,7 +178,7 @@ export const BookingProvider = ({ children }) => {
 
       const response = await axios.get(`/api/bookings/${id}`);
       
-      if (response.data.success) {
+      if (response?.data?.success) {
         const booking = response.data.booking;
         setSelectedBooking(booking);
         
@@ -193,10 +190,9 @@ export const BookingProvider = ({ children }) => {
         
         return booking;
       } else {
-        throw new Error(response.data.message || 'Booking not found');
+        throw new Error(response?.data?.message || 'Booking not found');
       }
     } catch (error) {
-      // Error fetching booking
       setError(error.response?.data?.message || 'Booking not found');
       setSelectedBooking(null);
       return null;
@@ -211,7 +207,7 @@ export const BookingProvider = ({ children }) => {
     try {
       const response = await axios.post('/api/bookings', bookingData);
       
-      if (response.data.success) {
+      if (response?.data?.success) {
         const newBooking = response.data.booking;
         
         // Update relevant state
@@ -221,8 +217,8 @@ export const BookingProvider = ({ children }) => {
         toast.success(response.data.message || 'Booking created successfully');
         return { success: true, booking: newBooking };
       } else {
-        toast.error(response.data.message || 'Failed to create booking');
-        return { success: false, message: response.data.message };
+        toast.error(response?.data?.message || 'Failed to create booking');
+        return { success: false, message: response?.data?.message };
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Failed to create booking';

@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import {
   Users,
   AlertTriangle,
-  UserCheck,
   Search,
   Eye,
   Pause,
@@ -57,7 +56,6 @@ const AdminPanel = () => {
 
   // Placeholder data for features not yet implemented
   const complaints = [];
-  const hostRequests = [];
 
   const filteredUsers = (users || []).filter(user =>
     (user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -98,7 +96,6 @@ const AdminPanel = () => {
                     { id: 'users', label: 'User Management', icon: Users },
                     { id: 'verification', label: 'Property Verification', icon: Shield },
                     { id: 'complaints', label: 'Complaints', icon: AlertTriangle },
-                    { id: 'hostRequests', label: 'Host Requests', icon: UserCheck },
                   ].map((item) => {
                     const Icon = item.icon;
                     return (
@@ -155,7 +152,6 @@ const AdminPanel = () => {
                 { id: 'users', icon: Users, label: 'Users' },
                 { id: 'verification', icon: Shield, label: 'Verify' },
                 { id: 'complaints', icon: AlertTriangle, label: 'Issues' },
-                { id: 'hostRequests', icon: UserCheck, label: 'Hosts' },
               ].map((item, index) => {
                 const Icon = item.icon;
                 return (
@@ -190,14 +186,13 @@ const AdminPanel = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 py-4 gap-4">
                 <div className="flex-1">
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-900 capitalize">
-                    {activeTab === 'hostRequests' ? 'Host Requests' : activeTab === 'verification' ? 'Property Verification' : activeTab}
+                    {activeTab === 'verification' ? 'Property Verification' : activeTab}
                   </h2>
                   <p className="text-sm text-gray-600 mt-1 hidden sm:block">
                     {activeTab === 'dashboard' && 'Overview of your platform'}
                     {activeTab === 'users' && 'Manage all users and their activities'}
                     {activeTab === 'verification' && 'Review and verify property listings with documents'}
                     {activeTab === 'complaints' && 'Review and resolve user complaints'}
-                    {activeTab === 'hostRequests' && 'Approve new host applications'}
                   </p>
                 </div>
 
@@ -249,7 +244,7 @@ const AdminPanel = () => {
                       },
                       {
                         label: 'Revenue',
-                        value: `₹${(dashboardStats?.totalRevenue ? dashboardStats.totalRevenue / 1000 : 0).toFixed(0)}K`,
+                        value: `Rs ${(dashboardStats?.totalRevenue ? dashboardStats.totalRevenue  : 0).toFixed(0)}`,
                         icon: DollarSign,
                         color: 'from-earth-brown to-earth-brown/80',
                         change: '+15%'
@@ -531,89 +526,7 @@ const AdminPanel = () => {
                 </div>
               )}
 
-              {/* Host Requests Tab */}
-              {activeTab === 'hostRequests' && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {hostRequests.map((request) => (
-                      <motion.div
-                        key={request.id}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        whileHover={{ y: -5 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-                          <CardContent className="p-6">
-                            <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
-                              <img
-                                className="w-16 h-16 rounded-full object-cover border-4 border-earth-brown/20 mx-auto sm:mx-0"
-                                src={request.avatar}
-                                alt={request.name}
-                              />
-                              <div className="text-center sm:text-left">
-                                <h3 className="text-lg sm:text-xl font-bold text-gray-900">{request.name}</h3>
-                                <p className="text-gray-600 text-sm sm:text-base break-all">{request.email}</p>
-                                <p className="text-sm text-gray-500">Applied on {request.date}</p>
-                              </div>
-                            </div>
 
-                            <div className="space-y-4 mb-6">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="text-center p-3 bg-soft-peach/20 rounded-lg">
-                                  <p className="text-2xl font-bold text-earth-brown">{request.properties}</p>
-                                  <p className="text-xs text-gray-600">Properties</p>
-                                </div>
-                                <div className="text-center p-3 bg-cream-beige/40 rounded-lg">
-                                  <p className="text-2xl font-bold text-earth-brown">{request.experience}</p>
-                                  <p className="text-xs text-gray-600">Experience</p>
-                                </div>
-                              </div>
-
-                              <div>
-                                <h4 className="font-medium text-gray-700 mb-2 flex items-center">
-                                  <Shield className="w-4 h-4 mr-2" />
-                                  ID Verification Document
-                                </h4>
-                                <div className="relative group">
-                                  <img
-                                    className="w-full h-40 object-cover rounded-lg border-2 border-gray-200 group-hover:border-earth-brown transition-colors"
-                                    src={request.idCard}
-                                    alt="ID Card"
-                                  />
-                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg flex items-center justify-center">
-                                    <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="text-sm text-gray-600">
-                                <p><span className="font-medium">Phone:</span> {request.phone}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                              <Button
-                                variant="outline"
-                                className="flex-1 border-red-200 text-red-700 hover:bg-red-50"
-                              >
-                                <X className="w-4 h-4 mr-2" />
-                                Reject
-                              </Button>
-                              <Button
-                                className="flex-1 bg-earth-brown hover:bg-earth-brown/90"
-                              >
-                                <Check className="w-4 h-4 mr-2" />
-                                Approve
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </motion.main>
           </div>
         </div>

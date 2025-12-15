@@ -90,6 +90,9 @@ const ImageGallery = ({ images }) => {
   useEffect(() => {
     if (!showAllPhotos) return;
 
+    // Store original overflow value
+    const originalOverflow = document.body.style.overflow;
+    
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
 
@@ -113,8 +116,8 @@ const ImageGallery = ({ images }) => {
     
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      // Restore body scroll when modal closes
-      document.body.style.overflow = 'unset';
+      // Restore original body scroll value
+      document.body.style.overflow = originalOverflow;
     };
   }, [showAllPhotos, images.length]);
 
@@ -175,7 +178,7 @@ const ImageGallery = ({ images }) => {
         </div>
         
         {/* Secondary images */}
-        {images.slice(1, 5).map((image, index) => (
+        {images && images.length > 1 && images.slice(1, 5).map((image, index) => (
           <div 
             key={index} 
             className="relative group cursor-pointer" 
@@ -265,7 +268,7 @@ const ImageGallery = ({ images }) => {
             {/* Thumbnail strip */}
             <div className="p-6">
               <div className="flex gap-3 overflow-x-auto pb-2">
-                {images.map((image, index) => (
+                {images && images.length > 0 && images.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
@@ -575,7 +578,7 @@ const BookingForm = ({ property }) => {
         </div>
 
         {/* Show booked ranges as a list and prevent selection that overlaps them */}
-        {bookedRanges.length > 0 && (
+        {bookedRanges && bookedRanges.length > 0 && (
           <div className="mt-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
             <h4 className="text-sm font-medium text-gray-700 mb-2">Unavailable dates</h4>
             <div className="flex flex-col gap-1 text-sm text-gray-600">
@@ -632,7 +635,7 @@ const BookingForm = ({ property }) => {
           disabled={isLoading || !isAvailable || !checkIn || !checkOut}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="w-full py-4 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl disabled:shadow-none"
+          className="w-full py-4 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl disabled:shadow-none "
         >
           {isLoading ? (
             <>
@@ -870,7 +873,7 @@ const PropertyDetails = () => {
                   </motion.div>
                   
                   {/* Amenities section */}
-                  {property.amenities && property.amenities.length > 0 && (
+                  {property.amenities && Array.isArray(property.amenities) && property.amenities.length > 0 && (
                     <motion.div 
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}

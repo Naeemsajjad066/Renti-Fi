@@ -33,6 +33,13 @@ const Login = () => {
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
     try {
       const response = await login({
         email: formData.email,
@@ -105,11 +112,14 @@ const Login = () => {
               <input
                 id="email"
                 name="email"
-                type="text"
+                type="email"
                 value={formData.email}
                 onChange={handleChange}
+                required
+                pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
                 className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
                 placeholder="Naeem123@gmail.com"
+                title="Please enter a valid email address"
               />
             </div>
 
@@ -129,6 +139,7 @@ const Login = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={handleChange}
+                  required
                   className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
                   placeholder="••••••••"
                 />

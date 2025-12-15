@@ -148,6 +148,11 @@ bookingSchema.index({ checkIn: 1 });
 bookingSchema.index({ checkOut: 1 });
 bookingSchema.index({ createdAt: 1 });
 
+// Compound indexes for common queries
+bookingSchema.index({ guest: 1, status: 1, createdAt: -1 });
+bookingSchema.index({ host: 1, status: 1, createdAt: -1 });
+bookingSchema.index({ property: 1, checkIn: 1, checkOut: 1, status: 1 });
+
 // Virtual for booking duration
 bookingSchema.virtual('duration').get(function() {
   return Math.ceil((this.checkOut - this.checkIn) / (1000 * 60 * 60 * 24));

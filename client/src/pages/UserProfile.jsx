@@ -68,6 +68,29 @@ const UserProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate full name
+    if (formData.fullName && formData.fullName.trim()) {
+      const nameRegex = /^[a-zA-Z\s]+$/;
+      if (!nameRegex.test(formData.fullName.trim())) {
+        toast.error("Full name can only contain letters and spaces");
+        return;
+      }
+      if (formData.fullName.trim().length < 3) {
+        toast.error("Full name must be at least 3 characters long");
+        return;
+      }
+    }
+
+    // Validate phone number if provided
+    if (formData.phoneNumber && formData.phoneNumber.trim()) {
+      const phoneRegex = /^(\+92|0)?[0-9]{10}$/;
+      if (!phoneRegex.test(formData.phoneNumber.replace(/\s/g, ''))) {
+        toast.error("Please enter a valid phone number");
+        return;
+      }
+    }
+
     try {
       const updateData = {
         fullName: formData.fullName,

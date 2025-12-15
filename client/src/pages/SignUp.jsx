@@ -36,14 +36,79 @@ const SignUp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Basic validation
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords don't match");
+    // Validate required fields
+    if (!formData.fullName.trim()) {
+      toast.error("Full name is required");
+      return;
+    }
+
+    // Validate name format (only letters and spaces)
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    if (!nameRegex.test(formData.fullName.trim())) {
+      toast.error("Full name can only contain letters and spaces");
+      return;
+    }
+
+    // Validate name length
+    if (formData.fullName.trim().length < 3) {
+      toast.error("Full name must be at least 3 characters long");
+      return;
+    }
+
+    if (!formData.idCard.trim()) {
+      toast.error("ID card number is required");
+      return;
+    }
+
+    // Validate ID card format (only numbers)
+    const idCardRegex = /^[0-9]{13}$/;
+    if (!idCardRegex.test(formData.idCard.replace(/[-\s]/g, ''))) {
+      toast.error("ID card must be exactly 13 digits");
+      return;
+    }
+
+    if (!formData.phoneNumber.trim()) {
+      toast.error("Phone number is required");
+      return;
+    }
+
+    // Validate phone number format
+    const phoneRegex = /^(\+92|0)?[0-9]{10}$/;
+    if (!phoneRegex.test(formData.phoneNumber.replace(/\s/g, ''))) {
+      toast.error("Please enter a valid phone number");
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      toast.error("Email address is required");
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    if (!formData.password) {
+      toast.error("Password is required");
       return;
     }
 
     if (formData.password.length < 6) {
       toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    if (!formData.confirmPassword) {
+      toast.error("Please confirm your password");
+      return;
+    }
+
+    // Validate password match
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords don't match");
       return;
     }
 
@@ -156,8 +221,12 @@ const SignUp = () => {
                 type="text"
                 value={formData.fullName}
                 onChange={handleChange}
+                required
+                minLength={3}
+                pattern="[a-zA-Z\s]+"
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                 placeholder="Naeem Sajjad"
+                title="Full name can only contain letters and spaces (minimum 3 characters)"
               />
             </motion.div>
 
@@ -171,8 +240,13 @@ const SignUp = () => {
                 type="text"
                 value={formData.idCard}
                 onChange={handleChange}
+                required
+                minLength={13}
+                maxLength={13}
+                pattern="[0-9]{13}"
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                 placeholder="3120399248231"
+                title="ID card must be exactly 13 digits"
               />
             </motion.div>
 
@@ -186,8 +260,11 @@ const SignUp = () => {
                 type="tel"
                 value={formData.phoneNumber}
                 onChange={handleChange}
+                required
+                pattern="^(\+92|0)?[0-9]{10}$"
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                 placeholder="03058765423"
+                title="Please enter a valid phone number (e.g., 03001234567)"
               />
             </motion.div>
 
@@ -201,8 +278,11 @@ const SignUp = () => {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
+                required
+                pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                 placeholder="naeem99@example.com"
+                title="Please enter a valid email address"
               />
             </motion.div>
 
@@ -217,6 +297,8 @@ const SignUp = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={handleChange}
+                  required
+                  minLength={6}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                   placeholder="••••••••"
                 />
@@ -241,6 +323,8 @@ const SignUp = () => {
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={formData.confirmPassword}
                   onChange={handleChange}
+                  required
+                  minLength={6}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                   placeholder="••••••••"
                 />
