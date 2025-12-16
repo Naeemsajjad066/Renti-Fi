@@ -55,6 +55,7 @@ const AnimatedRoutes = () => {
         <Route path="/properties/:id" element={<PropertyDetails />} />
         <Route path="/host/dashboard" element={<HostDashboard />} />
         <Route path="/host/add-listing" element={<AddListing />} />
+        <Route path="/host/add-listing/:id" element={<AddListing />} />
         <Route path="/host/properties" element={<AllProperties />} />
         <Route path="/host/properties/:id" element={<PropertyDetails />} />
         <Route path="/host/bookings" element={<HostBookings />} />

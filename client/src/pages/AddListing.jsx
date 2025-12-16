@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Upload, 
@@ -69,7 +69,10 @@ const AddListing = () => {
   const [activeStep, setActiveStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const {createProperty} = useContext(PropertyContext);
+  const { createProperty, updateProperty, fetchPropertyById, selectedProperty } = useContext(PropertyContext);
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const isEditMode = Boolean(id);
   // Form state
   const [images, setImages] = useState([]);
   const [idCardImage, setIdCardImage] = useState(null);
@@ -81,7 +84,7 @@ const AddListing = () => {
     city: '',
     state: '',
     zipCode: '',
-    country: '',
+    country: 'Pakistan',
     propertyType: '',
     bedrooms: 1,
     bathrooms: 1,
@@ -96,6 +99,50 @@ const AddListing = () => {
   
   // Location capture state
   const [locationCaptured, setLocationCaptured] = useState(false);
+  
+  // Load property data in edit mode
+  useEffect(() => {
+    if (isEditMode && id) {
+      fetchPropertyById(id);
+    }
+  }, [id, isEditMode]);
+  
+  // Populate form data when property is loaded
+  useEffect(() => {
+    if (isEditMode && selectedProperty) {
+      setFormData({
+        title: selectedProperty.title || '',
+        description: selectedProperty.description || '',
+        address: selectedProperty.address || '',
+        city: selectedProperty.city || '',
+        state: selectedProperty.state || '',
+        zipCode: selectedProperty.zipCode || '',
+        country: 'Pakistan',
+        propertyType: selectedProperty.propertyType || '',
+        bedrooms: selectedProperty.bedrooms || 1,
+        bathrooms: selectedProperty.bathrooms || 1,
+        maxGuests: selectedProperty.maxGuests || 2,
+        price: selectedProperty.price || '',
+        selectedAmenities: selectedProperty.amenities || [],
+        instantBooking: selectedProperty.instantBooking || false,
+        latitude: selectedProperty.latitude || null,
+        longitude: selectedProperty.longitude || null,
+        locationAccuracy: selectedProperty.locationAccuracy || null,
+      });
+      
+      if (selectedProperty.images && selectedProperty.images.length > 0) {
+        setImages(selectedProperty.images.map((url, index) => ({
+          id: index,
+          preview: url,
+          isExisting: true
+        })));
+      }
+      
+      if (selectedProperty.latitude && selectedProperty.longitude) {
+        setLocationCaptured(true);
+      }
+    }
+  }, [selectedProperty, isEditMode]);
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -205,12 +252,24 @@ const AddListing = () => {
 
   
   const nextStep = () => {
-    setActiveStep(prev => prev + 1);
+    setActiveStep(prev => {
+      // Skip step 5 (Documents) when in edit mode
+      if (isEditMode && prev === 4) {
+        return 6;
+      }
+      return prev + 1;
+    });
     window.scrollTo(0, 0);
   };
   
   const prevStep = () => {
-    setActiveStep(prev => prev - 1);
+    setActiveStep(prev => {
+      // Skip step 5 (Documents) when in edit mode
+      if (isEditMode && prev === 6) {
+        return 4;
+      }
+      return prev - 1;
+    });
     window.scrollTo(0, 0);
   };
   
@@ -230,61 +289,46 @@ const AddListing = () => {
         }
       });
   
-      // Append images
+      // Append images (only new images with file property)
       if (images.length > 0) {
         images.forEach((img) => {
-          formDataToSend.append("images", img.file); // ✅ multiple images support
+          if (img.file) {
+            formDataToSend.append("images", img.file);
+          }
         });
       }
 
-      // Append ID card
-      if (idCardImage) {
+      // Append ID card (only in create mode)
+      if (!isEditMode && idCardImage) {
         formDataToSend.append("idCard", idCardImage.file);
       }
 
-      // Append property documents
-      if (propertyDocuments.length > 0) {
+      // Append property documents (only in create mode)
+      if (!isEditMode && propertyDocuments.length > 0) {
         propertyDocuments.forEach((doc) => {
           formDataToSend.append("propertyDocuments", doc.file);
         });
       }
   
-      // Call context function
-      const result = await createProperty(formDataToSend);
+      // Call appropriate context function
+      let result;
+      if (isEditMode) {
+        result = await updateProperty(id, formDataToSend);
+      } else {
+        result = await createProperty(formDataToSend);
+      }
   
       if (result.success) {
         toast({
-          title: "Property Submitted for Verification!",
-          description:
-            "Your property has been submitted and is pending admin verification. You'll receive an email once it's reviewed.",
+          title: isEditMode ? "Property Updated!" : "Property Submitted for Verification!",
+          description: isEditMode 
+            ? "Your property has been updated successfully."
+            : "Your property has been submitted and is pending admin verification. You'll receive an email once it's reviewed.",
           variant: "success",
         });
   
-        // Reset form state
-        setFormData({
-          title: "",
-          description: "",
-          address: "",
-          city: "",
-          state: "",
-          zipCode: "",
-          country: "",
-          propertyType: "",
-          bedrooms: 1,
-          bathrooms: 1,
-          maxGuests: 2,
-          price: "",
-          selectedAmenities: [],
-          instantBooking: false,
-          minimumStay: "1",
-        });
-        setImages([]);
-        setIdCardImage(null);
-        setPropertyDocuments([]);
-        setLocationCaptured(false);
-  
-        // Redirect to dashboard
-        window.location.href = "/host/dashboard";
+        // Navigate to dashboard
+        navigate("/host/dashboard");
       }
     } catch (error) {
       toast({
@@ -315,7 +359,7 @@ const AddListing = () => {
           <header className="bg-white shadow-sm sticky top-0 z-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
               <h1 className="text-2xl font-display font-bold text-gray-900">
-                Add New Listing
+                {isEditMode ? 'Edit Listing' : 'Add New Listing'}
               </h1>
               
               <Link 
@@ -332,7 +376,7 @@ const AddListing = () => {
               {/* Progress steps */}
               <div className="mb-8">
                 <div className="flex items-center justify-between">
-                  {[1, 2, 3, 4, 5, 6].map((step) => (
+                  {[1, 2, 3, 4, 5, 6].filter(step => !(isEditMode && step === 5)).map((step) => (
                     <div key={step} className="flex flex-col items-center">
                       <div 
                         className={cn(
@@ -490,31 +534,6 @@ const AddListing = () => {
                               required
                               className="mt-1"
                             />
-                          </div>
-                          <div className="md:col-span-2">
-                            <Label htmlFor="country" className="text-xs text-gray-600">
-                              Country
-                            </Label>
-                            <Select
-                              value={formData.country}
-                              onValueChange={(value) => handleSelectChange('country', value)}
-                            >
-                              <SelectTrigger className="mt-1 w-full">
-                                <SelectValue placeholder="Select country" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-white">
-                                <SelectItem value="PK">Pakistan</SelectItem>
-                                <SelectItem value="IN">India</SelectItem>
-                                <SelectItem value="BD">Bangladesh</SelectItem>
-                                <SelectItem value="AF">Afghanistan</SelectItem>
-                                <SelectItem value="IR">Iran</SelectItem>
-                                <SelectItem value="CN">China</SelectItem>
-                                <SelectItem value="AE">UAE</SelectItem>
-                                <SelectItem value="SA">Saudi Arabia</SelectItem>
-                                <SelectItem value="TR">Turkey</SelectItem>
-                                <SelectItem value="US">United States</SelectItem>
-                              </SelectContent>
-                            </Select>
                           </div>
                         </div>
                       </div>
@@ -799,7 +818,7 @@ const AddListing = () => {
                 )}
                 
                 {/* Step 5: Verification Documents */}
-                {activeStep === 5 && (
+                {!isEditMode && activeStep === 5 && (
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}

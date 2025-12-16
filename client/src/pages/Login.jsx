@@ -12,6 +12,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -47,7 +48,12 @@ const Login = () => {
       });
       
       if (response?.success) {
-        navigate("/");
+        // Check if user is admin and redirect accordingly
+        if (response.userData?.role === 'admin' || isAdminMode) {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
       } else if (response?.requiresVerification) {
         // User needs to verify email
         navigate("/verify-email", {
@@ -69,7 +75,7 @@ const Login = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gray-50">
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gray-50 dark:bg-gray-900">
         {/* Logo & Heading */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -91,9 +97,9 @@ const Login = () => {
               </span>
             </div>
           </Link>
-          <h1 className="mt-4 text-2xl font-bold text-gray-900">Welcome back</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Sign in to your account
+          <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-gray-100">{isAdminMode ? 'Admin Login' : 'Welcome back'}</h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            {isAdminMode ? 'Sign in to admin dashboard' : 'Sign in to your account'}
           </p>
         </motion.div>
 
@@ -102,11 +108,11 @@ const Login = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="w-full max-w-md p-8 bg-white rounded-lg shadow-sm"
+          className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900/30"
         >
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Email
               </label>
               <input
@@ -117,7 +123,7 @@ const Login = () => {
                 onChange={handleChange}
                 required
                 pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
-                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                 placeholder="Naeem123@gmail.com"
                 title="Please enter a valid email address"
               />
@@ -125,10 +131,10 @@ const Login = () => {
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Password
                 </label>
-                <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                <Link to="/forgot-password" className="text-sm text-primary dark:text-primary-400 hover:underline">
                   Forgot password?
                 </Link>
               </div>
@@ -140,13 +146,13 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors border-gray-300"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={togglePasswordVisibility}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -158,18 +164,30 @@ const Login = () => {
                 type="submit"
                 className="w-full bg-primary hover:bg-primary/90 text-white py-2.5 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2"
               >
-                Sign In
+                {isAdminMode ? 'Sign In as Admin' : 'Sign In'}
               </button>
             </div>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-primary hover:underline font-medium">
-                Sign up
-              </Link>
-            </p>
+          <div className="mt-6 space-y-3">
+            <button
+              type="button"
+              onClick={() => setIsAdminMode(!isAdminMode)}
+              className="w-full py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+            >
+              {isAdminMode ? '← Back to User Login' : '🔐 Admin Login'}
+            </button>
+            
+            {!isAdminMode && (
+              <div className="text-center">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Don't have an account?{" "}
+                  <Link to="/signup" className="text-primary dark:text-primary-400 hover:underline font-medium">
+                    Sign up
+                  </Link>
+                </p>
+              </div>
+            )}
           </div>
         </motion.div>
       </div>

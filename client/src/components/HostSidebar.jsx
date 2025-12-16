@@ -25,11 +25,6 @@ const HostSidebar = ({ isMobile, isOpen, onToggle }) => {
       path: '/host/dashboard',
     },
     {
-      title: 'My Properties',
-      icon: Home,
-      path: '/host/properties',
-    },
-    {
       title: 'Add Property',
       icon: PlusCircle,
       path: '/host/add-listing',

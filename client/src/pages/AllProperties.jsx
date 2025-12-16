@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Filter, Search, MapPin, Star } from 'lucide-react';
+import { Filter, Search, MapPin, Star, Calendar } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
@@ -16,16 +17,26 @@ import { PropertyContext } from '../contexts/PropertyContext';
 const AllProperties = () => {
   // Mock properties data
 
-
+  const [searchParams] = useSearchParams();
+  const cityParam = searchParams.get('city');
+  const checkInParam = searchParams.get('checkIn');
+  
   const { properties, loading } = useContext(PropertyContext);
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [activeType, setActiveType] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [priceRange, setPriceRange] = useState([0, 50000]);
+  const [searchQuery, setSearchQuery] = useState(cityParam || '');
+  const [priceRange, setPriceRange] = useState([0, 100000]);
   const [sortBy, setSortBy] = useState('');
 
   const propertyTypeOptions = ['All', 'Apartment', 'House', 'Villa', 'Cabin', 'Cottage', 'Loft', 'Condo', 'Townhouse'];
   const sortOptions = ['Price: Low to High', 'Price: High to Low', 'Rating: High to Low', 'Latest'];
+  
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
 
   useEffect(() => {
     // Set initial filtered properties when properties load
@@ -94,22 +105,28 @@ const AllProperties = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900">
         <Navbar />
         
         <main className="flex-grow pt-24">
-          <section className="bg-gradient-to-b from-light-beige to-white py-16">
+          <section className="bg-gradient-to-b from-light-beige to-white dark:from-gray-800 dark:to-gray-900 py-16">
             <div className="page-container">
               <div className="text-center max-w-3xl mx-auto mb-12">
-                <Badge className="mb-3 bg-earth-brown/20 text-earth-brown hover:bg-earth-brown/30 border-none">
+                <Badge className="mb-3 bg-earth-brown/20 dark:bg-earth-brown/30 text-earth-brown hover:bg-earth-brown/30 dark:hover:bg-earth-brown/40 border-none">
                   Explore Properties
                 </Badge>
-                <h1 className="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-4">
+                <h1 className="text-4xl md:text-5xl font-display font-bold text-gray-900 dark:text-gray-100 mb-4">
                   Find Your Perfect Stay
                 </h1>
-                <p className="text-lg text-gray-700">
+                <p className="text-lg text-gray-700 dark:text-gray-300">
                   Browse our curated collection of exceptional properties around the world
                 </p>
+                {checkInParam && (
+                  <div className="mt-4 inline-flex items-center gap-2 bg-earth-brown/10 dark:bg-earth-brown/20 text-earth-brown dark:text-cream-beige px-4 py-2 rounded-full text-sm">
+                    <Calendar size={16} />
+                    <span>Check-in: {formatDate(checkInParam)}</span>
+                  </div>
+                )}
               </div>
               
               <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-16">
@@ -120,7 +137,7 @@ const AllProperties = () => {
                   <Input
                     type="text"
                     placeholder="Search by location or property name..."
-                    className="pl-10 py-6 border-cream-beige focus:border-earth-brown text-base"
+                    className="pl-10 py-6 border-cream-beige dark:border-gray-600 focus:border-earth-brown bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 text-base"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -129,25 +146,25 @@ const AllProperties = () => {
             </div>
           </section>
           
-          <section className="py-12 bg-white">
+          <section className="py-12 bg-white dark:bg-gray-900">
             <div className="page-container">
               <div className="flex flex-col lg:flex-row gap-8">
                 {/* Filters sidebar */}
                 <div className="w-full lg:w-1/4 space-y-6">
-                  <div className="bg-light-beige/30 rounded-xl p-6">
-                    <h3 className="text-xl font-semibold text-earth-brown mb-4">Filters</h3>
+                  <div className="bg-light-beige/30 dark:bg-gray-800 rounded-xl p-6">
+                    <h3 className="text-xl font-semibold text-earth-brown dark:text-cream-beige mb-4">Filters</h3>
                     
                     {/* Property Type Filter */}
                     <div className="mb-6">
-                      <h4 className="text-sm font-medium text-gray-700 mb-3">Property Type</h4>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Property Type</h4>
                       <div className="flex flex-wrap gap-2">
                         {propertyTypeOptions.map(type => (
                           <Badge 
                             key={type} 
                             className={`px-3 py-1.5 cursor-pointer ${
                               activeType === type 
-                                ? "bg-earth-brown text-white" 
-                                : "bg-white text-gray-700 hover:bg-gray-100"
+                                ? "bg-earth-brown text-white dark:bg-cream-beige dark:text-earth-brown" 
+                                : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
                             }`}
                             onClick={() => setActiveType(type)}
                           >
@@ -161,18 +178,25 @@ const AllProperties = () => {
                     
                     {/* Price Range Filter */}
                     <div className="mb-6">
-                      <h4 className="text-sm font-medium text-gray-700 mb-3">Price Range</h4>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Price Range (per night)</h4>
                       <Slider
-                        defaultValue={[0, 500]}
-                        max={500}
-                        step={10}
+                        min={0}
+                        max={100000}
+                        step={1000}
                         value={priceRange}
                         onValueChange={setPriceRange}
-                        className="mb-2"
+                        className="mb-4"
                       />
-                      <div className="flex justify-between text-sm text-gray-600">
-                        <span>Rs {priceRange[0]}</span>
-                        <span>Rs {priceRange[1]}</span>
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 mb-1">Min</span>
+                          <span className="font-medium text-gray-700 dark:text-gray-300">Rs {priceRange[0].toLocaleString()}</span>
+                        </div>
+                        <div className="text-gray-400">—</div>
+                        <div className="flex flex-col text-right">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 mb-1">Max</span>
+                          <span className="font-medium text-gray-700 dark:text-gray-300">Rs {priceRange[1].toLocaleString()}</span>
+                        </div>
                       </div>
                     </div>
                     
@@ -180,7 +204,7 @@ const AllProperties = () => {
                     
                     {/* Sort Option */}
                     <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-3">Sort By</h4>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Sort By</h4>
                       <Select value={sortBy} onValueChange={setSortBy}>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select an option" />
@@ -200,7 +224,7 @@ const AllProperties = () => {
                 {/* Property listings */}
                 <div className="w-full lg:w-3/4">
                   <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-semibold text-gray-900">
+                    <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                       {filteredProperties.length} Properties
                     </h2>
                     <Button variant="outline" className="flex items-center gap-2">
@@ -213,10 +237,10 @@ const AllProperties = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {Array.from({ length: 6 }).map((_, index) => (
                         <div key={index} className="animate-pulse">
-                          <div className="bg-gray-200 rounded-lg aspect-[3/2] mb-4"></div>
-                          <div className="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
-                          <div className="h-3 bg-gray-200 rounded mb-2 w-1/2"></div>
-                          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                          <div className="bg-gray-200 dark:bg-gray-700 rounded-lg aspect-[3/2] mb-4"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-3/4"></div>
+                          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mb-2 w-1/2"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
                         </div>
                       ))}
                     </div>
@@ -235,12 +259,12 @@ const AllProperties = () => {
                         ))}
                       </motion.div>
                     ) : (
-                      <div className="text-center py-12 bg-light-beige/30 rounded-xl">
-                        <p className="text-lg text-gray-700 mb-4">No properties match your search criteria</p>
+                      <div className="text-center py-12 bg-light-beige/30 dark:bg-gray-800 rounded-xl">
+                        <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">No properties match your search criteria</p>
                         <Button onClick={() => {
                           setActiveType('All');
                           setSearchQuery('');
-                          setPriceRange([0, 500]);
+                          setPriceRange([0, 100000]);
                           setSortBy('');
                         }}>
                           Reset Filters

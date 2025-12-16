@@ -250,9 +250,18 @@ export const deleteProperty = async (req, res) => {
 export const getUserProperties = async (req, res) => {
   try {
     const userId = req.params.userId || req.user._id;
+    console.log('Fetching properties for user:', userId);
     const properties = await Property.find({ host: userId });
+    console.log(`Found ${properties.length} properties for user ${userId}`);
+    console.log('Properties:', properties.map(p => ({ 
+      id: p._id, 
+      title: p.title, 
+      verificationStatus: p.verificationStatus,
+      isActive: p.isActive 
+    })));
     res.json({ success: true, properties });
   } catch (error) {
+    console.error('Error fetching user properties:', error);
     res.status(500).json({ success: false, message: "Error fetching user properties" });
   }
 };
@@ -304,6 +313,12 @@ export const approveProperty = async (req, res) => {
       return res.status(404).json({ success: false, message: "Property not found" });
     }
 
+    console.log('Approving property:', {
+      id: property._id,
+      title: property.title,
+      hostEmail: property.host.email
+    });
+
     // Update property status
     property.verificationStatus = 'approved';
     property.isVerified = true;
@@ -315,7 +330,14 @@ export const approveProperty = async (req, res) => {
 
     await property.save();
 
+    console.log('Property saved with status:', {
+      verificationStatus: property.verificationStatus,
+      isActive: property.isActive,
+      isVerified: property.isVerified
+    });
+
     // Send approval email to host
+    let emailSent = false;
     try {
       const { sendPropertyApprovalEmail } = await import('../lib/emailService.js');
       await sendPropertyApprovalEmail(property.host.email, {
@@ -324,15 +346,21 @@ export const approveProperty = async (req, res) => {
         propertyId: property._id,
         verifiedAt: property.verifiedAt
       });
+      emailSent = true;
+      console.log('Approval email sent successfully to:', property.host.email);
     } catch (emailError) {
-      console.error("Error sending approval email:", emailError);
+      console.error("Error sending approval email:", emailError.message);
+      console.error("Email stack:", emailError.stack);
       // Continue even if email fails
     }
 
     res.json({ 
       success: true, 
-      message: "Property approved successfully",
-      property 
+      message: emailSent 
+        ? "Property approved successfully and email sent to host"
+        : "Property approved successfully (email failed to send)",
+      property,
+      emailSent
     });
   } catch (error) {
     console.error("Error approving property:", error);

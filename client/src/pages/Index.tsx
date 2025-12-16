@@ -421,7 +421,7 @@ const Index = () => {
                         
                         <div className="flex items-center justify-between mt-auto pt-4 border-t border-cream-beige/30">
                           <div>
-                            <span className="text-2xl font-bold text-earth-brown">${property.price}</span>
+                            <span className="text-2xl font-bold text-earth-brown">Rs {property.price}</span>
                             <span className="text-gray-600"> / night</span>
                           </div>
                           <Link 

@@ -289,7 +289,7 @@ const HostDetail = () => {
                                   <span className="text-gray-500 ml-1">({listing.reviews.length})</span>
                                 </div>
                                 <div>
-                                  <span className="font-medium">${listing.price}</span>
+                                  <span className="font-medium">Rs {listing.price}</span>
                                   <span className="text-gray-600">/night</span>
                                 </div>
                               </div>

@@ -113,11 +113,15 @@ export const PropertyProvider = ({ children }) => {
   // ✅ Get properties of logged-in user
   const fetchUserProperties = async (userId) => {
     try {
+      console.log('Fetching user properties for userId:', userId);
       const { data } = await axios.get(`/api/properties/user/${userId || ""}`);
+      console.log('User properties response:', data);
       if (data.success) {
+        console.log(`Setting ${data.properties.length} user properties`);
         setUserProperties(data.properties);
       }
     } catch (error) {
+      console.error('Error fetching user properties:', error);
       toast.error(error.response?.data?.message || error.message);
     }
   };

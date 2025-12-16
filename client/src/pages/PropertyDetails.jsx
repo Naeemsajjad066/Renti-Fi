@@ -512,11 +512,13 @@ const BookingForm = ({ property }) => {
           </div>
           <p className="text-sm text-gray-500 mt-1">Plus taxes and fees</p>
         </div>
-        <div className="flex items-center bg-gray-50 px-3 py-2 rounded-xl">
-          <Star size={16} className="text-amber-400 mr-1 fill-current" />
-          <span className="font-semibold text-gray-900">{property.rating || 4.5}</span>
-          <span className="text-gray-500 ml-1 text-sm">({property.totalReviews || 0})</span>
-        </div>
+        {property.rating > 0 && property.totalReviews > 0 && (
+          <div className="flex items-center bg-gray-50 px-3 py-2 rounded-xl">
+            <Star size={16} className="text-amber-400 mr-1 fill-current" />
+            <span className="font-semibold text-gray-900">{property.rating.toFixed(1)}</span>
+            <span className="text-gray-500 ml-1 text-sm">({property.totalReviews})</span>
+          </div>
+        )}
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -791,7 +793,7 @@ const PropertyDetails = () => {
                     </div>
                     <div className="flex items-center bg-amber-50 px-3 py-1 rounded-full">
                       <Star size={16} className="text-amber-400 mr-1 fill-current" />
-                      <span className="font-semibold text-gray-900">{property.rating || 4.5}</span>
+                      <span className="font-semibold text-gray-900">{property.rating > 0 ? property.rating.toFixed(1) : 'No ratings yet'}</span>
                       <span className="text-gray-600 ml-1">({property.totalReviews || 0} reviews)</span>
                     </div>
                     <div className="flex items-center text-gray-500">
@@ -1040,8 +1042,8 @@ const PropertyDetails = () => {
                           <div className="flex flex-wrap items-center gap-4">
                             <div className="flex items-center bg-white/80 px-3 py-2 rounded-xl">
                               <Star size={16} className="text-amber-400 mr-2 fill-current" />
-                              <span className="font-semibold text-gray-900">{property.host?.rating || 4.5}</span>
-                              <span className="text-gray-600 ml-1">rating</span>
+                              <span className="font-semibold text-gray-900">{property.host?.rating > 0 ? property.host.rating.toFixed(1) : 'New host'}</span>
+                              {property.host?.rating > 0 && <span className="text-gray-600 ml-1">rating</span>}
                             </div>
                             <div className="flex items-center bg-green-100 px-3 py-2 rounded-xl">
                               <ShieldCheck size={16} className="text-green-600 mr-2" />

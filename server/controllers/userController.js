@@ -31,10 +31,10 @@ export const Signup = async (req, res) => {
             return res.json({ success: false, message: "Please enter a valid email address" });
         }
 
-        // Validate phone number format
-        const phoneRegex = /^(\+92|0)?[0-9]{10}$/;
+        // Validate phone number format (exactly 11 digits, numbers only)
+        const phoneRegex = /^[0-9]{11}$/;
         if (!phoneRegex.test(phoneNumber.replace(/\s/g, ''))) {
-            return res.json({ success: false, message: "Please enter a valid phone number" });
+            return res.json({ success: false, message: "Phone number must be exactly 11 digits and contain only numbers" });
         }
 
         // Validate ID card format (13 digits for Pakistani CNIC)

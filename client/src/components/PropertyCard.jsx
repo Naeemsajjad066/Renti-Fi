@@ -75,7 +75,7 @@ const PropertyCard = ({ property }) => {
             </div>
           </div>
           
-          {propertyRating > 0 && (
+          {propertyRating > 0 && totalReviews > 0 && (
             <div className="flex items-center gap-2 mb-3">
               <StarRating rating={propertyRating} size="sm" showNumber={false} />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">

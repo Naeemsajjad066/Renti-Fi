@@ -89,8 +89,9 @@ const Navbar = () => {
       variants={navVariants} 
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300", 
-        isScrolled ? "bg-white/80 backdrop-blur-md shadow-sm" : "bg-transparent",
-        theme === 'dark' && isScrolled ? "bg-gray-900/80" : ""
+        isScrolled 
+          ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm dark:shadow-gray-800/30" 
+          : "bg-transparent"
       )}
     >
       <div className="page-container">
@@ -116,9 +117,8 @@ const Navbar = () => {
             <Link 
               to="/" 
               className={cn(
-                "nav-item", 
-                location.pathname === "/" && "active",
-                theme === 'dark' && "text-gray-300 hover:text-white"
+                "nav-item dark:text-gray-300 dark:hover:text-white", 
+                location.pathname === "/" && "active"
               )}
             >
               Home
@@ -126,9 +126,8 @@ const Navbar = () => {
             <Link 
               to="/properties" 
               className={cn(
-                "nav-item", 
-                location.pathname === "/properties" && "active",
-                theme === 'dark' && "text-gray-300 hover:text-white"
+                "nav-item dark:text-gray-300 dark:hover:text-white", 
+                location.pathname === "/properties" && "active"
               )}
             >
               Properties
@@ -136,9 +135,8 @@ const Navbar = () => {
             <Link 
               to="/bookings" 
               className={cn(
-                "nav-item", 
-                location.pathname === "/bookings" && "active",
-                theme === 'dark' && "text-gray-300 hover:text-white"
+                "nav-item dark:text-gray-300 dark:hover:text-white", 
+                location.pathname === "/bookings" && "active"
               )}
             >
               Bookings
@@ -149,10 +147,7 @@ const Navbar = () => {
           <motion.div variants={itemVariants} className="md:hidden">
             <button 
               onClick={toggleMobileMenu} 
-              className={cn(
-                "p-2 rounded-md hover:text-primary focus:outline-none",
-                theme === 'dark' ? "text-gray-300 hover:text-white" : "text-gray-600"
-              )}
+              className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white focus:outline-none"
             >
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -161,10 +156,7 @@ const Navbar = () => {
           <motion.div variants={itemVariants} className="hidden md:flex items-center space-x-3">
             <button 
               onClick={toggleTheme}
-              className={cn(
-                "p-2 rounded-full hover:bg-gray-100 transition-colors",
-                theme === 'dark' && "hover:bg-gray-700"
-              )}
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               {theme === 'dark' ? (
                 <Sun size={20} className="text-yellow-400" />
@@ -177,23 +169,16 @@ const Navbar = () => {
               <div className="relative">
                 <button 
                   onClick={toggleDropdown} 
-                  className={cn(
-                    "flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 transition-colors",
-                    theme === 'dark' && "hover:bg-gray-700"
-                  )}
+                  className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center",
-                    theme === 'dark' ? "bg-primary/20" : "bg-primary/10"
-                  )}>
+                  <div className="w-8 h-8 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
                     <User size={18} className="text-primary" />
                   </div>
                   <ChevronDown 
                     size={16} 
                     className={cn(
-                      "transition-transform", 
-                      isDropdownOpen && "rotate-180",
-                      theme === 'dark' ? "text-gray-300" : "text-gray-600"
+                      "text-gray-600 dark:text-gray-300 transition-transform", 
+                      isDropdownOpen && "rotate-180"
                     )} 
                   />
                 </button>
@@ -203,18 +188,12 @@ const Navbar = () => {
                     initial="hidden" 
                     animate="visible" 
                     variants={dropdownVariants} 
-                    className={cn(
-                      "absolute right-0 mt-2 w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50",
-                      theme === 'dark' ? "bg-gray-800" : "bg-white"
-                    )}
+                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50"
                   >
                     <div className="py-1" role="menu" aria-orientation="vertical">
                       <Link 
                         to="/profile" 
-                        className={cn(
-                          "flex items-center px-4 py-2 text-sm hover:bg-gray-100",
-                          theme === 'dark' ? "text-gray-300 hover:bg-gray-700" : "text-gray-700"
-                        )}
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={closeDropdown}
                       >
                         <User size={16} className="mr-3" />
@@ -224,10 +203,7 @@ const Navbar = () => {
 
                       <Link 
                         to="/bookings" 
-                        className={cn(
-                          "flex items-center px-4 py-2 text-sm hover:bg-gray-100",
-                          theme === 'dark' ? "text-gray-300 hover:bg-gray-700" : "text-gray-700"
-                        )}
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={closeDropdown}
                       >
                         <Calendar size={16} className="mr-3" />
@@ -237,10 +213,7 @@ const Navbar = () => {
                       {userType === 'guest' ? (
                         <Link 
                           to="/host/dashboard" 
-                          className={cn(
-                            "flex items-center px-4 py-2 text-sm hover:bg-gray-100",
-                            theme === 'dark' ? "text-gray-300 hover:bg-gray-700" : "text-gray-700"
-                          )}
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                           onClick={closeDropdown}
                         >
                           <Home size={16} className="mr-3" />
@@ -248,10 +221,7 @@ const Navbar = () => {
                         </Link>
                       ) : (
                         <button 
-                          className={cn(
-                            "flex w-full items-center px-4 py-2 text-sm hover:bg-gray-100",
-                            theme === 'dark' ? "text-gray-300 hover:bg-gray-700" : "text-gray-700"
-                          )}
+                          className="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                           onClick={() => {
                             setUserType('guest');
                             closeDropdown();
@@ -262,10 +232,7 @@ const Navbar = () => {
                         </button>
                       )}
                       <button 
-                        className={cn(
-                          "flex w-full items-center px-4 py-2 text-sm hover:bg-gray-100 text-red-600",
-                          theme === 'dark' && "hover:bg-gray-700"
-                        )}
+                        className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={() => {
                           logout();         // clear token, user, etc.
                           closeDropdown();  
@@ -283,10 +250,7 @@ const Navbar = () => {
               <div className="flex items-center space-x-4">
                 <Link 
                   to="/login" 
-                  className={cn(
-                    "text-sm font-medium hover:text-primary transition-colors",
-                    theme === 'dark' ? "text-gray-300 hover:text-white" : "text-gray-700"
-                  )}
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-white transition-colors"
                 >
                   Login
                 </Link>
@@ -308,28 +272,19 @@ const Navbar = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className={cn(
-            "md:hidden px-4 py-4 border-t",
-            theme === 'dark' ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"
-          )}
+          className="md:hidden px-4 py-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700"
         >
           <nav className="flex flex-col space-y-4">
             <Link 
               to="/" 
-              className={cn(
-                "px-3 py-2 rounded-md text-base font-medium",
-                theme === 'dark' ? "text-gray-300" : "text-gray-900"
-              )}
+              className="px-3 py-2 rounded-md text-base font-medium text-gray-900 dark:text-gray-300"
               onClick={closeMobileMenu}
             >
               Home
             </Link>
             <Link 
               to="/bookings" 
-              className={cn(
-                "px-3 py-2 rounded-md text-base font-medium",
-                theme === 'dark' ? "text-gray-300" : "text-gray-900"
-              )}
+              className="px-3 py-2 rounded-md text-base font-medium text-gray-900 dark:text-gray-300"
               onClick={closeMobileMenu}
             >
               Bookings
@@ -338,10 +293,7 @@ const Navbar = () => {
             
             <button 
               onClick={toggleTheme} 
-              className={cn(
-                "flex items-center px-3 py-2 rounded-md text-base font-medium",
-                theme === 'dark' ? "text-gray-300" : "text-gray-900"
-              )}
+              className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-900 dark:text-gray-300"
             >
               {theme === 'dark' ? (
                 <>
@@ -358,16 +310,10 @@ const Navbar = () => {
             
             {isLoggedIn ? (
               <>
-                <div className={cn(
-                  "h-px my-2",
-                  theme === 'dark' ? "bg-gray-700" : "bg-gray-200"
-                )}></div>
+                <div className="h-px my-2 bg-gray-200 dark:bg-gray-700"></div>
                 <Link 
                   to="/profile" 
-                  className={cn(
-                    "px-3 py-2 rounded-md text-base font-medium",
-                    theme === 'dark' ? "text-gray-300" : "text-gray-900"
-                  )}
+                  className="px-3 py-2 rounded-md text-base font-medium text-gray-900 dark:text-gray-300"
                   onClick={closeMobileMenu}
                 >
                   My Profile
@@ -378,20 +324,14 @@ const Navbar = () => {
                 {userType === 'guest' ? (
                   <Link 
                     to="/host/dashboard" 
-                    className={cn(
-                      "px-3 py-2 rounded-md text-base font-medium",
-                      theme === 'dark' ? "text-gray-300" : "text-gray-900"
-                    )}
+                    className="px-3 py-2 rounded-md text-base font-medium text-gray-900 dark:text-gray-300"
                     onClick={closeMobileMenu}
                   >
                     Switch to Host
                   </Link>
                 ) : (
                   <button 
-                    className={cn(
-                      "px-3 py-2 rounded-md text-base font-medium text-left",
-                      theme === 'dark' ? "text-gray-300" : "text-gray-900"
-                    )}
+                    className="px-3 py-2 rounded-md text-base font-medium text-left text-gray-900 dark:text-gray-300"
                     onClick={() => {
                       setUserType('guest');
                       closeMobileMenu();
@@ -401,10 +341,7 @@ const Navbar = () => {
                   </button>
                 )}
                 <button 
-                  className={cn(
-                    "px-3 py-2 rounded-md text-base font-medium text-left text-red-600",
-                    theme === 'dark' && "text-red-400"
-                  )}
+                  className="px-3 py-2 rounded-md text-base font-medium text-left text-red-600 dark:text-red-400"
                   onClick={() => {
                     logout();
                     closeMobileMenu();
@@ -416,26 +353,17 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <div className={cn(
-                  "h-px my-2",
-                  theme === 'dark' ? "bg-gray-700" : "bg-gray-200"
-                )}></div>
+                <div className="h-px my-2 bg-gray-200 dark:bg-gray-700"></div>
                 <Link 
                   to="/login" 
-                  className={cn(
-                    "px-3 py-2 rounded-md text-base font-medium",
-                    theme === 'dark' ? "text-gray-300" : "text-gray-900"
-                  )}
+                  className="px-3 py-2 rounded-md text-base font-medium text-gray-900 dark:text-gray-300"
                   onClick={closeMobileMenu}
                 >
                   Login
                 </Link>
                 <Link 
                   to="/signup" 
-                  className={cn(
-                    "px-3 py-2 rounded-md text-base font-medium text-primary",
-                    theme === 'dark' && "text-primary-400"
-                  )}
+                  className="px-3 py-2 rounded-md text-base font-medium text-primary dark:text-primary-400"
                   onClick={closeMobileMenu}
                 >
                   Sign Up

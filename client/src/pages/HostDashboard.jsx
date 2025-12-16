@@ -224,6 +224,18 @@ const HostDashboard = () => {
       fetchUserProperties(authUser._id);
     }
   }, [authUser]);
+
+  // Auto-refresh properties every 30 seconds to check for approval updates
+  useEffect(() => {
+    if (!authUser?._id) return;
+    
+    const intervalId = setInterval(() => {
+      fetchUserProperties(authUser._id);
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(intervalId);
+  }, [authUser, fetchUserProperties]);
+  
   console.log(userProperties);
 
   const toggleSidebar = () => {
@@ -295,15 +307,6 @@ const HostDashboard = () => {
           <div className="flex-1 p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
               <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="mb-8 bg-white border border-cream-beige/30 p-1 rounded-xl shadow-sm">
-                  <TabsTrigger
-                    value="overview"
-                    className="text-sm md:text-base py-2 px-4 rounded-lg data-[state=active]:bg-earth-brown data-[state=active]:text-white"
-                  >
-                    Overview
-                  </TabsTrigger>
-                </TabsList>
-
                 {/* Overview Tab */}
                 <TabsContent value="overview" className="space-y-8">
                   <motion.div
@@ -415,13 +418,15 @@ const HostDashboard = () => {
                                   </div>
                                 </CardContent>
                                 <CardFooter className="px-4 py-3 bg-gray-50 border-t border-cream-beige/30 flex justify-between">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-earth-brown hover:text-earth-brown/80 hover:bg-earth-brown/5 px-3"
-                                  >
-                                    Edit
-                                  </Button>
+                                  <Link to={`/host/add-listing/${property._id}`}>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-earth-brown hover:text-earth-brown/80 hover:bg-earth-brown/5 px-3"
+                                    >
+                                      Edit
+                                    </Button>
+                                  </Link>
                                   <Link to={`/host/properties/${property._id}`}>
                                     <Button
                                       variant="ghost"
