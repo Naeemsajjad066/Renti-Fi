@@ -89,9 +89,9 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors text-sm">
+                <Link to="/privacy-policy" className="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors text-sm">
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors text-sm">
@@ -111,7 +111,7 @@ const Footer = () => {
             <ul className="space-y-4">
               <li className="flex items-start">
                 <Mail size={18} className="mr-3 text-gray-500 dark:text-gray-400 mt-0.5" />
-                <span className="text-sm text-gray-600 dark:text-gray-400">Rentifi.project@gmail.com</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">support@rentifi.com</span>
               </li>
               <li className="flex items-start">
                 <Phone size={18} className="mr-3 text-gray-500 dark:text-gray-400 mt-0.5" />

@@ -29,6 +29,11 @@ import GlobalLoader from "./components/GlobalLoader";
 import ProtectedRoute from "./components/ProtectedRoute";
 import StripeReturn from "./pages/StripeReturn";
 import StripeRefresh from "./pages/StripeRefresh";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import BookingDetails from "./pages/BookingDetails";
+import HostBookingDetails from "./pages/HostBookingDetails";
+import AdminComplaints from "./pages/AdminComplaints";
+import ComplaintDetails from "./pages/ComplaintDetails";
 
 
 const queryClient = new QueryClient({
@@ -63,19 +68,38 @@ const AnimatedRoutes = () => {
         <Route path="/host/properties" element={<AllProperties />} />
         <Route path="/host/properties/:id" element={<PropertyDetails />} />
         <Route path="/host/bookings" element={<HostBookings />} />
+        <Route path="/host/bookings/:id" element={<HostBookingDetails />} />
         <Route path="/host/messages" element={<NotFound />} />
         <Route path="/host/support" element={<NotFound />} />
         <Route path="/host/stripe/return" element={<StripeReturn />} />
         <Route path="/host/stripe/refresh" element={<StripeRefresh />} />
         <Route path="/bookings" element={<Bookings />} />
+        <Route path="/bookings/:id" element={<BookingDetails />} />
         <Route path="/properties" element={<AllProperties />} />
         <Route path="/settings" element={<Settings/>} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="*" element={<NotFound />} />
         <Route 
           path="/admin" 
           element={
             <ProtectedRoute requireAdmin={true}>
               <AdminPanel />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/complaints" 
+          element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminComplaints />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/complaints/:id" 
+          element={
+            <ProtectedRoute requireAdmin={true}>
+              <ComplaintDetails />
             </ProtectedRoute>
           } 
         />

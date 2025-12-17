@@ -214,6 +214,15 @@ const Bookings = () => {
                               </div>
                               
                               <div className="flex flex-wrap gap-2">
+                                {/* View Booking Details Button */}
+                                <Link
+                                  to={`/bookings/${booking._id}`}
+                                  className="inline-flex items-center px-3 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm transition-colors font-medium"
+                                >
+                                  <ExternalLink size={14} className="mr-1" />
+                                  View Details
+                                </Link>
+
                                 {/* View Property Button */}
                                 <Link
                                   to={`/properties/${booking.property?._id || booking.propertyId}`}

@@ -169,9 +169,25 @@ export const PropertyProvider = ({ children }) => {
       if (data.success) {
         setProperties((prev) => prev.filter((p) => p._id !== id));
         toast.success(data.message);
+        return { success: true, message: data.message };
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message);
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.message || error.message;
+      
+      // Show detailed error for active bookings
+      if (errorData?.hasActiveBookings || errorData?.hasUpcomingBookings) {
+        toast.error(errorMessage, { duration: 5000 });
+      } else {
+        toast.error(errorMessage);
+      }
+      
+      return { 
+        success: false, 
+        message: errorMessage,
+        hasActiveBookings: errorData?.hasActiveBookings,
+        hasUpcomingBookings: errorData?.hasUpcomingBookings
+      };
     }
   };
 

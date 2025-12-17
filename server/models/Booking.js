@@ -152,6 +152,13 @@ const bookingSchema = new mongoose.Schema({
   specialRequests: String,
   hostMessage: String,
   
+  // Verification Code
+  verificationCode: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  
   // Review Status
   isReviewed: {
     type: Boolean,
@@ -196,7 +203,8 @@ bookingSchema.methods.canCancel = function() {
   const now = new Date();
   const daysUntilCheckIn = Math.ceil((this.checkIn - now) / (1000 * 60 * 60 * 24));
   
-  if (this.status !== 'confirmed') return false;
+  // Cannot cancel if already cancelled, completed, or expired
+  if (['cancelled', 'completed', 'expired'].includes(this.status)) return false;
   
   // Allow cancellation up to 24 hours before check-in
   return daysUntilCheckIn > 1;

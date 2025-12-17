@@ -45,6 +45,7 @@ import LocationCapture from '@/components/LocationCapture';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
 import { PropertyContext } from '../contexts/PropertyContext';
+import { useLoading } from '../contexts/LoadingContext';
 import { useContext } from 'react';
 const propertyTypes = [
   { id: 'apartment', label: 'Apartment' },
@@ -69,6 +70,7 @@ const AddListing = () => {
   const [activeStep, setActiveStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { showLoading, hideLoading } = useLoading();
   const { createProperty, updateProperty, fetchPropertyById, selectedProperty } = useContext(PropertyContext);
   const { id } = useParams();
   const navigate = useNavigate();
@@ -280,6 +282,7 @@ const AddListing = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    showLoading(isEditMode ? 'Updating property...' : 'Creating listing...');
   
     try {
       const formDataToSend = new FormData();
@@ -342,6 +345,7 @@ const AddListing = () => {
       });
     } finally {
       setLoading(false);
+      hideLoading();
     }
   };
   

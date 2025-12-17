@@ -154,7 +154,8 @@ export const createBooking = async (req, res) => {
       specialRequests: specialRequests || '',
       paymentMethod: 'pending', // Will be updated when payment is processed
       paymentStatus: 'pending',
-      status: 'confirmed' // Auto-confirm for now (will change to 'pending' when payment is required)
+      status: 'confirmed', // Auto-confirm for now (will change to 'pending' when payment is required)
+      verificationCode: Math.floor(100000 + Math.random() * 900000).toString() // Generate 6-digit code
     });
 
     // Populate booking details
@@ -262,9 +263,9 @@ export const getBooking = async (req, res) => {
     const userId = req.user._id;
 
     const booking = await Booking.findById(id)
-      .populate('property', 'title images city address price amenities host')
-      .populate('guest', 'fullName email profilePicture phone')
-      .populate('host', 'fullName email profilePicture phone');
+      .populate('property', 'title images city state address price amenities host latitude longitude propertyType bedrooms bathrooms')
+      .populate('guest', 'fullName email profilePic phoneNumber')
+      .populate('host', 'fullName email profilePic phoneNumber');
 
     if (!booking) {
       return res.status(404).json({

@@ -260,9 +260,17 @@ export const AdminProvider = ({ children }) => {
 
       return { success: false, message: response.data.message };
     } catch (err) {
-      const message = err.response?.data?.message || 'Failed to delete property';
+      const errorData = err.response?.data;
+      const message = errorData?.message || 'Failed to delete property';
       setError(message);
-      return { success: false, message };
+      return { 
+        success: false, 
+        message,
+        hasActiveBookings: errorData?.hasActiveBookings,
+        hasUpcomingBookings: errorData?.hasUpcomingBookings,
+        activeBookingsCount: errorData?.activeBookingsCount,
+        upcomingBookingsCount: errorData?.upcomingBookingsCount
+      };
     } finally {
       setLoading(false);
     }

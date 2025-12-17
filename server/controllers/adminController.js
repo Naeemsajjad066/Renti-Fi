@@ -220,7 +220,39 @@ export const adminDeleteProperty = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Property not found' });
     }
 
-    // Delete all bookings associated with this property
+    // Check for active bookings (reserved, confirmed, checked-in)
+    const activeBookings = await Booking.find({
+      property: propertyId,
+      status: { $in: ['reserved', 'confirmed', 'checked-in'] }
+    });
+
+    if (activeBookings.length > 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Cannot delete property with active bookings. Please wait until all bookings are completed or cancelled.",
+        hasActiveBookings: true,
+        activeBookingsCount: activeBookings.length
+      });
+    }
+
+    // Check for upcoming bookings (bookings with future check-in dates)
+    const now = new Date();
+    const upcomingBookings = await Booking.find({
+      property: propertyId,
+      checkIn: { $gte: now },
+      status: { $in: ['reserved', 'confirmed'] }
+    });
+
+    if (upcomingBookings.length > 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Cannot delete property with upcoming bookings. Please cancel all bookings before deleting the property.",
+        hasUpcomingBookings: true,
+        upcomingBookingsCount: upcomingBookings.length
+      });
+    }
+
+    // Delete all completed/cancelled bookings associated with this property
     await Booking.deleteMany({ property: propertyId });
 
     // Delete the property

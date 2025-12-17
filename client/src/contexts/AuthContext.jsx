@@ -12,6 +12,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [authUser, setAuthUsr] = useState(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true); // Track initial auth check
   const { showLoading, hideLoading } = useLoading();
 
   // check if user is authenticated
@@ -217,23 +218,29 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Check if token exists and is a valid non-empty string (not null, undefined, or string literals)
-    if (token && typeof token === 'string' && token.trim().length > 0 && token !== 'null' && token !== 'undefined') {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      checkAuth();
-    } else {
-      // Clear any existing auth data if no valid token
-      setAuthUsr(null);
-      setToken(null);
-      localStorage.removeItem("token");
-      delete axios.defaults.headers.common["Authorization"];
-    }
+    const initializeAuth = async () => {
+      // Check if token exists and is a valid non-empty string (not null, undefined, or string literals)
+      if (token && typeof token === 'string' && token.trim().length > 0 && token !== 'null' && token !== 'undefined') {
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        await checkAuth();
+      } else {
+        // Clear any existing auth data if no valid token
+        setAuthUsr(null);
+        setToken(null);
+        localStorage.removeItem("token");
+        delete axios.defaults.headers.common["Authorization"];
+      }
+      setIsAuthLoading(false); // Mark initial auth check as complete
+    };
+    
+    initializeAuth();
   }, []);
 
   const value = {
     axios,
     authUser,
     token,
+    isAuthLoading,
     login,
     register,
     verifyEmail,

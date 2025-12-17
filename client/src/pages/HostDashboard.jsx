@@ -441,8 +441,10 @@ const HostDashboard = () => {
                                       className="text-red-600 hover:text-red-700 hover:bg-red-50 px-3"
                                       onClick={async () => {
                                         if (window.confirm(`Are you sure you want to delete "${property.title}"? This action cannot be undone.`)) {
-                                          await deleteProperty(property._id);
-                                          fetchUserProperties(authUser._id);
+                                          const result = await deleteProperty(property._id);
+                                          if (result?.success) {
+                                            fetchUserProperties(authUser._id);
+                                          }
                                         }
                                       }}
                                     >

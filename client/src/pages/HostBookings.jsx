@@ -322,13 +322,11 @@ const HostBookings = () => {
                                           </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                          <DropdownMenuItem>
-                                            <Eye size={16} className="mr-2" />
-                                            View Details
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem>
-                                            <MessageSquare size={16} className="mr-2" />
-                                            Message Guest
+                                          <DropdownMenuItem asChild>
+                                            <Link to={`/host/bookings/${booking._id}`} className="flex items-center cursor-pointer">
+                                              <Eye size={16} className="mr-2" />
+                                              View Details
+                                            </Link>
                                           </DropdownMenuItem>
                                           {booking.status === 'pending' && (
                                             <>
@@ -370,6 +368,12 @@ const HostBookings = () => {
                                     <p className="font-medium text-gray-900 truncate">
                                       {booking.guest?.fullName || 'Guest Name'}
                                     </p>
+                                    {booking.guest?.phoneNumber && (
+                                      <div className="flex items-center text-sm text-gray-600">
+                                        <Phone size={12} className="mr-1" />
+                                        <span>{booking.guest.phoneNumber}</span>
+                                      </div>
+                                    )}
                                     <div className="flex items-center text-sm text-gray-600">
                                       <Users size={12} className="mr-1" />
                                       <span>{getTotalGuests(booking.guests)} guests</span>

@@ -11,6 +11,7 @@ import reviewRouter from "./routes/reviews.js";
 import adminRouter from "./routes/admin.js";
 import paymentRouter from "./routes/payments.js";
 import stripeConnectRouter from "./routes/stripeConnect.js";
+import complaintRouter from "./routes/complaints.js";
 // import messageRouter from "./routes/messageRoutes.js";
 
 
@@ -106,6 +107,7 @@ app.use("/api/reviews",reviewRouter)
 app.use("/api/admin",adminRouter)
 app.use("/api/payments",paymentRouter)
 app.use("/api/stripe-connect",stripeConnectRouter)
+app.use("/api/complaints",complaintRouter)
 // app.use("/api/messages",messageRouter)
 
 const PORT = process.env.PORT || 5000;

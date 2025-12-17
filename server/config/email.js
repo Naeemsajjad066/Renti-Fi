@@ -84,7 +84,7 @@ export const emailTemplates = {
     `
   }),
   bookingConfirmation: (booking, property, user) => ({
-    subject: 'Booking Confirmation - Rentifi',
+    subject: `Booking Confirmed - ${property.title}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
         <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
@@ -93,30 +93,127 @@ export const emailTemplates = {
             <p style="color: #666; margin: 5px 0;">Your trusted rental platform</p>
           </div>
           
-          <h2 style="color: #333; margin-bottom: 20px;">Booking Confirmed!</h2>
-          <p style="color: #666; font-size: 16px; line-height: 1.5;">
-            Hello ${user.fullName}, your booking for <strong>${property.title}</strong> has been confirmed.
+          <div style="text-align: center; margin: 20px 0;">
+            <div style="background-color: #d4edda; border-radius: 50%; width: 80px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+              <span style="font-size: 48px;">✓</span>
+            </div>
+          </div>
+          
+          <h2 style="color: #28a745; text-align: center; margin-bottom: 20px;">Booking Confirmed!</h2>
+          <p style="color: #666; font-size: 16px; line-height: 1.5; text-align: center;">
+            Hello ${user.fullName}, your booking has been confirmed.
           </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <div style="background-color: #e3f2fd; border: 3px solid #2196f3; padding: 25px; border-radius: 12px; display: inline-block;">
+              <p style="color: #1976d2; margin: 0 0 10px 0; font-size: 14px; font-weight: 600;">YOUR VERIFICATION CODE</p>
+              <h1 style="color: #2196f3; font-size: 42px; font-weight: bold; margin: 0; letter-spacing: 12px;">${booking.verificationCode}</h1>
+              <p style="color: #666; margin: 10px 0 0 0; font-size: 13px;">Show this code to your host at check-in</p>
+            </div>
+          </div>
           
           <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0;">
             <h3 style="color: #A0937D; margin-top: 0;">Booking Details</h3>
-            <p><strong>Property:</strong> ${property.title}</p>
-            <p><strong>Location:</strong> ${property.city || property.address}</p>
-            <p><strong>Check-in:</strong> ${new Date(booking.checkIn).toLocaleDateString()}</p>
-            <p><strong>Check-out:</strong> ${new Date(booking.checkOut).toLocaleDateString()}</p>
-            <p><strong>Guests:</strong> ${booking.guests?.adults || booking.guests}</p>
-            <p><strong>Nights:</strong> ${booking.nights}</p>
-            <p style="font-size: 18px; color: #A0937D;"><strong>Total Amount:</strong> Rs ${booking.totalPrice?.toLocaleString()}</p>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr><td style="padding: 8px 0; color: #666;"><strong>Property:</strong></td><td style="padding: 8px 0; color: #333;">${property.title}</td></tr>
+              <tr><td style="padding: 8px 0; color: #666;"><strong>Location:</strong></td><td style="padding: 8px 0; color: #333;">${property.city || property.address}</td></tr>
+              <tr><td style="padding: 8px 0; color: #666;"><strong>Check-in:</strong></td><td style="padding: 8px 0; color: #333;">${new Date(booking.checkIn).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} at 9:00 AM</td></tr>
+              <tr><td style="padding: 8px 0; color: #666;"><strong>Check-out:</strong></td><td style="padding: 8px 0; color: #333;">${new Date(booking.checkOut).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} before 9:00 AM</td></tr>
+              <tr><td style="padding: 8px 0; color: #666;"><strong>Guests:</strong></td><td style="padding: 8px 0; color: #333;">${booking.guests?.adults || booking.guests} Adults</td></tr>
+              <tr><td style="padding: 8px 0; color: #666;"><strong>Nights:</strong></td><td style="padding: 8px 0; color: #333;">${booking.nights}</td></tr>
+              <tr><td style="padding: 16px 0 8px 0; color: #A0937D; font-size: 18px;"><strong>Total Amount:</strong></td><td style="padding: 16px 0 8px 0; color: #A0937D; font-size: 18px;"><strong>Rs ${booking.totalPrice?.toLocaleString()}</strong></td></tr>
+            </table>
           </div>
           
           <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
             <p style="color: #856404; margin: 0; font-size: 14px;">
-              <strong>Important:</strong> Please save this confirmation email for your records. You may need to show it during check-in.
+              <strong>Important:</strong> Save this email and your verification code. You'll need to show it to your host during check-in.
             </p>
           </div>
           
-          <p style="color: #666; font-size: 14px; margin-top: 30px;">
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/bookings" style="display: inline-block; background-color: #A0937D; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">View Booking Details</a>
+          </div>
+          
+          <p style="color: #666; font-size: 14px; margin-top: 30px; text-align: center;">
             Thank you for choosing Rentifi!<br>
+            <strong>The Rentifi Team</strong>
+          </p>
+        </div>
+      </div>
+    `
+  }),
+  
+  hostBookingNotification: (booking, property, guest, host) => ({
+    subject: `New Booking Received - ${property.title}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #A0937D; font-size: 32px; margin: 0;">Rentifi</h1>
+            <p style="color: #666; margin: 5px 0;">Your trusted rental platform</p>
+          </div>
+          
+          <div style="text-align: center; margin: 20px 0;">
+            <div style="background-color: #d4edda; border-radius: 50%; width: 80px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+              <span style="font-size: 48px;">🏠</span>
+            </div>
+          </div>
+          
+          <h2 style="color: #28a745; text-align: center; margin-bottom: 20px;">New Booking Received!</h2>
+          <p style="color: #666; font-size: 16px; line-height: 1.5; text-align: center;">
+            Hello ${host.fullName}, you have a new booking for your property.
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <div style="background-color: #e8f5e9; border: 3px solid #4caf50; padding: 25px; border-radius: 12px; display: inline-block;">
+              <p style="color: #2e7d32; margin: 0 0 10px 0; font-size: 14px; font-weight: 600;">GUEST VERIFICATION CODE</p>
+              <h1 style="color: #4caf50; font-size: 42px; font-weight: bold; margin: 0; letter-spacing: 12px;">${booking.verificationCode}</h1>
+              <p style="color: #666; margin: 10px 0 0 0; font-size: 13px;">Ask guest to show this code at check-in</p>
+            </div>
+          </div>
+          
+          <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="color: #A0937D; margin-top: 0;">Guest Information</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr><td style="padding: 8px 0; color: #666;"><strong>Name:</strong></td><td style="padding: 8px 0; color: #333;">${guest.fullName}</td></tr>
+              <tr><td style="padding: 8px 0; color: #666;"><strong>Email:</strong></td><td style="padding: 8px 0; color: #333;">${guest.email}</td></tr>
+              ${guest.phoneNumber ? `<tr><td style="padding: 8px 0; color: #666;"><strong>Phone:</strong></td><td style="padding: 8px 0; color: #333;">${guest.phoneNumber}</td></tr>` : ''}
+            </table>
+          </div>
+          
+          <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="color: #A0937D; margin-top: 0;">Booking Details</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr><td style="padding: 8px 0; color: #666;"><strong>Property:</strong></td><td style="padding: 8px 0; color: #333;">${property.title}</td></tr>
+              <tr><td style="padding: 8px 0; color: #666;"><strong>Check-in:</strong></td><td style="padding: 8px 0; color: #333;">${new Date(booking.checkIn).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} at 9:00 AM</td></tr>
+              <tr><td style="padding: 8px 0; color: #666;"><strong>Check-out:</strong></td><td style="padding: 8px 0; color: #333;">${new Date(booking.checkOut).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} before 9:00 AM</td></tr>
+              <tr><td style="padding: 8px 0; color: #666;"><strong>Guests:</strong></td><td style="padding: 8px 0; color: #333;">${booking.guests?.adults || booking.guests} Adults${booking.guests?.children ? `, ${booking.guests.children} Children` : ''}</td></tr>
+              <tr><td style="padding: 8px 0; color: #666;"><strong>Nights:</strong></td><td style="padding: 8px 0; color: #333;">${booking.nights}</td></tr>
+              <tr><td style="padding: 16px 0 8px 0; color: #A0937D; font-size: 18px;"><strong>Total Amount:</strong></td><td style="padding: 16px 0 8px 0; color: #A0937D; font-size: 18px;"><strong>Rs ${booking.totalPrice?.toLocaleString()}</strong></td></tr>
+              ${booking.hostPayout ? `<tr><td style="padding: 8px 0; color: #4caf50; font-size: 16px;"><strong>Your Payout:</strong></td><td style="padding: 8px 0; color: #4caf50; font-size: 16px;"><strong>Rs ${booking.hostPayout?.toLocaleString()}</strong></td></tr>` : ''}
+            </table>
+          </div>
+          
+          ${booking.specialRequests ? `
+          <div style="background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 20px 0;">
+            <p style="color: #1976d2; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Special Requests:</p>
+            <p style="color: #666; margin: 0; font-size: 14px;">${booking.specialRequests}</p>
+          </div>
+          ` : ''}
+          
+          <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+            <p style="color: #856404; margin: 0; font-size: 14px;">
+              <strong>Reminder:</strong> Please prepare your property for the guest's arrival and verify their code at check-in.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/host/bookings" style="display: inline-block; background-color: #A0937D; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">View Booking Details</a>
+          </div>
+          
+          <p style="color: #666; font-size: 14px; margin-top: 30px; text-align: center;">
+            Best regards,<br>
             <strong>The Rentifi Team</strong>
           </p>
         </div>

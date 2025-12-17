@@ -85,6 +85,11 @@ const AdminPanel = () => {
 
   // Placeholder data for features not yet implemented
   const complaints = [];
+  
+  // Navigate to complaints page
+  const handleViewComplaints = () => {
+    navigate('/admin/complaints');
+  };
 
   const filteredUsers = (users || []).filter(user => {
     const matchesSearch = user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -771,62 +776,27 @@ const AdminPanel = () => {
               {/* Complaints Tab */}
               {activeTab === 'complaints' && (
                 <div className="space-y-6">
-                  <div className="grid grid-cols-1 gap-6">
-                    {complaints.map((complaint) => (
-                      <motion.div
-                        key={complaint.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        whileHover={{ scale: 1.01 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Card className="border-0 shadow-lg">
-                          <CardContent className="p-6">
-                            <div className="flex flex-col md:flex-row md:items-start justify-between mb-4">
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-3 mb-2">
-                                  <Badge variant={
-                                    complaint.priority === 'High' ? 'destructive' :
-                                      complaint.priority === 'Medium' ? 'secondary' : 'default'
-                                  }>
-                                    {complaint.priority} Priority
-                                  </Badge>
-                                  <Badge variant={complaint.status === 'Pending' ? 'secondary' : 'default'}>
-                                    {complaint.status}
-                                  </Badge>
-                                </div>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                                  Complaint against {complaint.against}
-                                </h3>
-                                <div className="text-sm text-gray-600 mb-2 space-y-1">
-                                  <p className="break-all sm:break-normal">From: {complaint.from}</p>
-                                  <p>{complaint.date} • Category: {complaint.category}</p>
-                                </div>
-                                <p className="text-gray-700 leading-relaxed">{complaint.message}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:space-x-3 pt-4 border-t border-gray-100">
-                              <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                                <Eye className="w-4 h-4 mr-2" />
-                                View Details
-                              </Button>
-                              {complaint.status === 'Pending' && (
-                                <Button size="sm" className="w-full sm:w-auto bg-earth-brown hover:bg-earth-brown/90">
-                                  <Check className="w-4 h-4 mr-2" />
-                                  Resolve
-                                </Button>
-                              )}
-                              <Button variant="outline" size="sm" className="w-full sm:w-auto text-red-600 hover:text-red-700">
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Delete
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </div>
+                  <Card className="border-0 shadow-lg">
+                    <CardContent className="p-12 text-center">
+                      <div className="max-w-md mx-auto">
+                        <AlertTriangle className="w-16 h-16 text-[#A0937D] mx-auto mb-4" />
+                        <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                          Complaints Management
+                        </h3>
+                        <p className="text-gray-600 mb-6">
+                          View and manage all property complaints and reports submitted by users.
+                        </p>
+                        <Button 
+                          onClick={handleViewComplaints}
+                          size="lg"
+                          className="bg-[#A0937D] hover:bg-[#8a7d6b] text-white"
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          View All Complaints
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               )}
 

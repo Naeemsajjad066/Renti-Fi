@@ -1,6 +1,7 @@
 // controllers/propertyController.js
 import Property from "../models/Property.js";
 import User from "../models/User.js";
+import Booking from "../models/Booking.js";
 import cloudinary from "../lib/cloudinary.js";
 
 // CREATE Property
@@ -240,10 +241,43 @@ export const deleteProperty = async (req, res) => {
       return res.status(403).json({ success: false, message: "Unauthorized" });
     }
 
+    // Check for active bookings (reserved, confirmed, checked-in)
+    const activeBookings = await Booking.find({
+      property: req.params.id,
+      status: { $in: ['reserved', 'confirmed', 'checked-in'] }
+    });
+
+    if (activeBookings.length > 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Cannot delete property with active bookings. Please wait until all bookings are completed or cancelled.",
+        hasActiveBookings: true,
+        activeBookingsCount: activeBookings.length
+      });
+    }
+
+    // Check for upcoming bookings (bookings with future check-in dates)
+    const now = new Date();
+    const upcomingBookings = await Booking.find({
+      property: req.params.id,
+      checkIn: { $gte: now },
+      status: { $in: ['reserved', 'confirmed'] }
+    });
+
+    if (upcomingBookings.length > 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Cannot delete property with upcoming bookings. Please cancel all bookings before deleting the property.",
+        hasUpcomingBookings: true,
+        upcomingBookingsCount: upcomingBookings.length
+      });
+    }
+
     await Property.findByIdAndDelete(req.params.id);
 
     res.json({ success: true, message: "Property deleted successfully" });
   } catch (error) {
+    console.error('Error deleting property:', error);
     res.status(500).json({ success: false, message: "Error deleting property" });
   }
 };

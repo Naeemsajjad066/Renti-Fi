@@ -67,7 +67,7 @@ export const sendWelcomeEmail = async (email, user) => {
     }
 };
 
-// Send booking confirmation email
+// Send booking confirmation email to guest
 export const sendBookingConfirmationEmail = async (booking, property, user) => {
     try {
         const template = emailTemplates.bookingConfirmation(booking, property, user);
@@ -80,10 +80,30 @@ export const sendBookingConfirmationEmail = async (booking, property, user) => {
         };
 
         await transporter.sendMail(mailOptions);
-        console.log('Booking confirmation email sent to:', user.email);
+        console.log('Booking confirmation email sent to guest:', user.email);
     } catch (error) {
         console.error('Booking confirmation email failed:', error.message);
         throw new Error(`Failed to send booking confirmation email: ${error.message}`);
+    }
+};
+
+// Send booking notification email to host
+export const sendHostBookingNotification = async (booking, property, guest, host) => {
+    try {
+        const template = emailTemplates.hostBookingNotification(booking, property, guest, host);
+        
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+            to: host.email,
+            subject: template.subject,
+            html: template.html
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log('Booking notification email sent to host:', host.email);
+    } catch (error) {
+        console.error('Host booking notification email failed:', error.message);
+        throw new Error(`Failed to send host booking notification email: ${error.message}`);
     }
 };
 

@@ -4,6 +4,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PropertyContext } from '../contexts/PropertyContext';
 import { useBooking } from '../contexts/BookingContext';
+import { useAuth } from '../contexts/AuthContext';
+import { useLoading } from '../contexts/LoadingContext';
 import OptimizedImage from '../components/OptimizedImage';
 import { useImagePreloader } from '../hooks/useImagePreloader';
 import ReviewList from '../components/ReviewList';
@@ -30,12 +32,14 @@ import {
   CheckCircle,
   CreditCard,
   Banknote,
-  Info
+  Info,
+  Flag
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
 import { Button } from '@/components/ui/button';
+import ReportPropertyModal from '@/components/ReportPropertyModal';
 
 // Default amenities mapping for display
 const amenityIcons = {
@@ -320,6 +324,12 @@ const BookingForm = ({ property }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
+  // Use auth context to get token
+  const { token } = useAuth();
+  
+  // Use global loading context
+  const { showLoading, hideLoading } = useLoading();
+  
   // Use booking context
   const { createBooking, loading: isLoading } = useBooking();
 
@@ -455,7 +465,7 @@ const BookingForm = ({ property }) => {
         propertyId: property._id,
         checkIn,
         checkOut,
-        guests,
+        guests: typeof guests === 'number' ? { adults: guests, children: 0, infants: 0, pets: 0 } : guests,
         nights: pricing.nights,
         basePrice: pricing.basePrice,
         totalPrice: pricing.totalPrice,
@@ -463,6 +473,7 @@ const BookingForm = ({ property }) => {
       };
 
       setLoading(true);
+      showLoading('Processing payment...');
       try {
         const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/payments/create-checkout`, {
           method: 'POST',
@@ -483,6 +494,7 @@ const BookingForm = ({ property }) => {
         }
       } catch (error) {
         setLoading(false);
+        hideLoading();
         toast({
           title: 'Checkout Failed',
           description: error.message,
@@ -497,13 +509,14 @@ const BookingForm = ({ property }) => {
       propertyId: property._id,
       checkIn,
       checkOut,
-      guests,
+      guests: typeof guests === 'number' ? { adults: guests, children: 0, infants: 0, pets: 0 } : guests,
       nights: pricing.nights,
       basePrice: pricing.basePrice,
       totalPrice: pricing.totalPrice,
       paymentOption: 'arrival'
     };
 
+    showLoading('Creating reservation...');
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const response = await fetch(apiUrl + '/api/payments/reserve', {
@@ -521,8 +534,8 @@ const BookingForm = ({ property }) => {
         setBookingDetails(data.booking);
         setShowSuccess(true);
         toast({
-          title: 'Reservation Confirmed!',
-          description: 'Your booking has been reserved. Payment due on arrival.'
+          title: 'Booking Confirmed!',
+          description: 'Your booking has been confirmed. Payment due on arrival.'
         });
         // Reset form
         setCheckIn('');
@@ -539,6 +552,8 @@ const BookingForm = ({ property }) => {
         description: error.message,
         variant: 'destructive'
       });
+    } finally {
+      hideLoading();
     }
   };
 
@@ -838,6 +853,8 @@ const BookingForm = ({ property }) => {
 const PropertyDetails = () => {
   const { id } = useParams();
   const { selectedProperty, fetchPropertyById, loading } = useContext(PropertyContext);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const { toast } = useToast();
   
   useEffect(() => {
     if (id) {
@@ -912,9 +929,19 @@ const PropertyDetails = () => {
                 </Link>
                 
                 <div className="mb-6">
-                  <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-                    {property.title || property.name}
-                  </h1>
+                  <div className="flex items-start justify-between mb-4">
+                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight flex-1">
+                      {property.title || property.name}
+                    </h1>
+                    <button
+                      onClick={() => setShowReportModal(true)}
+                      className="ml-4 flex items-center gap-2 px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 border border-red-200 hover:border-red-300"
+                      title="Report this property"
+                    >
+                      <Flag size={18} />
+                      <span className="font-medium">Report</span>
+                    </button>
+                  </div>
                   
                   <div className="flex flex-wrap items-center gap-6 text-gray-600">
                     <div className="flex items-center">
@@ -1207,6 +1234,19 @@ const PropertyDetails = () => {
         </main>
         
         <Footer />
+        
+        {/* Report Property Modal */}
+        <ReportPropertyModal
+          property={property}
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          onSuccess={() => {
+            toast({
+              title: "Report Submitted",
+              description: "Thank you for your report. Our team will review it shortly.",
+            });
+          }}
+        />
       </div>
     </PageTransition>
   );

@@ -3,7 +3,7 @@ import { stripe, calculatePaymentBreakdown, calculateRefundAmount } from '../con
 import Booking from '../models/Booking.js';
 import Property from '../models/Property.js';
 import User from '../models/User.js';
-import { sendEmail } from '../lib/emailService.js';
+import { sendEmail, sendBookingConfirmationEmail, sendHostBookingNotification } from '../lib/emailService.js';
 
 // Create Stripe Checkout Session for payment
 export const createCheckoutSession = async (req, res) => {
@@ -207,18 +207,34 @@ export const confirmPayment = async (req, res) => {
       paymentMethod: 'credit_card',
       paidAt: new Date(),
       status: 'confirmed',
-      specialRequests: bookingData.specialRequests || ''
+      specialRequests: bookingData.specialRequests || '',
+      verificationCode: Math.floor(100000 + Math.random() * 900000).toString()
     });
 
     // Populate booking details
     const populatedBooking = await Booking.findById(booking._id)
       .populate('property', 'title images city address')
-      .populate('guest', 'fullName email')
-      .populate('host', 'fullName email');
+      .populate('guest', 'fullName email phoneNumber')
+      .populate('host', 'fullName email phoneNumber');
 
-    // Send confirmation emails
+    // Send booking confirmation emails to both guest and host
     try {
-      await sendPaymentConfirmationEmail(populatedBooking, property, breakdown);
+      // Send email to guest
+      await sendBookingConfirmationEmail(
+        populatedBooking,
+        populatedBooking.property,
+        populatedBooking.guest
+      );
+      console.log('Booking confirmation email sent to guest');
+      
+      // Send email to host
+      await sendHostBookingNotification(
+        populatedBooking,
+        populatedBooking.property,
+        populatedBooking.guest,
+        populatedBooking.host
+      );
+      console.log('Booking notification email sent to host');
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
       // Don't fail the booking creation if email fails
@@ -291,21 +307,38 @@ export const createReservation = async (req, res) => {
       },
       paymentStatus: 'pending',
       paymentMethod: 'cash',
-      status: 'reserved',
-      specialRequests: bookingData.specialRequests || ''
+      status: 'confirmed',
+      specialRequests: bookingData.specialRequests || '',
+      verificationCode: Math.floor(100000 + Math.random() * 900000).toString()
     });
 
     // Populate booking details
     const populatedBooking = await Booking.findById(booking._id)
       .populate('property', 'title images city address')
-      .populate('guest', 'fullName email')
-      .populate('host', 'fullName email');
+      .populate('guest', 'fullName email phoneNumber')
+      .populate('host', 'fullName email phoneNumber');
 
-    // Send reservation confirmation emails
+    // Send booking confirmation emails to both guest and host
     try {
-      await sendReservationConfirmationEmail(populatedBooking, property);
+      // Send email to guest
+      await sendBookingConfirmationEmail(
+        populatedBooking,
+        populatedBooking.property,
+        populatedBooking.guest
+      );
+      console.log('Booking confirmation email sent to guest');
+      
+      // Send email to host
+      await sendHostBookingNotification(
+        populatedBooking,
+        populatedBooking.property,
+        populatedBooking.guest,
+        populatedBooking.host
+      );
+      console.log('Booking notification email sent to host');
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
+      // Don't fail the booking creation if email fails
     }
 
     res.json({
@@ -566,7 +599,8 @@ async function handleCheckoutCompleted(session) {
       paymentStatus: 'partial',
       paymentMethod: 'credit_card',
       paidAt: new Date(),
-      status: 'confirmed'
+      status: 'confirmed',
+      verificationCode: Math.floor(100000 + Math.random() * 900000).toString() // Generate 6-digit code
     });
 
     console.log('Booking created from webhook:', booking._id);
@@ -606,11 +640,33 @@ async function handleCheckoutCompleted(session) {
       // Don't fail the booking if transfer fails - can retry manually
     }
 
-    // Send confirmation email
+    // Populate booking with full data for emails
+    const populatedBooking = await Booking.findById(booking._id)
+      .populate('guest', 'fullName email phoneNumber')
+      .populate('host', 'fullName email phoneNumber')
+      .populate('property');
+
+    // Send booking confirmation emails to both guest and host
     try {
-      await sendPaymentConfirmationEmail(booking, property, breakdown);
+      // Send email to guest
+      await sendBookingConfirmationEmail(
+        populatedBooking,
+        populatedBooking.property,
+        populatedBooking.guest
+      );
+      console.log('Booking confirmation email sent to guest');
+      
+      // Send email to host
+      await sendHostBookingNotification(
+        populatedBooking,
+        populatedBooking.property,
+        populatedBooking.guest,
+        populatedBooking.host
+      );
+      console.log('Booking notification email sent to host');
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
+      // Don't fail the booking if email fails
     }
   } catch (error) {
     console.error('Error handling checkout completed:', error);
