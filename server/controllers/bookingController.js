@@ -129,10 +129,7 @@ export const createBooking = async (req, res) => {
     // Calculate pricing
     const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
     const basePrice = property.price * nights;
-    const cleaningFee = Math.round(basePrice * 0.1); // 10% of base price
-    const serviceFee = Math.round(basePrice * 0.05); // 5% of base price
-    const taxes = Math.round((basePrice + cleaningFee + serviceFee) * 0.12); // 12% tax
-    const totalPrice = basePrice + cleaningFee + serviceFee + taxes;
+    const totalPrice = basePrice;
 
     // Create booking
     const booking = await Booking.create({
@@ -149,9 +146,9 @@ export const createBooking = async (req, res) => {
         pets: guestsObj.pets
       },
       basePrice,
-      cleaningFee,
-      serviceFee,
-      taxes,
+      cleaningFee: 0,
+      serviceFee: 0,
+      taxes: 0,
       totalPrice,
       currency: 'PKR',
       specialRequests: specialRequests || '',

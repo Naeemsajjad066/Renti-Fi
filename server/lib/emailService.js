@@ -126,3 +126,22 @@ export const sendPropertyRejectionEmail = async (email, data) => {
         throw new Error(`Failed to send property rejection email: ${error.message}`);
     }
 };
+
+// Generic email sender for custom emails (used by payment system)
+export const sendEmail = async ({ to, subject, html }) => {
+    try {
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+            to: to,
+            subject: subject,
+            html: html
+        };
+
+        const result = await transporter.sendMail(mailOptions);
+        console.log('Email sent to:', to);
+        return result;
+    } catch (error) {
+        console.error('Email send failed:', error.message);
+        throw new Error(`Failed to send email: ${error.message}`);
+    }
+};

@@ -1,12 +1,15 @@
 
 import { useState, useEffect, useContext } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PropertyContext } from '../contexts/PropertyContext';
 import { useBooking } from '../contexts/BookingContext';
 import OptimizedImage from '../components/OptimizedImage';
 import { useImagePreloader } from '../hooks/useImagePreloader';
 import ReviewList from '../components/ReviewList';
+import PaymentOptionSelector from '../components/PaymentOptionSelector';
+import StripeCheckoutForm from '../components/StripeCheckoutForm';
+import { useToast } from '../hooks/use-toast';
 import { 
   MapPin, 
   Wifi, 
@@ -24,13 +27,15 @@ import {
   Car,
   Utensils,
   ShieldCheck,
-  CheckCircle
+  CheckCircle,
+  CreditCard,
+  Banknote,
+  Info
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
 import { Button } from '@/components/ui/button';
-import { useToast } from '../hooks/use-toast';
 
 // Default amenities mapping for display
 const amenityIcons = {
@@ -309,7 +314,11 @@ const BookingForm = ({ property }) => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [bookingDetails, setBookingDetails] = useState(null);
   const [bookedRanges, setBookedRanges] = useState([]);
+  const [paymentOption, setPaymentOption] = useState('');
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Use booking context
   const { createBooking, loading: isLoading } = useBooking();
@@ -326,17 +335,11 @@ const BookingForm = ({ property }) => {
       
       if (nights > 0) {
         const basePrice = property.price * nights;
-        const cleaningFee = Math.round(basePrice * 0.1);
-        const serviceFee = Math.round(basePrice * 0.05);
-        const taxes = Math.round((basePrice + cleaningFee + serviceFee) * 0.12);
-        const totalPrice = basePrice + cleaningFee + serviceFee + taxes;
+        const totalPrice = basePrice;
         
         setPricing({
           nights,
           basePrice,
-          cleaningFee,
-          serviceFee,
-          taxes,
           totalPrice
         });
 
@@ -354,7 +357,7 @@ const BookingForm = ({ property }) => {
     const fetchBooked = async () => {
       if (!property?._id) return;
       try {
-        const res = await fetch(`http://localhost:5000/api/bookings/property/${property._id}/booked`);
+        const res = await fetch('http://localhost:5000/api/bookings/property/' + property._id + '/booked');
         if (!res.ok) return;
         const data = await res.json();
         if (!mounted) return;
@@ -399,9 +402,9 @@ const BookingForm = ({ property }) => {
         return;
       }
       
-      const response = await fetch(`http://localhost:5000/api/bookings/availability/${property._id}?checkIn=${checkIn}&checkOut=${checkOut}`, {
+      const response = await fetch('http://localhost:5000/api/bookings/availability/' + property._id + '?checkIn=' + checkIn + '&checkOut=' + checkOut, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': 'Bearer ' + token,
           'Content-Type': 'application/json'
         }
       });
@@ -428,32 +431,135 @@ const BookingForm = ({ property }) => {
     
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Please log in to make a booking');
+      toast({
+        title: 'Authentication Required',
+        description: 'Please log in to make a booking',
+        variant: 'destructive'
+      });
+      navigate('/login');
       return;
     }
 
+    if (!paymentOption) {
+      toast({
+        title: 'Payment Method Required',
+        description: 'Please select a payment method',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // If early payment selected, create checkout session
+    if (paymentOption === 'early') {
+      const checkoutData = {
+        propertyId: property._id,
+        checkIn,
+        checkOut,
+        guests,
+        nights: pricing.nights,
+        basePrice: pricing.basePrice,
+        totalPrice: pricing.totalPrice,
+        paymentOption: 'early'
+      };
+
+      setLoading(true);
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/payments/create-checkout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ bookingData: checkoutData })
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.url) {
+          // Redirect to Stripe Checkout
+          window.location.href = data.url;
+        } else {
+          throw new Error(data.message || 'Failed to create checkout session');
+        }
+      } catch (error) {
+        setLoading(false);
+        toast({
+          title: 'Checkout Failed',
+          description: error.message,
+          variant: 'destructive'
+        });
+      }
+      return;
+    }
+
+    // For arrival payment, create reservation directly
     const bookingData = {
       propertyId: property._id,
       checkIn,
       checkOut,
-      guests: {
-        adults: guests,
-        children: 0,
-        infants: 0
-      }
+      guests,
+      nights: pricing.nights,
+      basePrice: pricing.basePrice,
+      totalPrice: pricing.totalPrice,
+      paymentOption: 'arrival'
     };
 
-    const result = await createBooking(bookingData);
-    
-    if (result.success) {
-      setBookingDetails(result.booking);
-      setShowSuccess(true);
-      // Reset form
-      setCheckIn('');
-      setCheckOut('');
-      setGuests(1);
-      setPricing(null);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(apiUrl + '/api/payments/reserve', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ bookingData })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setBookingDetails(data.booking);
+        setShowSuccess(true);
+        toast({
+          title: 'Reservation Confirmed!',
+          description: 'Your booking has been reserved. Payment due on arrival.'
+        });
+        // Reset form
+        setCheckIn('');
+        setCheckOut('');
+        setGuests(1);
+        setPricing(null);
+        setPaymentOption('');
+      } else {
+        throw new Error(data.message || 'Failed to create reservation');
+      }
+    } catch (error) {
+      toast({
+        title: 'Booking Failed',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
+  };
+
+  const handlePaymentSuccess = (booking) => {
+    setBookingDetails(booking);
+    setShowSuccess(true);
+    setShowPaymentForm(false);
+    toast({
+      title: 'Payment Successful!',
+      description: 'Your booking has been confirmed.'
+    });
+    // Reset form
+    setCheckIn('');
+    setCheckOut('');
+    setGuests(1);
+    setPricing(null);
+    setPaymentOption('');
+  };
+
+  const handlePaymentCancel = () => {
+    setShowPaymentForm(false);
   };
 
   if (!property) return null;
@@ -612,6 +718,43 @@ const BookingForm = ({ property }) => {
           <Users size={20} className="absolute right-4 top-8 text-gray-400 pointer-events-none" />
         </div>
 
+        {/* Payment Options */}
+        {pricing && isAvailable && property.paymentOptions && (
+          <div className="mt-6">
+            <PaymentOptionSelector
+              selectedOption={paymentOption}
+              onOptionChange={setPaymentOption}
+              totalPrice={pricing.totalPrice}
+              propertyPaymentOptions={property.paymentOptions}
+            />
+          </div>
+        )}
+
+        {/* Payment Form - Show when early payment is selected */}
+        {showPaymentForm && paymentOption === 'early' && pricing && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-6"
+          >
+            <StripeCheckoutForm
+              amount={Math.round(pricing.totalPrice * 0.4)}
+              bookingData={{
+                propertyId: property._id,
+                checkIn,
+                checkOut,
+                guests,
+                nights: pricing.nights,
+                basePrice: pricing.basePrice,
+                totalPrice: pricing.totalPrice,
+                paymentOption: 'early'
+              }}
+              onSuccess={handlePaymentSuccess}
+              onCancel={handlePaymentCancel}
+            />
+          </motion.div>
+        )}
+
         {!isAvailable && checkIn && checkOut && (
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
@@ -632,33 +775,37 @@ const BookingForm = ({ property }) => {
           </motion.div>
         )}
         
-        <motion.button
-          type="submit"
-          disabled={isLoading || !isAvailable || !checkIn || !checkOut}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full py-4 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl disabled:shadow-none "
-        >
-          {isLoading ? (
-            <>
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-3"
-              />
-              Processing...
-            </>
-          ) : (
-            <>
-              <Calendar size={20} className="mr-2" />
-              Reserve Now
-            </>
-          )}
-        </motion.button>
-        
-        <p className="text-center text-sm text-gray-500">
-          You won't be charged yet
-        </p>
+        {!showPaymentForm && (
+          <>
+            <motion.button
+              type="submit"
+              disabled={isLoading || loading || !isAvailable || !checkIn || !checkOut || !paymentOption}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full py-4 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl disabled:shadow-none "
+            >
+              {(isLoading || loading) ? (
+                <>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-3"
+                  />
+                  {loading ? 'Redirecting to Checkout...' : 'Processing...'}
+                </>
+              ) : (
+                <>
+                  <Calendar size={20} className="mr-2" />
+                  {paymentOption === 'early' ? 'Continue to Payment' : 'Reserve Now'}
+                </>
+              )}
+            </motion.button>
+            
+            <p className="text-center text-sm text-gray-500">
+              {paymentOption === 'early' ? 'You will pay 40% now to secure booking' : 'You won\'t be charged yet'}
+            </p>
+          </>
+        )}
       </form>
       
       {pricing && (
@@ -674,18 +821,6 @@ const BookingForm = ({ property }) => {
                 Rs {property.price?.toLocaleString()} × {pricing.nights} {pricing.nights === 1 ? 'night' : 'nights'}
               </span>
               <span className="font-medium">Rs {pricing.basePrice?.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center justify-between py-1">
-              <span className="text-gray-600">Cleaning fee</span>
-              <span className="font-medium">Rs {pricing.cleaningFee?.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center justify-between py-1">
-              <span className="text-gray-600">Service fee</span>
-              <span className="font-medium">Rs {pricing.serviceFee?.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center justify-between py-1">
-              <span className="text-gray-600">Taxes & fees</span>
-              <span className="font-medium">Rs {pricing.taxes?.toLocaleString()}</span>
             </div>
             <div className="border-t border-gray-200 pt-3 mt-3">
               <div className="flex items-center justify-between">
@@ -787,7 +922,7 @@ const PropertyDetails = () => {
                       <MapPin size={18} className="text-primary mr-2" />
                       <span className="font-medium">
                         {property.city && property.state 
-                          ? `${property.city}, ${property.state}` 
+                          ? property.city + ', ' + property.state
                           : property.location || property.address}
                       </span>
                     </div>
@@ -842,7 +977,7 @@ const PropertyDetails = () => {
                           </div>
                         </div>
                       </div>
-                      <Link to={`/host/${property.host?._id || property.host}`} className="flex-shrink-0 ml-6">
+                      <Link to={'/host/' + (property.host?._id || property.host)} className="flex-shrink-0 ml-6">
                         <div className="relative group">
                           <img
                             src={property.host?.profilePic || property.host?.profilePicture || property.host?.image || property.hostImage || '/placeholder.svg'}
@@ -927,12 +1062,12 @@ const PropertyDetails = () => {
                         className="w-full h-full"
                         src={
                           property.latitude && property.longitude
-                            ? `https://maps.google.com/maps?q=${property.latitude},${property.longitude}&output=embed&z=15`
-                            : `https://maps.google.com/maps?q=${encodeURIComponent(
+                            ? 'https://maps.google.com/maps?q=' + property.latitude + ',' + property.longitude + '&output=embed&z=15'
+                            : 'https://maps.google.com/maps?q=' + encodeURIComponent(
                                 property.city && property.state 
-                                  ? `${property.city}, ${property.state}` 
+                                  ? property.city + ', ' + property.state
                                   : property.location || property.address
-                              )}&output=embed`
+                              ) + '&output=embed'
                         }
                         allowFullScreen
                         style={{ border: 'none' }}
@@ -945,7 +1080,7 @@ const PropertyDetails = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => {
-                              const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${property.latitude},${property.longitude}`;
+                              const googleMapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + property.latitude + ',' + property.longitude;
                               window.open(googleMapsUrl, '_blank');
                             }}
                             className="bg-white/90 backdrop-blur-sm hover:bg-white text-gray-800 px-4 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 flex items-center"
@@ -963,7 +1098,7 @@ const PropertyDetails = () => {
                         <div>
                           <p className="font-medium text-gray-900">
                             {property.city && property.state 
-                              ? `${property.city}, ${property.state}${property.country ? `, ${property.country}` : ''}` 
+                              ? property.city + ', ' + property.state + (property.country ? ', ' + property.country : '')
                               : property.address}
                           </p>
                           
@@ -1015,7 +1150,7 @@ const PropertyDetails = () => {
                     className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8"
                   >
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Meet your host</h2>
-                    <Link to={`/host/${property.host?._id || property.host}`} className="block group">
+                    <Link to={'/host/' + (property.host?._id || property.host)} className="block group">
                       <div className="flex items-start gap-6 p-6 rounded-2xl bg-gradient-to-br from-primary/5 to-primary/10 group-hover:from-primary/10 group-hover:to-primary/20 transition-all duration-300">
                         <div className="relative">
                           <img

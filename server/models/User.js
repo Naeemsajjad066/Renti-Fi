@@ -54,6 +54,20 @@ const userSchema=new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
+    },
+    // Stripe Connect account for hosts
+    stripeAccountId: {
+        type: String,
+        default: ''
+    },
+    stripeAccountStatus: {
+        type: String,
+        enum: ['', 'pending', 'active', 'restricted'],
+        default: ''
+    },
+    stripeOnboardingComplete: {
+        type: Boolean,
+        default: false
     }
 },{
     timestamps:true

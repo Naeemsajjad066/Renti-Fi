@@ -9,11 +9,16 @@ import propertyRouter from "./routes/properties.js";
 import bookingRouter from "./routes/bookings.js";
 import reviewRouter from "./routes/reviews.js";
 import adminRouter from "./routes/admin.js";
+import paymentRouter from "./routes/payments.js";
+import stripeConnectRouter from "./routes/stripeConnect.js";
 // import messageRouter from "./routes/messageRoutes.js";
 
 
 const app = express();
 const server = http.createServer(app);
+
+// Stripe webhook endpoint needs raw body - must be before express.json()
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 
 // middleware setup
 app.use(express.json({ limit: "4mb" }));
@@ -99,6 +104,8 @@ app.use("/api/properties",propertyRouter)
 app.use("/api/bookings",bookingRouter)
 app.use("/api/reviews",reviewRouter)
 app.use("/api/admin",adminRouter)
+app.use("/api/payments",paymentRouter)
+app.use("/api/stripe-connect",stripeConnectRouter)
 // app.use("/api/messages",messageRouter)
 
 const PORT = process.env.PORT || 5000;

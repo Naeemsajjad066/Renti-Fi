@@ -88,25 +88,58 @@ const bookingSchema = new mongoose.Schema({
     default: 'USD'
   },
   
+  // Payment Option Selected
+  paymentOption: {
+    type: String,
+    enum: ['arrival', 'early'],
+    required: true
+  },
+
+  // Payment Breakdown for Early Payment
+  paymentBreakdown: {
+    upfrontAmount: { type: Number, default: 0 },          // 40% of total
+    upfrontPaid: { type: Boolean, default: false },
+    upfrontPaidAt: { type: Date },
+    upfrontPaymentIntentId: { type: String },              // Stripe Payment Intent ID
+    
+    arrivalAmount: { type: Number, required: true },       // 60% or 100% depending on option
+    arrivalPaid: { type: Boolean, default: false },
+    arrivalPaidAt: { type: Date },
+    arrivalPaymentIntentId: { type: String }               // For future online arrival payment
+  },
+
+  // Stripe Payment Information
+  stripePaymentIntentId: { type: String },                 // Main payment intent
+  stripeChargeId: { type: String },                        // Charge ID after capture
+  stripeCheckoutSessionId: { type: String },               // Checkout session ID
+  stripeTransferId: { type: String },                      // Transfer ID to host's account
+  stripeRefundId: { type: String },                        // Refund ID if cancelled
+  refundAmount: { type: Number, default: 0 },
+  refundedAt: { type: Date },
+  
+  // Platform Fee & Host Payout
+  platformFee: { type: Number, default: 0 },               // Platform's 5% commission
+  hostPayout: { type: Number, default: 0 },                // Amount transferred to host
+
   // Payment Information
   paymentStatus: {
     type: String,
-    enum: ['pending', 'paid', 'refunded', 'failed'],
+    enum: ['pending', 'partial', 'paid', 'refunded', 'failed'],
     default: 'pending'
   },
   paymentMethod: {
     type: String,
-    enum: ['credit_card', 'debit_card', 'paypal', 'bank_transfer', 'pending'],
+    enum: ['credit_card', 'debit_card', 'cash', 'pending'],
     default: 'pending'
   },
-  paymentId: String, // Payment gateway transaction ID
+  paymentId: String, // Legacy field
   paidAt: Date,
   
   // Booking Status
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'cancelled', 'completed', 'expired'],
-    default: 'pending'
+    enum: ['reserved', 'confirmed', 'checked-in', 'completed', 'cancelled', 'expired'],
+    default: 'reserved'
   },
   cancellationReason: String,
   cancelledBy: {

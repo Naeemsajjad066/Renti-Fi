@@ -4,7 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-import { Toaster } from "react-hot-toast"
+import { Toaster } from "react-hot-toast";
+import { StripeProvider } from "./contexts/StripeContext";
 
 
 import Home from "./pages/Home";
@@ -25,6 +26,9 @@ import AllProperties from "./pages/AllProperties";
 import AdminPanel from "./components/AdminPanel";
 import Settings from "./pages/Settings";
 import GlobalLoader from "./components/GlobalLoader";
+import ProtectedRoute from "./components/ProtectedRoute";
+import StripeReturn from "./pages/StripeReturn";
+import StripeRefresh from "./pages/StripeRefresh";
 
 
 const queryClient = new QueryClient({
@@ -61,11 +65,20 @@ const AnimatedRoutes = () => {
         <Route path="/host/bookings" element={<HostBookings />} />
         <Route path="/host/messages" element={<NotFound />} />
         <Route path="/host/support" element={<NotFound />} />
+        <Route path="/host/stripe/return" element={<StripeReturn />} />
+        <Route path="/host/stripe/refresh" element={<StripeRefresh />} />
         <Route path="/bookings" element={<Bookings />} />
         <Route path="/properties" element={<AllProperties />} />
         <Route path="/settings" element={<Settings/>} />
         <Route path="*" element={<NotFound />} />
-        <Route path="/admin" element={<AdminPanel/>} />
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminPanel />
+            </ProtectedRoute>
+          } 
+        />
       </Routes>
     </AnimatePresence>
   );
@@ -74,12 +87,14 @@ const AnimatedRoutes = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner position="top-right" closeButton theme="light" richColors />
-      <BrowserRouter>
-        <AnimatedRoutes />
-        <GlobalLoader />
-      </BrowserRouter>
+      <StripeProvider>
+        <Toaster />
+        <Sonner position="top-right" closeButton theme="light" richColors />
+        <BrowserRouter>
+          <AnimatedRoutes />
+          <GlobalLoader />
+        </BrowserRouter>
+      </StripeProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

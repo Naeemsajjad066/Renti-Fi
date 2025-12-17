@@ -102,7 +102,26 @@ const propertySchema = new mongoose.Schema({
   totalReviews: { type: Number, default: 0 },
 
   isActive: { type: Boolean, default: true },
-  isVerified: { type: Boolean, default: false } // Changed default to false
+  isVerified: { type: Boolean, default: false }, // Changed default to false
+
+  // Payment Configuration (Required for listing)
+  paymentOptions: {
+    type: String,
+    enum: ['arrival', 'early', 'both'],
+    required: [true, 'Payment option is required to list property'],
+    default: 'both'
+  },
+  cancellationPolicy: {
+    type: String,
+    enum: ['flexible', 'moderate', 'strict'],
+    required: [true, 'Cancellation policy is required'],
+    default: 'moderate'
+  },
+  // Stripe Connect Account (for future direct payouts to hosts)
+  stripeAccountId: {
+    type: String,
+    default: null
+  }
 },
 {
   timestamps: true

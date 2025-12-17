@@ -36,6 +36,16 @@ export const AdminProvider = ({ children }) => {
     return token ? { Authorization: `Bearer ${token}` } : {};
   }, [token]);
 
+  // Handle authorization errors
+  const handleAuthError = useCallback((err) => {
+    if (err.response?.status === 403) {
+      // Redirect to home if user doesn't have admin access
+      window.location.href = '/';
+      return 'Access denied. Admin privileges required.';
+    }
+    return err.response?.data?.message || err.message;
+  }, []);
+
   // Get Dashboard Statistics
   const getDashboardStats = useCallback(async () => {
     try {
@@ -54,13 +64,13 @@ export const AdminProvider = ({ children }) => {
 
       return { success: false, message: response.data.message };
     } catch (err) {
-      const message = err.response?.data?.message || 'Failed to fetch dashboard stats';
+      const message = handleAuthError(err) || 'Failed to fetch dashboard stats';
       setError(message);
       return { success: false, message };
     } finally {
       setLoading(false);
     }
-  }, [token, getAuthHeader]);
+  }, [token, getAuthHeader, handleAuthError]);
 
   // Get All Users
   const getAllUsers = useCallback(async () => {
@@ -153,9 +163,11 @@ export const AdminProvider = ({ children }) => {
       );
 
       if (response.data.success) {
-        // Update local state
+        // Update local state - merge updates with existing user data
         setUsers(prev => prev.map(user => 
-          user._id === userId ? response.data.user : user
+          user._id === userId 
+            ? { ...user, ...updates, ...response.data.user }
+            : user
         ));
         return { success: true, data: response.data.user };
       }
@@ -163,6 +175,92 @@ export const AdminProvider = ({ children }) => {
       return { success: false, message: response.data.message };
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to update user';
+      setError(message);
+      return { success: false, message };
+    } finally {
+      setLoading(false);
+    }
+  }, [token, getAuthHeader]);
+
+  // Delete User
+  const deleteUser = useCallback(async (userId) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await axios.delete(
+        `${BASE_URL}/admin/users/${userId}`,
+        { headers: getAuthHeader() }
+      );
+
+      if (response.data.success) {
+        // Remove from local state
+        setUsers(prev => prev.filter(user => user._id !== userId));
+        return { success: true, message: response.data.message };
+      }
+
+      return { success: false, message: response.data.message };
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to delete user';
+      setError(message);
+      return { success: false, message };
+    } finally {
+      setLoading(false);
+    }
+  }, [token, getAuthHeader]);
+
+  // Update Property
+  const updateProperty = useCallback(async (propertyId, updates) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await axios.put(
+        `${BASE_URL}/admin/properties/${propertyId}`,
+        updates,
+        { headers: getAuthHeader() }
+      );
+
+      if (response.data.success) {
+        // Update local state - merge updates with existing property data
+        setProperties(prev => prev.map(property => 
+          property._id === propertyId 
+            ? { ...property, ...updates, ...response.data.property }
+            : property
+        ));
+        return { success: true, data: response.data.property };
+      }
+
+      return { success: false, message: response.data.message };
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to update property';
+      setError(message);
+      return { success: false, message };
+    } finally {
+      setLoading(false);
+    }
+  }, [token, getAuthHeader]);
+
+  // Delete Property
+  const deleteProperty = useCallback(async (propertyId) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await axios.delete(
+        `${BASE_URL}/admin/properties/${propertyId}`,
+        { headers: getAuthHeader() }
+      );
+
+      if (response.data.success) {
+        // Remove from local state
+        setProperties(prev => prev.filter(property => property._id !== propertyId));
+        return { success: true, message: response.data.message };
+      }
+
+      return { success: false, message: response.data.message };
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to delete property';
       setError(message);
       return { success: false, message };
     } finally {
@@ -182,6 +280,9 @@ export const AdminProvider = ({ children }) => {
     getAllProperties,
     getAllBookings,
     updateUser,
+    deleteUser,
+    updateProperty,
+    deleteProperty,
   };
 
   return (

@@ -95,6 +95,8 @@ const AddListing = () => {
     latitude: null,
     longitude: null,
     locationAccuracy: null,
+    paymentOptions: '',
+    cancellationPolicy: '',
   });
   
   // Location capture state
@@ -128,6 +130,8 @@ const AddListing = () => {
         latitude: selectedProperty.latitude || null,
         longitude: selectedProperty.longitude || null,
         locationAccuracy: selectedProperty.locationAccuracy || null,
+        paymentOptions: selectedProperty.paymentOptions || '',
+        cancellationPolicy: selectedProperty.cancellationPolicy || '',
       });
       
       if (selectedProperty.images && selectedProperty.images.length > 0) {
@@ -985,14 +989,12 @@ const AddListing = () => {
                     transition={{ duration: 0.3 }}
                     className="bg-white p-6 rounded-lg shadow-sm"
                   >
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6"> Pricing</h2>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Pricing & Payment</h2>
                     
                     <div className="space-y-6">
-
-                      
                       <div>
                         <Label htmlFor="price" className="text-sm font-medium text-gray-700 block mb-3">
-                          Price Per Night/Day
+                          Price Per Night/Day *
                         </Label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1010,6 +1012,90 @@ const AddListing = () => {
                           />
                         </div>
                       </div>
+
+                      {/* Payment Options */}
+                      <div>
+                        <Label htmlFor="paymentOptions" className="text-sm font-medium text-gray-700 block mb-3">
+                          Payment Options * <span className="text-red-500">(Required)</span>
+                        </Label>
+                        <p className="text-xs text-gray-600 mb-3">
+                          Select how guests can pay for their bookings
+                        </p>
+                        <Select 
+                          value={formData.paymentOptions} 
+                          onValueChange={(value) => setFormData(prev => ({...prev, paymentOptions: value}))}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select payment option" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="arrival">Pay on Arrival Only (Cash)</SelectItem>
+                            <SelectItem value="early">Online Payment Only (40% upfront + 60% on arrival)</SelectItem>
+                            <SelectItem value="both">Both Options Available</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                        {formData.paymentOptions && (
+                          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p className="text-xs text-blue-900">
+                              {formData.paymentOptions === 'arrival' && '✓ Guests will pay the full amount in cash when they check in.'}
+                              {formData.paymentOptions === 'early' && '✓ Guests will pay 40% online via Stripe to confirm booking, and 60% on arrival.'}
+                              {formData.paymentOptions === 'both' && '✓ Guests can choose between paying online (40% upfront) or paying full amount on arrival.'}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Cancellation Policy */}
+                      <div>
+                        <Label htmlFor="cancellationPolicy" className="text-sm font-medium text-gray-700 block mb-3">
+                          Cancellation Policy * <span className="text-red-500">(Required)</span>
+                        </Label>
+                        <p className="text-xs text-gray-600 mb-3">
+                          Choose your cancellation policy for refunds
+                        </p>
+                        <Select 
+                          value={formData.cancellationPolicy} 
+                          onValueChange={(value) => setFormData(prev => ({...prev, cancellationPolicy: value}))}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select cancellation policy" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="flexible">Flexible - Full refund 1 day before check-in</SelectItem>
+                            <SelectItem value="moderate">Moderate - Full refund 7 days before check-in</SelectItem>
+                            <SelectItem value="strict">Strict - Full refund 14 days before check-in</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                        {formData.cancellationPolicy && (
+                          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                            <p className="text-xs text-amber-900 font-medium mb-2">Refund Schedule:</p>
+                            <ul className="text-xs text-amber-900 space-y-1">
+                              {formData.cancellationPolicy === 'flexible' && (
+                                <>
+                                  <li>• 1+ days before: 100% refund</li>
+                                  <li>• Less than 1 day: 50% refund</li>
+                                </>
+                              )}
+                              {formData.cancellationPolicy === 'moderate' && (
+                                <>
+                                  <li>• 7+ days before: 100% refund</li>
+                                  <li>• 3-6 days before: 50% refund</li>
+                                  <li>• Less than 3 days: No refund</li>
+                                </>
+                              )}
+                              {formData.cancellationPolicy === 'strict' && (
+                                <>
+                                  <li>• 14+ days before: 100% refund</li>
+                                  <li>• 7-13 days before: 50% refund</li>
+                                  <li>• Less than 7 days: No refund</li>
+                                </>
+                              )}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
                       
                     </div>
                     
@@ -1017,7 +1103,11 @@ const AddListing = () => {
                       <Button type="button" variant="outline" onClick={prevStep}>
                         Back
                       </Button>
-                      <Button type="submit" disabled={loading}>
+                      <Button 
+                        type="submit" 
+                        disabled={loading || !formData.paymentOptions || !formData.cancellationPolicy}
+                        className={(!formData.paymentOptions || !formData.cancellationPolicy) ? 'opacity-50 cursor-not-allowed' : ''}
+                      >
                         {loading ? (
                           <><span className="mr-2">Publishing...</span><Loader2 className="h-4 w-4 animate-spin" /></>
                         ) : (
@@ -1025,6 +1115,12 @@ const AddListing = () => {
                         )}
                       </Button>
                     </div>
+                    
+                    {(!formData.paymentOptions || !formData.cancellationPolicy) && (
+                      <p className="text-sm text-red-600 text-center mt-4">
+                        Please configure payment options and cancellation policy to publish your listing.
+                      </p>
+                    )}
                   </motion.div>
                 )}
               </form>

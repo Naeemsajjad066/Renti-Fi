@@ -14,8 +14,6 @@ import {
   Shield,
   Home,
   Calendar,
-  Filter,
-  Download,
   Star,
   MapPin,
   Clock,
@@ -29,20 +27,49 @@ import PropertyVerificationPanel from './PropertyVerificationPanel';
 import { usePropertyVerification } from '../contexts/PropertyVerificationContext';
 import { useAdmin } from '../contexts/AdminContext';
 import { useEffect } from 'react';
+import { useToast } from '../hooks/use-toast';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const AdminPanel = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const { authUser } = useAuth();
+  const navigate = useNavigate();
+
+  // Secondary protection: Check if user is admin
+  useEffect(() => {
+    if (authUser && authUser.role !== 'admin') {
+      navigate('/', { replace: true });
+    }
+  }, [authUser, navigate]);
+  const [activeTab, setActiveTab] = useState(() => {
+    // Persist active tab across refreshes
+    return localStorage.getItem('adminActiveTab') || 'dashboard';
+  });
   const [searchQuery, setSearchQuery] = useState('');
+  const [propertyFilter, setPropertyFilter] = useState('all'); // 'all', 'active', 'blocked'
+  const [userFilter, setUserFilter] = useState('all'); // 'all', 'hosts', 'guests'
+
+  // Save active tab to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('adminActiveTab', activeTab);
+  }, [activeTab]);
   const { pendingProperties, getPendingProperties } = usePropertyVerification();
   const { 
     dashboardStats, 
-    users, 
+    users,
+    properties, 
     bookings,
     getDashboardStats, 
-    getAllUsers, 
+    getAllUsers,
+    getAllProperties, 
     getAllBookings,
+    updateUser,
+    deleteUser,
+    updateProperty,
+    deleteProperty,
     loading
   } = useAdmin();
+  const { toast } = useToast();
 
   useEffect(() => {
     getPendingProperties();
@@ -51,16 +78,37 @@ const AdminPanel = () => {
       getAllUsers();
     } else if (activeTab === 'bookings') {
       getAllBookings();
+    } else if (activeTab === 'properties') {
+      getAllProperties();
     }
-  }, [getPendingProperties, getDashboardStats, getAllUsers, getAllBookings, activeTab]);
+  }, [getPendingProperties, getDashboardStats, getAllUsers, getAllProperties, getAllBookings, activeTab]);
 
   // Placeholder data for features not yet implemented
   const complaints = [];
 
-  const filteredUsers = (users || []).filter(user =>
-    (user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredUsers = (users || []).filter(user => {
+    const matchesSearch = user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (userFilter === 'hosts') {
+      return matchesSearch && (user.isHost || user.role === 'host');
+    } else if (userFilter === 'guests') {
+      return matchesSearch && !user.isHost && user.role !== 'host';
+    }
+    return matchesSearch;
+  });
+
+  const filteredProperties = (properties || []).filter(property => {
+    const matchesSearch = property.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      property.city?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (propertyFilter === 'active') {
+      return matchesSearch && property.isActive === true;
+    } else if (propertyFilter === 'blocked') {
+      return matchesSearch && property.isActive === false;
+    }
+    return matchesSearch;
+  });
 
   return (
     <PageTransition>
@@ -94,6 +142,7 @@ const AdminPanel = () => {
                   {[
                     { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
                     { id: 'users', label: 'User Management', icon: Users },
+                    { id: 'properties', label: 'Property Management', icon: Home },
                     { id: 'verification', label: 'Property Verification', icon: Shield },
                     { id: 'complaints', label: 'Complaints', icon: AlertTriangle },
                   ].map((item) => {
@@ -150,6 +199,7 @@ const AdminPanel = () => {
               {[
                 { id: 'dashboard', icon: TrendingUp, label: 'Dashboard' },
                 { id: 'users', icon: Users, label: 'Users' },
+                { id: 'properties', icon: Home, label: 'Properties' },
                 { id: 'verification', icon: Shield, label: 'Verify' },
                 { id: 'complaints', icon: AlertTriangle, label: 'Issues' },
               ].map((item, index) => {
@@ -191,20 +241,10 @@ const AdminPanel = () => {
                   <p className="text-sm text-gray-600 mt-1 hidden sm:block">
                     {activeTab === 'dashboard' && 'Overview of your platform'}
                     {activeTab === 'users' && 'Manage all users and their activities'}
+                    {activeTab === 'properties' && 'Manage all property listings'}
                     {activeTab === 'verification' && 'Review and verify property listings with documents'}
                     {activeTab === 'complaints' && 'Review and resolve user complaints'}
                   </p>
-                </div>
-
-                <div className="flex items-center space-x-2 sm:space-x-3">
-                  <Button variant="outline" size="sm" className="border-earth-brown/20 text-earth-brown hover:bg-earth-brown hover:text-white hidden sm:flex">
-                    <Download className="w-4 h-4 mr-2" />
-                    Export
-                  </Button>
-                  <Button variant="outline" size="sm" className="border-earth-brown/20 text-earth-brown hover:bg-earth-brown hover:text-white">
-                    <Filter className="w-4 h-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Filter</span>
-                  </Button>
                 </div>
               </div>
             </motion.header>
@@ -300,7 +340,7 @@ const AdminPanel = () => {
                               <div className="w-2 h-2 rounded-full bg-blue-500"></div>
                               <div className="flex-1">
                                 <p className="text-sm font-medium text-gray-900">New user registered</p>
-                                <p className="text-xs text-gray-500">{user.name} • {new Date(user.createdAt).toLocaleDateString()}</p>
+                                <p className="text-xs text-gray-500">{user.fullName || user.email} • {new Date(user.createdAt).toLocaleDateString()}</p>
                               </div>
                             </div>
                           ))
@@ -358,6 +398,188 @@ const AdminPanel = () => {
                 <PropertyVerificationPanel />
               )}
 
+              {/* Property Management Tab */}
+              {activeTab === 'properties' && (
+                <div className="space-y-6">
+                  {/* Search and Filters */}
+                  <Card className="border-0 shadow-lg">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div className="relative flex-1 max-w-md">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                          <input
+                            type="text"
+                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-earth-brown focus:border-earth-brown transition-colors"
+                            placeholder="Search properties by title or city..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Button 
+                            variant={propertyFilter === 'all' ? 'default' : 'outline'} 
+                            size="sm" 
+                            className="text-xs sm:text-sm"
+                            onClick={() => setPropertyFilter('all')}
+                          >
+                            All Properties
+                          </Button>
+                          <Button 
+                            variant={propertyFilter === 'active' ? 'default' : 'outline'} 
+                            size="sm" 
+                            className="text-xs sm:text-sm"
+                            onClick={() => setPropertyFilter('active')}
+                          >
+                            Active
+                          </Button>
+                          <Button 
+                            variant={propertyFilter === 'blocked' ? 'default' : 'outline'} 
+                            size="sm" 
+                            className="text-xs sm:text-sm"
+                            onClick={() => setPropertyFilter('blocked')}
+                          >
+                            Blocked
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Properties Grid */}
+                  {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-earth-brown"></div>
+                    </div>
+                  ) : filteredProperties.length === 0 ? (
+                    <Card className="border-0 shadow-lg">
+                      <CardContent className="p-12 text-center">
+                        <Home className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                        <p className="text-gray-600">No properties found</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    {filteredProperties.map((property) => (
+                      <motion.div
+                        key={property._id}
+                        whileHover={{ y: -5 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+                          <CardContent className="p-6">
+                            {property.images?.[0] && (
+                              <div className="mb-4 rounded-lg overflow-hidden h-40">
+                                <img 
+                                  src={property.images[0]} 
+                                  alt={property.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+                            
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 gap-3">
+                              <div className="min-w-0 flex-1">
+                                <h3 className="font-semibold text-gray-900 truncate">{property.title}</h3>
+                                <p className="text-sm text-gray-600 truncate flex items-center mt-1">
+                                  <MapPin className="w-3 h-3 mr-1" />
+                                  {property.city}
+                                </p>
+                              </div>
+                              <Badge variant={property.isActive ? 'default' : 'destructive'}>
+                                {property.isActive ? 'Active' : 'Blocked'}
+                              </Badge>
+                            </div>
+
+                            <div className="space-y-2 mb-4">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Host:</span>
+                                <span className="font-medium text-earth-brown truncate ml-2">{property.host?.fullName || 'Unknown'}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Price:</span>
+                                <span className="font-medium">Rs {property.price?.toLocaleString()}/night</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Status:</span>
+                                <span className="font-medium capitalize">{property.verificationStatus || 'pending'}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Listed:</span>
+                                <span className="font-medium">{new Date(property.createdAt).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="flex-1"
+                                onClick={() => window.open(`/property/${property._id}`, '_blank')}
+                              >
+                                <Eye className="w-4 h-4 sm:mr-1" />
+                                <span className="hidden sm:inline">View</span>
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="flex-1"
+                                onClick={async () => {
+                                  if (window.confirm(`Are you sure you want to ${property.isActive ? 'block' : 'unblock'} "${property.title}"?`)) {
+                                    const result = await updateProperty(property._id, { isActive: !property.isActive });
+                                    if (result.success) {
+                                      toast({
+                                        title: "Success",
+                                        description: `Property ${property.isActive ? 'blocked' : 'unblocked'} successfully`,
+                                      });
+                                      // No need to call getAllProperties() - context already updates local state
+                                    } else {
+                                      toast({
+                                        title: "Error",
+                                        description: result.message || 'Failed to update property',
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }
+                                }}
+                              >
+                                <Pause className="w-4 h-4 sm:mr-1" />
+                                <span className="hidden sm:inline">{property.isActive ? 'Block' : 'Unblock'}</span>
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="text-red-600 hover:text-red-700 sm:flex-none"
+                                onClick={async () => {
+                                  if (window.confirm(`Are you sure you want to delete "${property.title}"? This action cannot be undone.`)) {
+                                    const result = await deleteProperty(property._id);
+                                    if (result.success) {
+                                      toast({
+                                        title: "Success",
+                                        description: 'Property deleted successfully',
+                                      });
+                                      // No need to call getAllProperties() - context already updates local state
+                                    } else {
+                                      toast({
+                                        title: "Error",
+                                        description: result.message || 'Failed to delete property',
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                  )}
+                </div>
+              )}
+
               {/* Users Tab */}
               {activeTab === 'users' && (
                 <div className="space-y-6">
@@ -376,9 +598,30 @@ const AdminPanel = () => {
                           />
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <Button variant="outline" size="sm" className="text-xs sm:text-sm">All Users</Button>
-                          <Button variant="outline" size="sm" className="text-xs sm:text-sm">Hosts</Button>
-                          <Button variant="outline" size="sm" className="text-xs sm:text-sm">Guests</Button>
+                          <Button 
+                            variant={userFilter === 'all' ? 'default' : 'outline'} 
+                            size="sm" 
+                            className="text-xs sm:text-sm"
+                            onClick={() => setUserFilter('all')}
+                          >
+                            All Users
+                          </Button>
+                          <Button 
+                            variant={userFilter === 'hosts' ? 'default' : 'outline'} 
+                            size="sm" 
+                            className="text-xs sm:text-sm"
+                            onClick={() => setUserFilter('hosts')}
+                          >
+                            Hosts
+                          </Button>
+                          <Button 
+                            variant={userFilter === 'guests' ? 'default' : 'outline'} 
+                            size="sm" 
+                            className="text-xs sm:text-sm"
+                            onClick={() => setUserFilter('guests')}
+                          >
+                            Guests
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
@@ -400,7 +643,7 @@ const AdminPanel = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {filteredUsers.map((user) => (
                       <motion.div
-                        key={user.id}
+                        key={user._id}
                         whileHover={{ y: -5 }}
                         transition={{ duration: 0.2 }}
                       >
@@ -409,22 +652,22 @@ const AdminPanel = () => {
                             <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 gap-3">
                               <div className="flex items-center space-x-3 flex-1 min-w-0">
                                 <div className="w-12 h-12 rounded-full bg-earth-brown/20 flex items-center justify-center text-earth-brown font-bold flex-shrink-0">
-                                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                                  {user.fullName?.charAt(0).toUpperCase() || 'U'}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <h3 className="font-semibold text-gray-900 truncate">{user.name || 'Unknown User'}</h3>
+                                  <h3 className="font-semibold text-gray-900 truncate">{user.fullName || 'Unknown User'}</h3>
                                   <p className="text-sm text-gray-600 truncate">{user.email}</p>
                                 </div>
                               </div>
                               <Badge variant={user.isActive ? 'default' : 'destructive'}>
-                                {user.isActive ? 'Active' : 'Inactive'}
+                                {user.isActive ? 'Active' : 'Suspended'}
                               </Badge>
                             </div>
 
                             <div className="space-y-2 mb-4">
                               <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">User Type:</span>
-                                <span className="font-medium text-earth-brown">{user.isHost ? 'Host' : 'Guest'}</span>
+                                <span className="text-gray-600">Role:</span>
+                                <span className="font-medium text-earth-brown capitalize">{user.role || 'user'}</span>
                               </div>
                               <div className="flex justify-between text-sm">
                                 <span className="text-gray-600">Joined:</span>
@@ -440,19 +683,80 @@ const AdminPanel = () => {
                                   <span className="font-medium">{user.phoneNumber}</span>
                                 </div>
                               )}
+                              {user.bookingCount !== undefined && (
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">Bookings:</span>
+                                  <span className="font-medium">{user.bookingCount}</span>
+                                </div>
+                              )}
+                              {user.propertyCount > 0 && (
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">Properties:</span>
+                                  <span className="font-medium">{user.propertyCount}</span>
+                                </div>
+                              )}
                             </div>
 
                             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                              <Button variant="outline" size="sm" className="flex-1">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="flex-1"
+                                onClick={() => window.open(`/host/${user._id}`, '_blank')}
+                              >
                                 <Eye className="w-4 h-4 sm:mr-1" />
                                 <span className="hidden sm:inline">View</span>
                               </Button>
-                              <Button variant="outline" size="sm" className="flex-1">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="flex-1"
+                                onClick={async () => {
+                                  if (window.confirm(`Are you sure you want to ${user.isActive ? 'suspend' : 'activate'} ${user.fullName}?`)) {
+                                    const result = await updateUser(user._id, { isActive: !user.isActive });
+                                    if (result.success) {
+                                      toast({
+                                        title: "Success",
+                                        description: `User ${user.isActive ? 'suspended' : 'activated'} successfully`,
+                                      });
+                                      // No need to call getAllUsers() - context already updates local state
+                                    } else {
+                                      toast({
+                                        title: "Error",
+                                        description: result.message || 'Failed to update user',
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }
+                                }}
+                              >
                                 <Pause className="w-4 h-4 sm:mr-1" />
-                                <span className="hidden sm:inline">Suspend</span>
+                                <span className="hidden sm:inline">{user.isActive ? 'Suspend' : 'Activate'}</span>
                               </Button>
-                              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 sm:flex-none">
-                                <MoreHorizontal className="w-4 h-4" />
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="text-red-600 hover:text-red-700 sm:flex-none"
+                                onClick={async () => {
+                                  if (window.confirm(`Are you sure you want to delete ${user.fullName}? This action cannot be undone.`)) {
+                                    const result = await deleteUser(user._id);
+                                    if (result.success) {
+                                      toast({
+                                        title: "Success",
+                                        description: 'User deleted successfully',
+                                      });
+                                      // No need to call getAllUsers() - context already updates local state
+                                    } else {
+                                      toast({
+                                        title: "Error",
+                                        description: result.message || 'Failed to delete user',
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
                           </CardContent>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 import { PropertyContext } from "../contexts/PropertyContext";
 import { motion } from "framer-motion";
+import StripeConnectSetup from "../components/StripeConnectSetup";
 import {
   ChevronRight,
   Home,
@@ -23,6 +24,7 @@ import {
   AlertCircle,
   Shield,
   Zap,
+  Trash2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -215,7 +217,7 @@ const HostDashboard = () => {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { authUser } = useContext(AuthContext);
-  const { userProperties, fetchUserProperties, loading } =
+  const { userProperties, fetchUserProperties, deleteProperty, loading } =
     useContext(PropertyContext);
 
   useEffect(() => {
@@ -306,6 +308,11 @@ const HostDashboard = () => {
 
           <div className="flex-1 p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
+              {/* Stripe Connect Setup */}
+              <div className="mb-8">
+                <StripeConnectSetup />
+              </div>
+
               <Tabs defaultValue="overview" className="w-full">
                 {/* Overview Tab */}
                 <TabsContent value="overview" className="space-y-8">
@@ -418,15 +425,30 @@ const HostDashboard = () => {
                                   </div>
                                 </CardContent>
                                 <CardFooter className="px-4 py-3 bg-gray-50 border-t border-cream-beige/30 flex justify-between">
-                                  <Link to={`/host/add-listing/${property._id}`}>
+                                  <div className="flex gap-2">
+                                    <Link to={`/host/add-listing/${property._id}`}>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-earth-brown hover:text-earth-brown/80 hover:bg-earth-brown/5 px-3"
+                                      >
+                                        Edit
+                                      </Button>
+                                    </Link>
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      className="text-earth-brown hover:text-earth-brown/80 hover:bg-earth-brown/5 px-3"
+                                      className="text-red-600 hover:text-red-700 hover:bg-red-50 px-3"
+                                      onClick={async () => {
+                                        if (window.confirm(`Are you sure you want to delete "${property.title}"? This action cannot be undone.`)) {
+                                          await deleteProperty(property._id);
+                                          fetchUserProperties(authUser._id);
+                                        }
+                                      }}
                                     >
-                                      Edit
+                                      <Trash2 size={16} />
                                     </Button>
-                                  </Link>
+                                  </div>
                                   <Link to={`/host/properties/${property._id}`}>
                                     <Button
                                       variant="ghost"

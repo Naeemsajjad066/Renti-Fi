@@ -6,7 +6,9 @@ import {
   getAllProperties,
   getAllBookings,
   adminUpdateUser,
+  adminDeleteUser,
   adminUpdateProperty,
+  adminDeleteProperty,
   getAdminLogs,
   verifyHostDocuments
 } from '../controllers/adminController.js';
@@ -19,10 +21,9 @@ import { protect, adminProtect } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// TEMPORARY: Only require authentication, not admin role
-// TODO: Re-enable adminProtect after setting up admin users
+// All admin routes require authentication AND admin role
 router.use(protect);
-// router.use(adminProtect); // Temporarily disabled for testing
+router.use(adminProtect);
 
 router.get('/dashboard/stats', getDashboardStats);
 router.get('/users', getAllUsers);
@@ -30,7 +31,9 @@ router.get('/properties', getAllProperties);
 router.get('/bookings', getAllBookings);
 router.get('/logs', getAdminLogs);
 router.put('/users/:userId', adminUpdateUser);
+router.delete('/users/:userId', adminDeleteUser);
 router.put('/properties/:propertyId', adminUpdateProperty);
+router.delete('/properties/:propertyId', adminDeleteProperty);
 router.put('/documents/:documentId/verify', verifyHostDocuments);
 
 // Property verification routes

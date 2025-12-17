@@ -1,10 +1,21 @@
 // controllers/propertyController.js
 import Property from "../models/Property.js";
+import User from "../models/User.js";
 import cloudinary from "../lib/cloudinary.js";
 
 // CREATE Property
 export const createProperty = async (req, res) => {
   try {
+    // Check if host has connected Stripe account
+    const host = await User.findById(req.user._id);
+    if (!host.stripeAccountId || !host.stripeOnboardingComplete) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please connect your Stripe account before listing a property',
+        requiresStripeSetup: true
+      });
+    }
+
     const {
       title,
       description,
@@ -22,6 +33,8 @@ export const createProperty = async (req, res) => {
       latitude,
       longitude,
       locationAccuracy,
+      paymentOptions,
+      cancellationPolicy
     } = req.body;
 
     // Separate files by field name - uploadFields returns an object
@@ -115,6 +128,9 @@ export const createProperty = async (req, res) => {
       isLocationVerified: !!(latitude && longitude),
       hostIdCard: idCardData,
       propertyDocuments: propertyDocumentsData,
+      paymentOptions: paymentOptions || '',
+      cancellationPolicy: cancellationPolicy || '',
+      stripeAccountId: host.stripeAccountId,
       verificationStatus: 'pending',
       isVerified: false,
       isActive: false // Property won't be shown until approved

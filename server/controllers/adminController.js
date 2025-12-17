@@ -17,25 +17,37 @@ export const getDashboardStats = async (req, res) => {
     const bookings = await Booking.find({ status: 'completed' });
     const totalRevenue = bookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
 
-    // Get recent activity counts
+    // Get recent activity
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const recentUsers = await User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
-    const recentBookings = await Booking.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
-    const recentProperties = await Property.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
+    const recentUsers = await User.find({ createdAt: { $gte: thirtyDaysAgo } })
+      .select('fullName email createdAt')
+      .sort({ createdAt: -1 })
+      .limit(5);
+    
+    const recentBookingsData = await Booking.find({ createdAt: { $gte: thirtyDaysAgo } })
+      .populate('guest', 'fullName')
+      .populate('property', 'title')
+      .select('guest property totalPrice createdAt')
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const activeUsers = await User.countDocuments({ isActive: true });
+    const activeProperties = await Property.countDocuments({ verificationStatus: 'approved', isActive: true });
 
     res.json({
       success: true,
       stats: {
         totalUsers,
+        activeUsers,
         totalProperties,
+        activeProperties,
         totalBookings,
         totalRevenue,
         pendingProperties,
         recentUsers,
-        recentBookings,
-        recentProperties
+        recentBookings: recentBookingsData
       }
     });
   } catch (error) {
@@ -194,6 +206,92 @@ export const adminUpdateProperty = async (req, res) => {
   } catch (error) {
     console.error('Error updating property:', error);
     res.status(500).json({ success: false, message: 'Error updating property' });
+  }
+};
+
+// DELETE Property (Admin)
+export const adminDeleteProperty = async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+
+    const property = await Property.findById(propertyId);
+
+    if (!property) {
+      return res.status(404).json({ success: false, message: 'Property not found' });
+    }
+
+    // Delete all bookings associated with this property
+    await Booking.deleteMany({ property: propertyId });
+
+    // Delete the property
+    await Property.findByIdAndDelete(propertyId);
+
+    // Log admin action
+    if (AdminLog) {
+      await AdminLog.create({
+        admin: req.user._id,
+        action: 'DELETE_PROPERTY',
+        targetType: 'Property',
+        targetId: propertyId,
+        details: `Deleted property: ${property.title}`,
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Property and associated bookings deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting property:', error);
+    res.status(500).json({ success: false, message: 'Error deleting property' });
+  }
+};
+
+// DELETE User (Admin)
+export const adminDeleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Don't allow deleting admin users
+    if (user.role === 'admin') {
+      return res.status(403).json({ success: false, message: 'Cannot delete admin users' });
+    }
+
+    // Delete user's properties if they are a host
+    if (user.isHost || user.role === 'host') {
+      await Property.deleteMany({ host: userId });
+    }
+
+    // Delete user's bookings
+    await Booking.deleteMany({ guest: userId });
+
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+
+    // Log admin action
+    if (AdminLog) {
+      await AdminLog.create({
+        admin: req.user._id,
+        action: 'DELETE_USER',
+        targetType: 'User',
+        targetId: userId,
+        details: `Deleted user: ${user.fullName}`,
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'User and associated data deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ success: false, message: 'Error deleting user' });
   }
 };
 
