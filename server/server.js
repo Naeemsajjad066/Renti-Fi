@@ -97,6 +97,23 @@ app.options('*', (req, res) => {
   res.sendStatus(200);
 });
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Rentifi API is running',
+    version: '1.0.0',
+    endpoints: {
+      status: '/api/status',
+      auth: '/api/auth',
+      properties: '/api/properties',
+      bookings: '/api/bookings',
+      reviews: '/api/reviews',
+      payments: '/api/payments'
+    }
+  });
+});
+
 // test route
 app.use("/api/status", (req, res) => res.send("Server is live"));
 
