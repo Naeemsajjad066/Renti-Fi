@@ -115,11 +115,10 @@ const PORT = process.env.PORT || 5000;
 // connect to mongodb
 await connectDB();
 
-// start server only after DB is connected
-if(process.env.NODE_ENV !=="production"){
-  server.listen(PORT, () => {
-    console.log("Server is running on port: " + PORT);
-  });
-}
+// start server - bind to 0.0.0.0 for cloud deployment
+server.listen(PORT, '0.0.0.0', () => {
+  console.log("Server is running on port: " + PORT);
+});
+
 //export server for vercel
 export default server;

@@ -10,23 +10,34 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_APP_PASSWORD
-  }
+  },
+  // Add connection timeout settings for production
+  connectionTimeout: 5000, // 5 seconds
+  greetingTimeout: 5000,
+  socketTimeout: 10000
 });
 
-// Only verify if credentials are available
+// Only verify if credentials are available - don't block server startup
 if (process.env.EMAIL_USER && process.env.EMAIL_APP_PASSWORD) {
+  // Use a timeout to prevent blocking server startup
+  const verifyTimeout = setTimeout(() => {
+    console.warn('⚠️ Email service verification timeout - continuing without verification');
+  }, 10000);
+
   transporter.verify((error) => {
+    clearTimeout(verifyTimeout);
     if (error) {
       console.error('❌ Email service unavailable:', error.message);
       if (error.code === 'EAUTH') {
         console.error('🔐 Check email credentials and app password');
       }
+      // Don't throw error, just log and continue
     } else {
       console.log('✅ Email service ready');
     }
   });
 } else {
-  console.warn('⚠️ Email credentials missing');
+  console.warn('⚠️ Email credentials missing - email features will be disabled');
 }
 
 // Email templates
