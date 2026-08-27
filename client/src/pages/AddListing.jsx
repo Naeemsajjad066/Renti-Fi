@@ -169,7 +169,8 @@ const AddListing = () => {
       }
     });
   };
-  
+
+
   // Location capture handlers
   const handleLocationCapture = (locationData) => {
     setFormData(prev => ({
