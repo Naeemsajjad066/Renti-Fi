@@ -1,0 +1,107 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Deploy — triggers only when CI passes on the main branch
+#
+# Strategy: SSH into your production server, pull latest code, rebuild,
+# and restart the Node.js process via PM2.
+#
+# Required GitHub Secrets (Settings → Secrets → Actions):
+#   DEPLOY_HOST          — server IP or hostname
+#   DEPLOY_USER          — SSH user (e.g. ubuntu, ec2-user, root)
+#   DEPLOY_SSH_KEY       — private SSH key (contents of ~/.ssh/id_rsa)
+#   DEPLOY_PATH          — absolute path on server (e.g. /var/www/rentifi)
+#   VITE_BACKEND_URL     — production API base URL
+#   VITE_API_URL         — same as above (used by Stripe redirect)
+#   VITE_STRIPE_PUBLISHABLE_KEY — live Stripe publishable key
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Deploy to Production
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    name: "Deploy — Production"
+    runs-on: ubuntu-latest
+    # Only deploy when CI succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18.x"
+          cache: "npm"
+          cache-dependency-path: client/package-lock.json
+
+      # ── Build frontend locally so we upload a clean dist ──────────────────
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Build client
+        working-directory: client
+        env:
+          VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+        run: npm run build
+
+      # ── Add SSH key ────────────────────────────────────────────────────────
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      # ── Upload built frontend to server ───────────────────────────────────
+      - name: Upload client/dist to server
+        run: |
+          rsync -az --delete \
+            client/dist/ \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/client/dist/
+
+      # ── SSH deploy script ──────────────────────────────────────────────────
+      - name: Deploy on server
+        run: |
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
+            set -e
+            cd ${{ secrets.DEPLOY_PATH }}
+
+            echo "==> Pulling latest code"
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "==> Installing server dependencies"
+            cd server
+            npm ci --omit=dev
+
+            echo "==> Restarting backend with PM2"
+            # Start app if not running, otherwise reload (zero-downtime)
+            pm2 describe rentifi-server > /dev/null 2>&1 \
+              && pm2 reload rentifi-server --update-env \
+              || pm2 start server.js \
+                   --name rentifi-server \
+                   --interpreter node \
+                   --env production
+
+            pm2 save
+
+            echo "==> Deploy complete"
+          ENDSSH
+
+      # ── Notify on failure ──────────────────────────────────────────────────
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Deploy failed — check the logs above for details."
+          echo "Rollback: SSH into the server and run: pm2 reload rentifi-server"

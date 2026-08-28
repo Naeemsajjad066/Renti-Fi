@@ -1,0 +1,168 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CI — runs on every push and pull-request
+#
+# Jobs:
+#   lint-client   TypeScript type-check + ESLint on the React frontend
+#   build-client  Production Vite build (confirms nothing will break at deploy)
+#   lint-server   Node.js syntax check on every JS file in server/
+#   test-server   Jest test suite for the Express backend
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: CI
+
+on:
+  push:
+    branches: ["**"]          # all branches
+  pull_request:
+    branches: ["**"]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true   # cancel stale runs when new commits arrive
+
+env:
+  NODE_VERSION: "18.x"
+
+jobs:
+  # ── 1. Frontend lint & type-check ─────────────────────────────────────────
+  lint-client:
+    name: "Client — Lint & Type-check"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: TypeScript type-check
+        working-directory: client
+        run: npx tsc --noEmit
+
+      - name: ESLint
+        working-directory: client
+        run: npm run lint
+
+  # ── 2. Frontend production build ───────────────────────────────────────────
+  build-client:
+    name: "Client — Production Build"
+    runs-on: ubuntu-latest
+    needs: lint-client           # only build if lint passes
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Build
+        working-directory: client
+        # Provide dummy env values so Vite doesn't fail on missing vars
+        env:
+          VITE_BACKEND_URL: "https://api.rentifi.com"
+          VITE_API_URL: "https://api.rentifi.com"
+          VITE_STRIPE_PUBLISHABLE_KEY: "pk_test_placeholder"
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-dist-${{ github.sha }}
+          path: client/dist
+          retention-days: 7
+
+  # ── 3. Backend syntax check ────────────────────────────────────────────────
+  lint-server:
+    name: "Server — Syntax Check"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Node.js syntax check (all JS files)
+        working-directory: server
+        # node --check validates syntax without executing the file
+        run: |
+          find . \
+            -name "*.js" \
+            -not -path "*/node_modules/*" \
+            -not -path "*/scripts/*" \
+          | while read f; do node --check "$f"; done
+
+  # ── 4. Backend tests ───────────────────────────────────────────────────────
+  test-server:
+    name: "Server — Jest Tests"
+    runs-on: ubuntu-latest
+    needs: lint-server
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Run Jest
+        working-directory: server
+        env:
+          NODE_ENV: test
+          MONGODB_URI: mongodb://localhost:27017/rentifi_test
+          JWT_SECRET: ci-test-secret-key-do-not-use-in-production
+          PORT: 5001
+          # Stripe — use test keys (set in repo secrets, dummy fallback for CI)
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY_TEST || 'sk_test_placeholder' }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET_TEST || 'whsec_placeholder' }}
+          # Cloudinary — optional for tests
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME || 'test' }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY || 'test' }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET || 'test' }}
+        run: npm test -- --forceExit --passWithNoTests
