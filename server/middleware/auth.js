@@ -24,7 +24,9 @@ export const protect = async (req, res, next) => {
 
     
     // Get user from token
-    const user = await User.findById(decoded.userId);
+    const user = await User.findById(decoded.userId).select(
+      '-password -emailVerificationToken -emailVerificationExpires'
+    );
     
     if (!user) {
       return res.status(401).json({
@@ -48,7 +50,16 @@ export const protect = async (req, res, next) => {
 // Optional: Admin protection middleware
 export const adminProtect = async (req, res, next) => {
   try {
-    await protect(req, res, () => {});
+    if (!req.user) {
+      let authenticated = false;
+      await protect(req, res, () => {
+        authenticated = true;
+      });
+
+      if (!authenticated) {
+        return;
+      }
+    }
     
     if (req.user.role !== 'admin') {
       return res.status(403).json({

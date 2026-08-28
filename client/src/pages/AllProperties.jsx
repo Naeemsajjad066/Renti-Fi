@@ -21,7 +21,7 @@ const AllProperties = () => {
   const cityParam = searchParams.get('city');
   const checkInParam = searchParams.get('checkIn');
   
-  const { properties, loading } = useContext(PropertyContext);
+  const { properties, loading, fetchProperties } = useContext(PropertyContext);
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [activeType, setActiveType] = useState('All');
   const [searchQuery, setSearchQuery] = useState(cityParam || '');
@@ -30,6 +30,10 @@ const AllProperties = () => {
 
   const propertyTypeOptions = ['All', 'Apartment', 'House', 'Villa', 'Cabin', 'Cottage', 'Loft', 'Condo', 'Townhouse'];
   const sortOptions = ['Price: Low to High', 'Price: High to Low', 'Rating: High to Low', 'Latest'];
+
+  useEffect(() => {
+    fetchProperties();
+  }, [fetchProperties]);
   
   // Format date for display
   const formatDate = (dateString) => {

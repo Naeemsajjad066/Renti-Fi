@@ -1,11 +1,7 @@
-import { createContext, useEffect, useState, useContext } from "react";
-import axios from "axios";
+import { createContext, useCallback, useEffect, useMemo, useState, useContext } from "react";
+import axios from "../lib/api";
 import toast from "react-hot-toast";
 import { useLoading } from "./LoadingContext";
-
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
-
-axios.defaults.baseURL = backendUrl;
 
 export const AuthContext = createContext();
 
@@ -16,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   const { showLoading, hideLoading } = useLoading();
 
   // check if user is authenticated
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const { data } = await axios.get("/api/auth/check");
       if (data.success) {
@@ -35,10 +31,10 @@ export const AuthProvider = ({ children }) => {
         console.error("Auth check error:", error.response?.data?.message || error.message);
       }
     }
-  };
+  }, []);
 
   // signup function
-  const register = async (credentials) => {
+  const register = useCallback(async (credentials) => {
     showLoading("Creating your account...");
     try {
       const { data } = await axios.post("/api/auth/signup", credentials);
@@ -66,10 +62,10 @@ export const AuthProvider = ({ children }) => {
     } finally {
       hideLoading();
     }
-  };
+  }, [hideLoading, showLoading]);
 
   // verify email function
-  const verifyEmail = async (email, code, userData) => {
+  const verifyEmail = useCallback(async (email, code, userData) => {
     showLoading("Verifying your email...");
     try {
       const { data } = await axios.post("/api/auth/verify-email", {
@@ -91,10 +87,10 @@ export const AuthProvider = ({ children }) => {
     } finally {
       hideLoading();
     }
-  };
+  }, [hideLoading, showLoading]);
 
   // resend verification code function
-  const resendVerificationCode = async (email, fullName) => {
+  const resendVerificationCode = useCallback(async (email, fullName) => {
     showLoading("Sending verification code...");
     try {
       const { data } = await axios.post("/api/auth/resend-verification", {
@@ -115,10 +111,10 @@ export const AuthProvider = ({ children }) => {
     } finally {
       hideLoading();
     }
-  };
+  }, [hideLoading, showLoading]);
 
   // login function
-  const login = async (credentials) => {
+  const login = useCallback(async (credentials) => {
     showLoading("Signing you in...");
     try {
       const { data } = await axios.post(`/api/auth/login`, credentials);
@@ -138,19 +134,19 @@ export const AuthProvider = ({ children }) => {
     } finally {
       hideLoading();
     }
-  };
+  }, [hideLoading, showLoading]);
 
   // logout function
-  const logout = async () => {
+  const logout = useCallback(async () => {
     localStorage.removeItem("token");
     setToken(null);
     setAuthUsr(null);
     delete axios.defaults.headers.common["Authorization"];
     toast.success("Logged out successfully");
-  };
+  }, []);
 
   // forgot password function
-  const forgotPassword = async (email) => {
+  const forgotPassword = useCallback(async (email) => {
     showLoading("Sending reset code...");
     try {
       const { data } = await axios.post("/api/auth/forgot-password", { email });
@@ -168,10 +164,10 @@ export const AuthProvider = ({ children }) => {
     } finally {
       hideLoading();
     }
-  };
+  }, [hideLoading, showLoading]);
 
   // reset password function
-  const resetPassword = async (email, code, newPassword) => {
+  const resetPassword = useCallback(async (email, code, newPassword) => {
     showLoading("Resetting password...");
     try {
       const { data } = await axios.post("/api/auth/reset-password", {
@@ -193,10 +189,10 @@ export const AuthProvider = ({ children }) => {
     } finally {
       hideLoading();
     }
-  };
+  }, [hideLoading, showLoading]);
 
   // update profile function
-  const updateProfile = async (body) => {
+  const updateProfile = useCallback(async (body) => {
     showLoading("Updating profile...");
     try {
       const { data } = await axios.put("/api/auth/update-profile", body);
@@ -215,7 +211,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       hideLoading();
     }
-  };
+  }, [hideLoading, showLoading]);
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -236,7 +232,7 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     axios,
     authUser,
     token,
@@ -249,7 +245,7 @@ export const AuthProvider = ({ children }) => {
     resetPassword,
     logout,
     updateProfile,
-  };
+  }), [authUser, forgotPassword, isAuthLoading, login, logout, register, resendVerificationCode, resetPassword, token, updateProfile, verifyEmail]);
 
   return (
     <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

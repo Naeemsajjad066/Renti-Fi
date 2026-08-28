@@ -299,20 +299,40 @@ export const deleteProperty = async (req, res) => {
 // GET properties of logged-in user
 export const getUserProperties = async (req, res) => {
   try {
-    const userId = req.params.userId || req.user._id;
-    console.log('Fetching properties for user:', userId);
+    const requestedUserId = req.params.userId;
+    const currentUserId = req.user._id.toString();
+
+    if (requestedUserId && requestedUserId !== currentUserId && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    const userId = requestedUserId || currentUserId;
     const properties = await Property.find({ host: userId });
-    console.log(`Found ${properties.length} properties for user ${userId}`);
-    console.log('Properties:', properties.map(p => ({ 
-      id: p._id, 
-      title: p.title, 
-      verificationStatus: p.verificationStatus,
-      isActive: p.isActive 
-    })));
     res.json({ success: true, properties });
   } catch (error) {
     console.error('Error fetching user properties:', error);
     res.status(500).json({ success: false, message: "Error fetching user properties" });
+  }
+};
+
+// GET approved properties for a public host profile
+export const getPublicHostProperties = async (req, res) => {
+  try {
+    const properties = await Property.find({
+      host: req.params.hostId,
+      isActive: true,
+      verificationStatus: 'approved'
+    })
+      .select('-hostIdCard -propertyDocuments -verifiedBy -rejectionReason -adminNotes -stripeAccountId')
+      .populate('host', 'fullName profilePic bio createdAt')
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, properties });
+  } catch (error) {
+    res.status(404).json({ success: false, message: 'Host properties not found' });
   }
 };
 

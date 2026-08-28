@@ -1,41 +1,9 @@
 // src/context/PropertyContext.jsx
-import { createContext, useEffect, useState } from "react";
-import axios from "axios";
+import { createContext, useCallback, useEffect, useMemo, useState } from "react";
+import axios from "../lib/api";
 import toast from "react-hot-toast";
 
 export const PropertyContext = createContext();
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
-
-axios.defaults.baseURL = backendUrl;
-
-// ✅ Attach token globally for all requests
-axios.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// ✅ Handle 401 responses globally
-axios.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Don't show toast for 401 on auth check requests
-      const isAuthCheck = error.config?.url?.includes('/api/auth/check');
-      if (!isAuthCheck) {
-        // Unauthorized request handled silently
-      }
-      
-      // Clear invalid tokens
-      localStorage.removeItem("token");
-      delete axios.defaults.headers.common["Authorization"];
-    }
-    return Promise.reject(error);
-  }
-);
-
 export const PropertyProvider = ({ children }) => {
   const [properties, setProperties] = useState([]);
   const [featuredProperties, setFeaturedProperties] = useState([]);
@@ -45,7 +13,7 @@ export const PropertyProvider = ({ children }) => {
   const [cache, setCache] = useState(new Map());
 
   // ✅ Get all properties
-  const fetchProperties = async () => {
+  const fetchProperties = useCallback(async () => {
     try {
       setLoading(true);
       const { data } = await axios.get("/api/properties");
@@ -57,10 +25,10 @@ export const PropertyProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // ✅ Get featured properties
-  const fetchFeaturedProperties = async () => {
+  const fetchFeaturedProperties = useCallback(async () => {
     try {
       const { data } = await axios.get("/api/properties/featured");
       if (data.success) {
@@ -69,10 +37,10 @@ export const PropertyProvider = ({ children }) => {
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
     }
-  };
+  }, []);
 
   // ✅ Get single property with caching
-  const fetchPropertyById = async (id) => {
+  const fetchPropertyById = useCallback(async (id) => {
     try {
       setLoading(true);
       setSelectedProperty(null); // Clear previous property
@@ -108,10 +76,10 @@ export const PropertyProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [cache]);
 
   // ✅ Get properties of logged-in user
-  const fetchUserProperties = async (userId) => {
+  const fetchUserProperties = useCallback(async (userId) => {
     try {
       console.log('Fetching user properties for userId:', userId);
       const { data } = await axios.get(`/api/properties/user/${userId || ""}`);
@@ -124,10 +92,10 @@ export const PropertyProvider = ({ children }) => {
       console.error('Error fetching user properties:', error);
       toast.error(error.response?.data?.message || error.message);
     }
-  };
+  }, []);
 
   // ✅ Create property
-  const createProperty = async (formData) => {
+  const createProperty = useCallback(async (formData) => {
     try {
       const { data } = await axios.post("/api/properties", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -141,10 +109,10 @@ export const PropertyProvider = ({ children }) => {
       toast.error(error.response?.data?.message || error.message);
       throw error;
     }
-  };
+  }, []);
 
   // ✅ Update property
-  const updateProperty = async (id, formData) => {
+  const updateProperty = useCallback(async (id, formData) => {
     try {
       const { data } = await axios.put(`/api/properties/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -160,10 +128,10 @@ export const PropertyProvider = ({ children }) => {
       toast.error(error.response?.data?.message || error.message);
       throw error;
     }
-  };
+  }, []);
 
   // ✅ Delete property
-  const deleteProperty = async (id) => {
+  const deleteProperty = useCallback(async (id) => {
     try {
       const { data } = await axios.delete(`/api/properties/${id}`);
       if (data.success) {
@@ -189,24 +157,19 @@ export const PropertyProvider = ({ children }) => {
         hasUpcomingBookings: errorData?.hasUpcomingBookings
       };
     }
-  };
+  }, []);
 
   // ✅ Check availability (if backend supports it)
-  const checkAvailability = async (id) => {
+  const checkAvailability = useCallback(async (id) => {
     try {
       const { data } = await axios.get(`/api/properties/${id}/availability`);
       return data;
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
     }
-  };
-
-  useEffect(() => {
-    fetchProperties();
-    fetchFeaturedProperties();
   }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     properties,
     featuredProperties,
     userProperties,
@@ -220,7 +183,7 @@ export const PropertyProvider = ({ children }) => {
     updateProperty,
     deleteProperty,
     checkAvailability,
-  };
+  }), [checkAvailability, createProperty, deleteProperty, fetchFeaturedProperties, fetchProperties, fetchPropertyById, fetchUserProperties, loading, properties, featuredProperties, selectedProperty, userProperties]);
 
   return (
     <PropertyContext.Provider value={value}>

@@ -26,80 +26,55 @@ const HostProfile = () => {
   const [hostProperties, setHostProperties] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
   
   useEffect(() => {
     const fetchHostProfile = async () => {
       setIsLoading(true);
       try {
-        const token = localStorage.getItem('token');
-        
-        // Fetch host details
-        const hostResponse = await fetch(`http://localhost:5000/api/auth/user/${hostId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        // ✅ correct mount point: /api/auth (not /api/users)
+        const hostResponse = await fetch(`${backendUrl}/api/auth/public/${hostId}`);
         
         if (!hostResponse.ok) {
-          console.error('Host fetch failed:', hostResponse.status, hostResponse.statusText);
           throw new Error('Host not found');
         }
         
         const hostData = await hostResponse.json();
-        console.log('Host data received:', hostData);
-        
-        // Extract host information from different possible data structures
-        const hostInfo = hostData.user || hostData.data || hostData;
-        console.log('Processed host info:', hostInfo);
+
+        if (!hostData.success) {
+          throw new Error(hostData.message || 'Host not found');
+        }
+
+        const hostInfo = hostData.user;
         
         // Fetch host's properties
-        const propertiesResponse = await fetch(`http://localhost:5000/api/properties/user/${hostId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
+        const propertiesResponse = await fetch(`${backendUrl}/api/properties/host/${hostId}`);
         if (propertiesResponse.ok) {
           const propertiesData = await propertiesResponse.json();
-          console.log('Properties data:', propertiesData);
           setHostProperties(propertiesData.properties || []);
         } else {
-          console.warn('Failed to fetch host properties');
           setHostProperties([]);
         }
 
-        // Ensure we have a valid host object with required fields
+        // ✅ Build processed host — set explicit fields AFTER spreading so they
+        //    don't get clobbered by the spread (previous code did it in reverse)
         const processedHost = {
-          _id: hostInfo._id || hostId,
-          fullName: hostInfo.fullName || hostInfo.name || 'Host',
-          email: hostInfo.email || '',
-          profilePic: hostInfo.profilePic || hostInfo.profilePicture || hostInfo.image || hostInfo.avatar,
-          phone: hostInfo.phone || hostInfo.phoneNumber,
-          createdAt: hostInfo.createdAt || new Date(),
-          bio: hostInfo.bio || hostInfo.description || '',
-          ...hostInfo
+          ...hostInfo,
+          _id:        hostInfo._id        || hostId,
+          fullName:   hostInfo.fullName   || hostInfo.name || 'Host',
+          email:      hostInfo.email      || null,
+          // ✅ prefer profilePic (what the DB stores), fall back gracefully
+          profilePic: hostInfo.profilePic || hostInfo.profilePicture || hostInfo.image || hostInfo.avatar || null,
+          phone:      hostInfo.phone      || hostInfo.phoneNumber    || null,
+          createdAt:  hostInfo.createdAt  || new Date(),
+          bio:        hostInfo.bio        || hostInfo.description    || '',
         };
         
-        console.log('Final processed host:', processedHost);
         setHost(processedHost);
       } catch (error) {
-        console.error('Error fetching host profile:', error);
-        
-        // Fallback: Create a mock host profile for demonstration
-        console.log('Using fallback host profile');
-        setHost({
-          _id: hostId,
-          fullName: 'Professional Host',
-          email: 'host@rentifi.com',
-          profilePicture: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-          phone: '+92 300 1234567',
-          createdAt: new Date('2023-01-01'),
-          bio: 'Welcome to my host profile! I am a dedicated host with years of experience in hospitality. I am committed to providing exceptional service and comfortable accommodations for all my guests.'
-        });
+        setError(error.message || 'Unable to load host profile');
+        setHost(null);
         setHostProperties([]);
-        setError(null); // Clear error to show fallback content
       } finally {
         setIsLoading(false);
       }
@@ -165,31 +140,8 @@ const HostProfile = () => {
   const totalReviews = hostProperties.reduce((sum, prop) => sum + (prop.totalReviews || 0), 0);
   const joinDate = new Date(host.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   
-  // Get the best available profile picture
-  const getProfilePicture = () => {
-    // Check for the actual database field 'profilePic' first
-    if (host.profilePic && host.profilePic.trim() !== '') {
-      console.log('Using actual profile picture:', host.profilePic);
-      return host.profilePic;
-    }
-    
-    // Fallback to other possible field names
-    const possibleImages = [
-      host.profilePicture,
-      host.image,
-      host.avatar,
-      host.photo
-    ].filter(Boolean);
-    
-    if (possibleImages.length > 0) {
-      console.log('Using fallback profile picture:', possibleImages[0]);
-      return possibleImages[0];
-    }
-    
-    // Only use placeholder if no real image is found
-    console.log('No profile picture found, using placeholder');
-    return '/placeholder.svg';
-  };
+  // profilePic is already resolved in processedHost — just fall back to placeholder
+  const getProfilePicture = () => host.profilePic || '/placeholder.svg';
 
   return (
     <PageTransition>

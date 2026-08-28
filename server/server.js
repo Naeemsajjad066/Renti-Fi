@@ -1,6 +1,7 @@
 import express from "express";
 import "dotenv/config";
 import cors from "cors";
+import helmet from "helmet";
 import http from "http";
 import mongoSanitize from 'express-mongo-sanitize';
 import { connectDB } from "./lib/db.js";
@@ -23,6 +24,7 @@ app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 
 // middleware setup
 app.use(express.json({ limit: "4mb" }));
+app.use(helmet());
 
 // Security middleware - sanitize data to prevent NoSQL injection
 app.use(mongoSanitize());
@@ -42,10 +44,10 @@ app.use(cors({
       process.env.FRONTEND_URL
     ].filter(Boolean);
     
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
       callback(null, true);
     } else {
-      callback(null, true); // Allow all origins in development
+      callback(new Error('Origin not allowed by CORS'));
     }
   },
   credentials: true,
@@ -71,8 +73,6 @@ app.use((req, res, next) => {
   res.setHeader('X-XSS-Protection', '1; mode=block');
   
   // Performance headers
-  res.setHeader('X-Powered-By', 'RentiFi');
-  
   // Log requests in development
   if (process.env.NODE_ENV === 'development') {
     console.log(`${req.method} ${req.path} - Origin: ${req.get('Origin')}`);

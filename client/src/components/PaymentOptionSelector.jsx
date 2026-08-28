@@ -1,145 +1,154 @@
 import React from 'react';
-import { CreditCard, Banknote, Info } from 'lucide-react';
+import { CreditCard, Banknote, ShieldCheck, Clock } from 'lucide-react';
 
-const PaymentOptionSelector = ({ 
-  selectedOption, 
-  onOptionChange, 
-  totalPrice, 
-  propertyPaymentOptions 
+/**
+ * PaymentOptionSelector
+ * Renders 1 or 2 stacked payment option cards that match the booking card's
+ * earth-brown design system. Cards are always full-width (never side-by-side)
+ * so they fit cleanly inside the narrow booking sidebar.
+ */
+const PaymentOptionSelector = ({
+  selectedOption,
+  onOptionChange,
+  totalPrice,
+  propertyPaymentOptions,
 }) => {
-  
-  const upfrontAmount = (totalPrice * 0.4).toFixed(0);
-  const arrivalAmount = (totalPrice * 0.6).toFixed(0);
+  const upfront  = Math.round(totalPrice * 0.4);
+  const onArrival = Math.round(totalPrice * 0.6);
 
-  const paymentOptions = [
+  const options = [
     {
       id: 'arrival',
+      icon: Banknote,
       title: 'Pay on Arrival',
-      icon: <Banknote className="w-6 h-6" />,
-      description: 'Pay full amount in cash when you arrive',
-      breakdown: [
-        { label: 'Due on arrival', amount: totalPrice }
+      subtitle: 'Full cash payment when you check in',
+      pill: { label: 'No card needed', color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400' },
+      meta: [
+        { label: 'Due today',    value: 'Rs 0',                     muted: true  },
+        { label: 'Due on arrival', value: `Rs ${totalPrice.toLocaleString()}`, bold: true },
       ],
-      badge: 'No upfront payment',
-      available: propertyPaymentOptions === 'arrival' || propertyPaymentOptions === 'both'
+      available: propertyPaymentOptions === 'arrival' || propertyPaymentOptions === 'both',
     },
     {
       id: 'early',
-      title: 'Pay Now (40% Advance)',
-      icon: <CreditCard className="w-6 h-6" />,
-      description: 'Secure your booking with online payment',
-      breakdown: [
-        { label: 'Pay now (40%)', amount: parseInt(upfrontAmount) },
-        { label: 'Due on arrival (60%)', amount: parseInt(arrivalAmount) }
+      icon: CreditCard,
+      title: 'Pay 40% Now',
+      subtitle: 'Secure your stay with Stripe',
+      pill: { label: 'Instant confirmation', color: 'text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400' },
+      meta: [
+        { label: 'Due today (40%)',    value: `Rs ${upfront.toLocaleString()}`,   bold: true  },
+        { label: 'Due on arrival (60%)', value: `Rs ${onArrival.toLocaleString()}`, muted: true },
       ],
-      badge: 'Secure with Stripe',
-      available: propertyPaymentOptions === 'early' || propertyPaymentOptions === 'both'
-    }
+      available: propertyPaymentOptions === 'early' || propertyPaymentOptions === 'both',
+    },
   ];
 
-  const availableOptions = paymentOptions.filter(opt => opt.available);
+  const available = options.filter(o => o.available);
 
-  if (availableOptions.length === 0) {
+  if (available.length === 0) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-        <p className="text-red-600">Payment options not configured for this property</p>
+      <div className="rounded-xl border border-red-200 dark:border-red-800/40 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-600 dark:text-red-400 text-center">
+        No payment methods configured for this property.
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-        <CreditCard className="w-5 h-5" />
-        Choose Payment Method
-      </h3>
-      
-      <div className="grid gap-4 md:grid-cols-2">
-        {availableOptions.map((option) => (
-          <label
-            key={option.id}
-            className={`relative flex flex-col p-4 border-2 rounded-lg cursor-pointer transition-all ${
-              selectedOption === option.id
-                ? 'border-[#D4AF37] bg-[#D4AF37]/5'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <input
-              type="radio"
-              name="paymentOption"
-              value={option.id}
-              checked={selectedOption === option.id}
-              onChange={(e) => onOptionChange(e.target.value)}
-              className="sr-only"
-            />
-            
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${
-                  selectedOption === option.id
-                    ? 'bg-[#D4AF37] text-white'
-                    : 'bg-gray-100 text-gray-600'
-                }`}>
-                  {option.icon}
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">{option.title}</h4>
-                  <p className="text-sm text-gray-500">{option.description}</p>
-                </div>
-              </div>
-              
-              {selectedOption === option.id && (
-                <div className="w-5 h-5 rounded-full bg-[#D4AF37] flex items-center justify-center">
-                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              )}
-            </div>
+    <div>
+      {/* Section label */}
+      <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2.5">
+        Payment Method
+      </p>
 
-            <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
-              {option.breakdown.map((item, index) => (
-                <div key={index} className="flex justify-between text-sm">
-                  <span className="text-gray-600">{item.label}</span>
-                  <span className="font-semibold text-gray-900">
-                    Rs {item.amount.toLocaleString()}
+      <div className="space-y-2">
+        {available.map((opt) => {
+          const isSelected = selectedOption === opt.id;
+          const Icon = opt.icon;
+
+          return (
+            <label
+              key={opt.id}
+              className={[
+                'flex items-start gap-3.5 rounded-xl border-2 px-4 py-3.5 cursor-pointer transition-all duration-150 select-none',
+                isSelected
+                  ? 'border-earth-brown bg-earth-brown/5 dark:bg-earth-brown/10'
+                  : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-800',
+              ].join(' ')}
+            >
+              <input
+                type="radio"
+                name="paymentOption"
+                value={opt.id}
+                checked={isSelected}
+                onChange={(e) => onOptionChange(e.target.value)}
+                className="sr-only"
+              />
+
+              {/* Icon */}
+              <div
+                className={[
+                  'w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5 transition-colors',
+                  isSelected
+                    ? 'bg-earth-brown text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400',
+                ].join(' ')}
+              >
+                <Icon size={17} />
+              </div>
+
+              {/* Body */}
+              <div className="flex-1 min-w-0">
+                {/* Title row */}
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`text-sm font-semibold leading-tight ${isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>
+                    {opt.title}
+                  </span>
+                  {/* Custom radio dot */}
+                  <span
+                    className={[
+                      'w-4.5 h-4.5 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors',
+                      isSelected
+                        ? 'border-earth-brown bg-earth-brown'
+                        : 'border-gray-300 dark:border-gray-600',
+                    ].join(' ')}
+                  >
+                    {isSelected && (
+                      <span className="w-[7px] h-[7px] rounded-full bg-white block" />
+                    )}
                   </span>
                 </div>
-              ))}
-            </div>
 
-            <div className="mt-3">
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                option.id === 'early'
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-blue-100 text-blue-800'
-              }`}>
-                {option.badge}
-              </span>
-            </div>
-          </label>
-        ))}
+                {/* Subtitle */}
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 mb-2.5">{opt.subtitle}</p>
+
+                {/* Amount breakdown */}
+                <div className="space-y-1">
+                  {opt.meta.map((row) => (
+                    <div key={row.label} className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{row.label}</span>
+                      <span
+                        className={`text-xs font-semibold ${
+                          row.muted
+                            ? 'text-gray-400 dark:text-gray-500'
+                            : 'text-gray-900 dark:text-white'
+                        }`}
+                      >
+                        {row.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pill */}
+                <span className={`inline-flex items-center gap-1 mt-2.5 text-[11px] font-medium px-2 py-0.5 rounded-full ${opt.pill.color}`}>
+                  {opt.id === 'early' ? <ShieldCheck size={10} /> : <Clock size={10} />}
+                  {opt.pill.label}
+                </span>
+              </div>
+            </label>
+          );
+        })}
       </div>
-
-      {selectedOption === 'early' && (
-        <div className="flex items-start gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-          <div className="text-sm text-blue-900">
-            <p className="font-medium mb-1">Secure Online Payment</p>
-            <p>You'll pay 40% now to confirm your booking. The remaining 60% is due upon arrival at the property.</p>
-          </div>
-        </div>
-      )}
-
-      {selectedOption === 'arrival' && (
-        <div className="flex items-start gap-2 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-          <Info className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-          <div className="text-sm text-amber-900">
-            <p className="font-medium mb-1">Cash Payment on Arrival</p>
-            <p>Your booking will be reserved. Full payment of Rs {totalPrice.toLocaleString()} is required when you check in.</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

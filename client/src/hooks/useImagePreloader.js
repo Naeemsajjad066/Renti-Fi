@@ -60,6 +60,13 @@ export const useOptimizedImage = (src, options = {}) => {
   useEffect(() => {
     if (!src) return;
 
+    if (options.priority !== 'high') {
+      setCurrentSrc(src);
+      setIsLoaded(false);
+      setHasError(false);
+      return;
+    }
+
     const img = new Image();
     
     img.onload = () => {

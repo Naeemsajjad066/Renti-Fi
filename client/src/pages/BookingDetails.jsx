@@ -15,38 +15,38 @@ import {
   CheckCircle,
   XCircle,
   ExternalLink,
-  Download,
-  MessageSquare
+  ChevronLeft
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
 import { Button } from '@/components/ui/button';
-import axios from 'axios';
+import api from '../lib/api';          // ← authenticated axios instance
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 
 const BookingDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { authUser } = useAuth();        // ← was `user`, context exports `authUser`
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [isHost, setIsHost] = useState(false);
 
   useEffect(() => {
-    fetchBookingDetails();
-  }, [id]);
+    if (id && authUser) fetchBookingDetails();
+  }, [id, authUser]);
 
   const fetchBookingDetails = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`/api/bookings/${id}`);
+      const { data } = await api.get(`/api/bookings/${id}`);  // ← uses authenticated instance
       if (data.success) {
         setBooking(data.booking);
         // Check if current user is the host
-        setIsHost(user?._id === data.booking.host?._id || user?._id === data.booking.host);
+        const hostId = data.booking.host?._id || data.booking.host;
+        setIsHost(authUser?._id?.toString() === hostId?.toString());
       }
     } catch (error) {
       console.error('Error fetching booking details:', error);
@@ -60,18 +60,15 @@ const BookingDetails = () => {
 
   const handleCancelBooking = async () => {
     if (!window.confirm(
-      'Are you sure you want to cancel this booking?\n\n⚠️ IMPORTANT: If you paid upfront (40%), that amount will NOT be refunded. Only the remaining amount will be refunded if applicable.'
-    )) {
-      return;
-    }
+      'Are you sure you want to cancel this booking?\n\nIf you paid 40% upfront, that amount will NOT be refunded.'
+    )) return;
 
     try {
       setCancelling(true);
-      const { data } = await axios.post(`/api/bookings/${id}/cancel`);
-      
+      const { data } = await api.post(`/api/bookings/${id}/cancel`);  // ← authenticated
       if (data.success) {
         toast.success('Booking cancelled successfully');
-        fetchBookingDetails(); // Refresh booking data
+        fetchBookingDetails();
       }
     } catch (error) {
       console.error('Error cancelling booking:', error);

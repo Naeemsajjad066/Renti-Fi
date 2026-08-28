@@ -32,6 +32,13 @@ export const createBooking = async (req, res) => {
     checkInDateNormalized.setUTCHours(0, 0, 0, 0);
     
     // Validate dates
+    if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid booking dates'
+      });
+    }
+
     if (checkInDateNormalized < today) {
       return res.status(400).json({
         success: false,
@@ -52,6 +59,13 @@ export const createBooking = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Property not found'
+      });
+    }
+
+    if (!property.isActive || property.verificationStatus !== 'approved') {
+      return res.status(400).json({
+        success: false,
+        message: 'This property is not available for booking'
       });
     }
 
@@ -209,20 +223,18 @@ export const createBooking = async (req, res) => {
 // Get user bookings (both as guest and host)
 export const getUserBookings = async (req, res) => {
   try {
-    // Use userId from params if provided, otherwise use authenticated user ID
-    const userId = req.params.userId || req.user._id;
-    const { type = 'guest' } = req.query; // 'guest' or 'host'
-
-    // If accessing another user's bookings, ensure they have permission
-    if (req.params.userId && req.params.userId !== req.user._id.toString()) {
-      // Only allow if requesting host bookings (for host dashboard)
-      if (type !== 'host') {
-        return res.status(403).json({
-          success: false,
-          message: 'Access denied'
-        });
-      }
+    // Only admins may request another user's bookings.
+    const requestedUserId = req.params.userId;
+    const currentUserId = req.user._id.toString();
+    if (requestedUserId && requestedUserId !== currentUserId && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
     }
+
+    const userId = requestedUserId || currentUserId;
+    const { type = 'guest' } = req.query; // 'guest' or 'host'
 
     let query = {};
     if (type === 'guest') {
@@ -304,7 +316,7 @@ export const updateBookingStatus = async (req, res) => {
     const { status } = req.body;
     const userId = req.user._id;
 
-    const validStatuses = ['pending', 'confirmed', 'cancelled', 'completed'];
+    const validStatuses = ['confirmed', 'checked-in', 'completed', 'cancelled'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -325,6 +337,21 @@ export const updateBookingStatus = async (req, res) => {
       return res.status(403).json({
         success: false,
         message: 'Only the host can update booking status'
+      });
+    }
+
+    const allowedTransitions = {
+      reserved: ['confirmed', 'cancelled'],
+      confirmed: ['checked-in', 'cancelled'],
+      'checked-in': ['completed'],
+      completed: [],
+      cancelled: [],
+      expired: []
+    };
+    if (!allowedTransitions[booking.status]?.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot change booking status from ${booking.status} to ${status}`
       });
     }
 
@@ -471,6 +498,13 @@ export const checkAvailability = async (req, res) => {
       });
     }
 
+    if (checkOutDate <= checkInDate) {
+      return res.status(400).json({
+        success: false,
+        message: 'Check-out date must be after check-in date'
+      });
+    }
+
     // Check if property exists
     const property = await Property.findById(propertyId);
     if (!property) {
@@ -480,10 +514,20 @@ export const checkAvailability = async (req, res) => {
       });
     }
 
+    if (!property.isActive || property.verificationStatus !== 'approved') {
+      return res.json({
+        success: true,
+        available: false,
+        conflictingBookings: 0,
+        propertyId,
+        dates: { checkIn, checkOut }
+      });
+    }
+
     // Find overlapping bookings
     const overlappingBookings = await Booking.find({
       property: propertyId,
-      status: { $in: ['confirmed', 'pending'] },
+      status: { $in: ['reserved', 'confirmed', 'checked-in'] },
       $or: [
         { checkIn: { $lt: checkOutDate }, checkOut: { $gt: checkInDate } },
         { checkIn: { $gte: checkInDate, $lt: checkOutDate } }
@@ -505,7 +549,7 @@ export const checkAvailability = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to check availability',
-      available: true // Default to available on error
+      available: false
     });
   }
 };
@@ -522,7 +566,7 @@ export const getBookedRanges = async (req, res) => {
     // Fetch bookings that are confirmed or pending (these block dates)
     const bookings = await Booking.find({
       property: propertyId,
-      status: { $in: ['confirmed', 'pending'] }
+      status: { $in: ['reserved', 'confirmed', 'checked-in'] }
     }).select('checkIn checkOut status').sort({ checkIn: 1 });
 
     const ranges = bookings.map(b => ({ from: b.checkIn, to: b.checkOut }));

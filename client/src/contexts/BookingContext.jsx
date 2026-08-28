@@ -1,39 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../lib/api";
 import toast from "react-hot-toast";
 import { AuthContext } from "./AuthContext";
 import { useLoading } from "./LoadingContext";
 
 export const BookingContext = createContext();
-
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
-axios.defaults.baseURL = backendUrl;
-
-// Attach token globally for all requests
-axios.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Handle 401 responses globally
-axios.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      const isAuthCheck = error.config?.url?.includes('/api/auth/check');
-      if (!isAuthCheck) {
-        // Unauthorized request handled silently
-      }
-      
-      localStorage.removeItem("token");
-      delete axios.defaults.headers.common["Authorization"];
-    }
-    return Promise.reject(error);
-  }
-);
 
 export const BookingProvider = ({ children }) => {
   const { authUser } = useContext(AuthContext);
@@ -108,7 +79,13 @@ export const BookingProvider = ({ children }) => {
       const response = await axios.get('/api/bookings?type=guest');
       
       if (response?.data?.success) {
-        setGuestBookings(response.data.bookings || []);
+        const fetched = response.data.bookings || [];
+        setGuestBookings(fetched);
+        // Also refresh the combined bookings array so all consumers stay in sync
+        setBookings(prev => {
+          const hostOnly = prev.filter(b => b.host?._id === authUser._id || b.host === authUser._id);
+          return [...hostOnly, ...fetched];
+        });
       } else {
         throw new Error(response?.data?.message || 'Failed to fetch guest bookings');
       }
@@ -161,16 +138,16 @@ export const BookingProvider = ({ children }) => {
   };
 
   // ✅ Get single booking by ID
-  const fetchBookingById = async (id) => {
+  const fetchBookingById = async (id, { skipCache = false } = {}) => {
     try {
       setLoading(true);
       
-      // Check cache first
+      // Check cache first (unless caller asks to skip)
       const cacheKey = `booking_${id}`;
       const cachedBooking = cache.get(cacheKey);
       const now = Date.now();
       
-      if (cachedBooking && (now - cachedBooking.timestamp) < 300000) {
+      if (!skipCache && cachedBooking && (now - cachedBooking.timestamp) < 300000) {
         setSelectedBooking(cachedBooking.data);
         setLoading(false);
         return cachedBooking.data;

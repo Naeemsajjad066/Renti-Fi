@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -61,6 +61,7 @@ const HostBookings = () => {
     setSearchTerm,
     updateBookingStatus,
     refreshBookings,
+    fetchHostBookings,
     getStatusBadge,
     formatCurrency,
     formatDate,
@@ -68,6 +69,11 @@ const HostBookings = () => {
     getBookingStats,
     getFilteredBookings
   } = useBooking();
+
+  // Fetch fresh host bookings every time this page is mounted
+  useEffect(() => {
+    fetchHostBookings();
+  }, []);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);

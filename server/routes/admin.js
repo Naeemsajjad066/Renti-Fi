@@ -17,12 +17,11 @@ import {
   approveProperty,
   rejectProperty
 } from '../controllers/propertyController.js';
-import { protect, adminProtect } from '../middleware/auth.js';
+import { adminProtect } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // All admin routes require authentication AND admin role
-router.use(protect);
 router.use(adminProtect);
 
 router.get('/dashboard/stats', getDashboardStats);

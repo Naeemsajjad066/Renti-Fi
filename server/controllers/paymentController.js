@@ -27,6 +27,25 @@ export const createCheckoutSession = async (req, res) => {
       });
     }
 
+    if (!property.isActive || property.verificationStatus !== 'approved') {
+      return res.status(400).json({
+        success: false,
+        message: 'This property is not available for booking'
+      });
+    }
+
+    const checkInDate = new Date(bookingData.checkIn);
+    const checkOutDate = new Date(bookingData.checkOut);
+    if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime()) || checkOutDate <= checkInDate) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid booking dates'
+      });
+    }
+
+    const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+    const totalPrice = property.price * nights;
+
     // Check if property has payment options configured
     if (!property.paymentOptions) {
       return res.status(400).json({
@@ -35,9 +54,23 @@ export const createCheckoutSession = async (req, res) => {
       });
     }
 
+    if (!['arrival', 'early'].includes(bookingData.paymentOption)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid payment option'
+      });
+    }
+
+    if (property.paymentOptions !== 'both' && property.paymentOptions !== bookingData.paymentOption) {
+      return res.status(400).json({
+        success: false,
+        message: 'Selected payment option is not available for this property'
+      });
+    }
+
     // Calculate payment breakdown
     const breakdown = calculatePaymentBreakdown(
-      bookingData.totalPrice,
+      totalPrice,
       bookingData.paymentOption
     );
 
@@ -79,7 +112,7 @@ export const createCheckoutSession = async (req, res) => {
             currency: 'pkr', // Pakistani Rupees
             product_data: {
               name: property.title,
-              description: `${bookingData.nights} nights`,
+              description: `${nights} nights`,
               images: property.images ? [property.images[0]] : [],
             },
             unit_amount: Math.round(breakdown.upfrontAmount * 100),
@@ -97,15 +130,15 @@ export const createCheckoutSession = async (req, res) => {
           guestId: req.user._id.toString(),
           hostId: property.host._id.toString(),
           paymentOption: bookingData.paymentOption,
-          totalPrice: bookingData.totalPrice,
+          totalPrice,
           upfrontAmount: breakdown.upfrontAmount,
           arrivalAmount: breakdown.arrivalAmount,
-          checkIn: bookingData.checkIn,
-          checkOut: bookingData.checkOut,
+          checkIn: checkInDate.toISOString(),
+          checkOut: checkOutDate.toISOString(),
           guestsAdults: bookingData.guests?.adults || bookingData.guests || 1,
           guestsChildren: bookingData.guests?.children || 0,
           guestsInfants: bookingData.guests?.infants || 0,
-          nights: bookingData.nights,
+          nights,
           hostStripeAccountId: host.stripeAccountId, // For transfer after payment
         },
       },
@@ -115,15 +148,15 @@ export const createCheckoutSession = async (req, res) => {
         guestId: req.user._id.toString(),
         hostId: property.host._id.toString(),
         paymentOption: bookingData.paymentOption,
-        totalPrice: bookingData.totalPrice,
+        totalPrice,
         upfrontAmount: breakdown.upfrontAmount,
         arrivalAmount: breakdown.arrivalAmount,
-        checkIn: bookingData.checkIn,
-        checkOut: bookingData.checkOut,
+        checkIn: checkInDate.toISOString(),
+        checkOut: checkOutDate.toISOString(),
         guestsAdults: bookingData.guests?.adults || bookingData.guests || 1,
         guestsChildren: bookingData.guests?.children || 0,
         guestsInfants: bookingData.guests?.infants || 0,
-        nights: bookingData.nights,
+        nights,
         hostStripeAccountId: host.stripeAccountId, // For transfer after payment
       },
     });
@@ -161,6 +194,22 @@ export const confirmPayment = async (req, res) => {
 
     // Extract metadata
     const metadata = paymentIntent.metadata;
+
+    if (metadata.guestId !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Payment does not belong to the authenticated user'
+      });
+    }
+
+    const existingBooking = await Booking.findOne({ stripePaymentIntentId: paymentIntentId });
+    if (existingBooking) {
+      return res.json({
+        success: true,
+        message: 'Payment was already confirmed',
+        booking: existingBooking
+      });
+    }
     
     // Fetch property
     const property = await Property.findById(metadata.propertyId);
@@ -168,6 +217,31 @@ export const confirmPayment = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Property not found'
+      });
+    }
+
+    if (!property.isActive || property.verificationStatus !== 'approved') {
+      return res.status(400).json({
+        success: false,
+        message: 'This property is no longer available for booking'
+      });
+    }
+
+    const checkInDate = new Date(metadata.checkIn);
+    const checkOutDate = new Date(metadata.checkOut);
+    if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime()) || checkOutDate <= checkInDate) {
+      return res.status(400).json({ success: false, message: 'Invalid booking dates' });
+    }
+
+    const overlappingBookings = await Booking.findOverlappingBookings(
+      metadata.propertyId,
+      checkInDate,
+      checkOutDate
+    );
+    if (overlappingBookings.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'Property is no longer available for the selected dates'
       });
     }
 
@@ -182,15 +256,20 @@ export const confirmPayment = async (req, res) => {
       property: metadata.propertyId,
       guest: req.user._id,
       host: property.host,
-      checkIn: new Date(bookingData.checkIn),
-      checkOut: new Date(bookingData.checkOut),
-      nights: bookingData.nights,
-      guests: bookingData.guests,
-      basePrice: bookingData.basePrice,
-      cleaningFee: bookingData.cleaningFee || 0,
-      serviceFee: bookingData.serviceFee || 0,
-      taxes: bookingData.taxes || 0,
-      totalPrice: bookingData.totalPrice,
+      checkIn: checkInDate,
+      checkOut: checkOutDate,
+      nights: parseInt(metadata.nights, 10),
+      guests: {
+        adults: parseInt(metadata.guestsAdults, 10) || 1,
+        children: parseInt(metadata.guestsChildren, 10) || 0,
+        infants: parseInt(metadata.guestsInfants, 10) || 0,
+        pets: parseInt(metadata.guestsPets, 10) || 0
+      },
+      basePrice: parseInt(metadata.totalPrice, 10),
+      cleaningFee: 0,
+      serviceFee: 0,
+      taxes: 0,
+      totalPrice: parseInt(metadata.totalPrice, 10),
       currency: 'PKR',
       paymentOption: metadata.paymentOption,
       paymentBreakdown: {
@@ -207,7 +286,7 @@ export const confirmPayment = async (req, res) => {
       paymentMethod: 'credit_card',
       paidAt: new Date(),
       status: 'confirmed',
-      specialRequests: bookingData.specialRequests || '',
+      specialRequests: '',
       verificationCode: Math.floor(100000 + Math.random() * 900000).toString()
     });
 
@@ -260,6 +339,10 @@ export const createReservation = async (req, res) => {
   try {
     const { bookingData } = req.body;
 
+    if (!bookingData?.propertyId || !bookingData.checkIn || !bookingData.checkOut || !bookingData.guests) {
+      return res.status(400).json({ success: false, message: 'All booking fields are required' });
+    }
+
     // Fetch property
     const property = await Property.findById(bookingData.propertyId);
     if (!property) {
@@ -268,6 +351,46 @@ export const createReservation = async (req, res) => {
         message: 'Property not found'
       });
     }
+
+    if (!property.isActive || property.verificationStatus !== 'approved') {
+      return res.status(400).json({ success: false, message: 'This property is not available for booking' });
+    }
+
+    if (property.host.toString() === req.user._id.toString()) {
+      return res.status(400).json({ success: false, message: 'You cannot book your own property' });
+    }
+
+    const checkInDate = new Date(bookingData.checkIn);
+    const checkOutDate = new Date(bookingData.checkOut);
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime()) || checkInDate < today || checkOutDate <= checkInDate) {
+      return res.status(400).json({ success: false, message: 'Invalid booking dates' });
+    }
+
+    const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+    const guests = typeof bookingData.guests === 'object'
+      ? bookingData.guests
+      : { adults: Number(bookingData.guests), children: 0, infants: 0, pets: 0 };
+    const guestsObj = {
+      adults: Number(guests.adults ?? 0),
+      children: Number(guests.children ?? 0),
+      infants: Number(guests.infants ?? 0),
+      pets: Number(guests.pets ?? 0)
+    };
+    if (Object.values(guestsObj).some((count) => !Number.isFinite(count) || count < 0) || guestsObj.adults < 1) {
+      return res.status(400).json({ success: false, message: 'Invalid guests value' });
+    }
+    if (guestsObj.adults + guestsObj.children + guestsObj.infants > property.maxGuests) {
+      return res.status(400).json({ success: false, message: `Property can accommodate maximum ${property.maxGuests} guests` });
+    }
+
+    const overlappingBookings = await Booking.findOverlappingBookings(bookingData.propertyId, checkInDate, checkOutDate);
+    if (overlappingBookings.length > 0) {
+      return res.status(400).json({ success: false, message: 'Property is not available for selected dates' });
+    }
+
+    const totalPrice = property.price * nights;
 
     // Check if arrival payment is allowed
     if (property.paymentOptions === 'early') {
@@ -279,7 +402,7 @@ export const createReservation = async (req, res) => {
 
     // Calculate payment breakdown
     const breakdown = calculatePaymentBreakdown(
-      bookingData.totalPrice,
+      totalPrice,
       'arrival'
     );
 
@@ -288,15 +411,15 @@ export const createReservation = async (req, res) => {
       property: bookingData.propertyId,
       guest: req.user._id,
       host: property.host,
-      checkIn: new Date(bookingData.checkIn),
-      checkOut: new Date(bookingData.checkOut),
-      nights: bookingData.nights,
-      guests: bookingData.guests,
-      basePrice: bookingData.basePrice,
+      checkIn: checkInDate,
+      checkOut: checkOutDate,
+      nights,
+      guests: guestsObj,
+      basePrice: totalPrice,
       cleaningFee: bookingData.cleaningFee || 0,
       serviceFee: bookingData.serviceFee || 0,
       taxes: bookingData.taxes || 0,
-      totalPrice: bookingData.totalPrice,
+      totalPrice,
       currency: 'PKR',
       paymentOption: 'arrival',
       paymentBreakdown: {
@@ -560,6 +683,16 @@ async function handleCheckoutCompleted(session) {
     const property = await Property.findById(bookingData.propertyId);
     if (!property) {
       console.error('Property not found for checkout session');
+      return;
+    }
+
+    const existingBooking = await Booking.findOne({
+      $or: [
+        { stripeCheckoutSessionId: session.id },
+        { stripePaymentIntentId: session.payment_intent }
+      ]
+    });
+    if (existingBooking) {
       return;
     }
 

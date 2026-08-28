@@ -7,11 +7,18 @@ const storage = multer.memoryStorage();
 
 // File filter
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|webp|pdf/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype) || file.mimetype === 'application/pdf';
+  const allowedTypes = {
+    '.jpeg': 'image/jpeg',
+    '.jpg': 'image/jpeg',
+    '.png': 'image/png',
+    '.gif': 'image/gif',
+    '.webp': 'image/webp',
+    '.pdf': 'application/pdf'
+  };
+  const extension = path.extname(file.originalname).toLowerCase();
+  const mimetype = allowedTypes[extension] === file.mimetype;
 
-  if (mimetype && extname) {
+  if (mimetype) {
     cb(null, true);
   } else {
     cb(new Error("Invalid file type. Only images and PDF files are allowed."));
@@ -21,7 +28,11 @@ const fileFilter = (req, file, cb) => {
 // Configure multer
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+    files: 16,
+    fields: 50
+  },
   fileFilter,
 });
 

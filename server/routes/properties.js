@@ -8,7 +8,8 @@ import {
   deleteProperty,
   // checkAvailability,
   getUserProperties,
-  getFeaturedProperties
+  getFeaturedProperties,
+  getPublicHostProperties
 } from '../controllers/propertyController.js';
 import { protect } from '../middleware/auth.js';
 import { uploadFields } from '../middleware/upload.js';
@@ -19,6 +20,7 @@ const propertyRouter = express.Router();
 // Public routes (with lenient rate limiting for browsing)
 propertyRouter.get('/', propertyViewLimiter, getProperties);
 propertyRouter.get('/featured', propertyViewLimiter, getFeaturedProperties);
+propertyRouter.get('/host/:hostId', propertyViewLimiter, getPublicHostProperties);
 propertyRouter.get('/:id', propertyViewLimiter, getProperty);
 // propertyRouter.get('/:id/availability', checkAvailability);
 

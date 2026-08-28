@@ -249,9 +249,14 @@ export const login = async (req, res) => {
       }
   
       const token = generateToken(userData._id);
+            const safeUserData = userData.toObject();
+            delete safeUserData.password;
+            delete safeUserData.emailVerificationToken;
+            delete safeUserData.emailVerificationExpires;
+
       return res.json({
         success: true,
-        userData,
+                userData: safeUserData,
         token,
         message: "Login Successful",
       });
@@ -581,5 +586,28 @@ export const getUserById = async (req, res) => {
             success: false,
             message: "Failed to fetch user details"
         });
+    }
+};
+
+// Get public host profile data
+export const getPublicUserById = async (req, res) => {
+    try {
+        // Don't filter by role — a user may own properties regardless of their
+        // role field value. Only exclude deactivated accounts.
+        const user = await User.findOne({
+            _id: req.params.userId,
+            isActive: true
+        }).select('fullName profilePic bio createdAt role');
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Host not found"
+            });
+        }
+
+        res.json({ success: true, user });
+    } catch (error) {
+        res.status(404).json({ success: false, message: "Host not found" });
     }
 };

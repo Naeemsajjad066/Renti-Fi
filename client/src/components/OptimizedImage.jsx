@@ -1,5 +1,5 @@
 // components/OptimizedImage.jsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useOptimizedImage } from '../hooks/useImagePreloader';
 
 const OptimizedImage = ({ 
@@ -14,14 +14,20 @@ const OptimizedImage = ({
   ...props 
 }) => {
   const [showLoader, setShowLoader] = useState(true);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const { currentSrc, isLoaded, hasError } = useOptimizedImage(src, { 
     priority, 
     placeholder, 
     fallback 
   });
 
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [src]);
+
   const handleLoad = (e) => {
     setShowLoader(false);
+    setImageLoaded(true);
     onLoad?.(e);
   };
 
@@ -42,7 +48,7 @@ const OptimizedImage = ({
         src={currentSrc}
         alt={alt}
         className={`transition-opacity duration-300 ${
-          isLoaded ? 'opacity-100' : 'opacity-0'
+          (isLoaded || imageLoaded) ? 'opacity-100' : 'opacity-0'
         } ${className}`}
         loading={priority === 'high' ? 'eager' : 'lazy'}
         decoding="async"

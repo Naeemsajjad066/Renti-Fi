@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useMemo, useState, useCallback } from 'react';
 import axios from 'axios';
 import { BASE_URL } from '../utils/api.config';
 import { useAuth } from './AuthContext';
@@ -276,7 +276,7 @@ export const AdminProvider = ({ children }) => {
     }
   }, [token, getAuthHeader]);
 
-  const value = {
+  const value = useMemo(() => ({
     dashboardStats,
     users,
     properties,
@@ -291,7 +291,7 @@ export const AdminProvider = ({ children }) => {
     deleteUser,
     updateProperty,
     deleteProperty,
-  };
+  }), [bookings, dashboardStats, deleteProperty, deleteUser, error, getAllBookings, getAllProperties, getAllUsers, getDashboardStats, loading, properties, updateProperty, updateUser, users]);
 
   return (
     <AdminContext.Provider value={value}>

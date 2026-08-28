@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useMemo, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { useLoading } from './LoadingContext';
 import axios from 'axios';
@@ -319,7 +319,7 @@ export const ReviewProvider = ({ children }) => {
     }
   }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     reviews,
     propertyReviews,
     userReviews,
@@ -335,7 +335,7 @@ export const ReviewProvider = ({ children }) => {
     markHelpful,
     canUserReview,
     clearReviewCache
-  };
+  }), [addHostResponse, canUserReview, clearReviewCache, deleteReview, error, getPropertyReviews, getPropertyStats, getUserReviews, markHelpful, propertyReviews, reviewStats, reviews, submitReview, updateReview, userReviews]);
 
   return (
     <ReviewContext.Provider value={value}>

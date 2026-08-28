@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 const LoadingContext = createContext();
 
@@ -14,22 +14,22 @@ export const LoadingProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
-  const showLoading = (message = 'Loading...') => {
+  const showLoading = useCallback((message = 'Loading...') => {
     setLoadingMessage(message);
     setLoading(true);
-  };
+  }, []);
 
-  const hideLoading = () => {
+  const hideLoading = useCallback(() => {
     setLoading(false);
     setLoadingMessage('');
-  };
+  }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     loading,
     loadingMessage,
     showLoading,
     hideLoading,
-  };
+  }), [loading, loadingMessage, showLoading, hideLoading]);
 
   return (
     <LoadingContext.Provider value={value}>

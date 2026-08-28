@@ -1,4 +1,6 @@
 // Centralized error handling utility
+import { Component } from 'react';
+import axios from 'axios';
 import toast from 'react-hot-toast';
 
 export const handleApiError = (error, customMessage) => {
