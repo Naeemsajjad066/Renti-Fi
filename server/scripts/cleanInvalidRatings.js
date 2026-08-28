@@ -24,7 +24,7 @@ const cleanInvalidRatings = async () => {
     for (const property of properties) {
       // Count actual reviews for this property
       const reviewCount = await Review.countDocuments({ property: property._id });
-      
+
       // Calculate actual rating from reviews
       const stats = await Review.calculatePropertyRating(property._id);
       const actualRating = stats.averageRating || 0;
@@ -45,7 +45,7 @@ const cleanInvalidRatings = async () => {
         property.rating = Math.round(actualRating * 10) / 10;
         property.totalReviews = actualReviewCount;
         await property.save();
-        
+
         fixedCount++;
       } else {
         alreadyCorrectCount++;

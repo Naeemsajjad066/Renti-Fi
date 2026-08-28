@@ -1,6 +1,6 @@
 // middleware/upload.js
-import multer from "multer";
-import path from "path";
+import multer from 'multer';
+import path from 'path';
 
 // Use memory storage so files are not written to disk
 const storage = multer.memoryStorage();
@@ -13,7 +13,7 @@ const fileFilter = (req, file, cb) => {
     '.png': 'image/png',
     '.gif': 'image/gif',
     '.webp': 'image/webp',
-    '.pdf': 'application/pdf'
+    '.pdf': 'application/pdf',
   };
   const extension = path.extname(file.originalname).toLowerCase();
   const mimetype = allowedTypes[extension] === file.mimetype;
@@ -21,7 +21,7 @@ const fileFilter = (req, file, cb) => {
   if (mimetype) {
     cb(null, true);
   } else {
-    cb(new Error("Invalid file type. Only images and PDF files are allowed."));
+    cb(new Error('Invalid file type. Only images and PDF files are allowed.'));
   }
 };
 
@@ -31,7 +31,7 @@ const upload = multer({
   limits: {
     fileSize: 10 * 1024 * 1024,
     files: 16,
-    fields: 50
+    fields: 50,
   },
   fileFilter,
 });
@@ -48,15 +48,15 @@ export const uploadFields = (fields) => upload.fields(fields);
 // Error handler
 export const handleUploadError = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
-    if (err.code === "LIMIT_FILE_SIZE") {
-      return res.status(400).json({ success: false, message: "File too large (max 10MB)." });
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ success: false, message: 'File too large (max 10MB).' });
     }
-    if (err.code === "LIMIT_FILE_COUNT") {
-      return res.status(400).json({ success: false, message: "Too many files uploaded." });
+    if (err.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({ success: false, message: 'Too many files uploaded.' });
     }
   }
 
-  if (err.message?.includes("Invalid file type")) {
+  if (err.message?.includes('Invalid file type')) {
     return res.status(400).json({ success: false, message: err.message });
   }
 

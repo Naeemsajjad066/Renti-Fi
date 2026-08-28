@@ -9,7 +9,7 @@ import {
   // checkAvailability,
   getUserProperties,
   getFeaturedProperties,
-  getPublicHostProperties
+  getPublicHostProperties,
 } from '../controllers/propertyController.js';
 import { protect } from '../middleware/auth.js';
 import { uploadFields } from '../middleware/upload.js';
@@ -30,14 +30,22 @@ propertyRouter.get('/user/:userId?', getUserProperties);
 
 // Host routes - Accept images, ID card, and property documents (with API rate limiting)
 // propertyRouter.use(hostProtect);
-propertyRouter.post('/', apiLimiter, uploadFields([
-  { name: 'images', maxCount: 10 },
-  { name: 'idCard', maxCount: 1 },
-  { name: 'propertyDocuments', maxCount: 5 }
-]), createProperty);
-propertyRouter.put('/:id', apiLimiter, uploadFields([
-  { name: 'images', maxCount: 10 }
-]), updateProperty);
+propertyRouter.post(
+  '/',
+  apiLimiter,
+  uploadFields([
+    { name: 'images', maxCount: 10 },
+    { name: 'idCard', maxCount: 1 },
+    { name: 'propertyDocuments', maxCount: 5 },
+  ]),
+  createProperty
+);
+propertyRouter.put(
+  '/:id',
+  apiLimiter,
+  uploadFields([{ name: 'images', maxCount: 10 }]),
+  updateProperty
+);
 propertyRouter.delete('/:id', apiLimiter, deleteProperty);
 
 export default propertyRouter;

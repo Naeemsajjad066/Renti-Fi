@@ -7,7 +7,7 @@ dotenv.config();
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 // Upload image to Cloudinary
@@ -17,11 +17,11 @@ export const uploadToCloudinary = async (file, folder = 'rentifi') => {
       folder,
       resource_type: 'auto',
       quality: 'auto',
-      fetch_format: 'auto'
+      fetch_format: 'auto',
     });
     return result;
   } catch (error) {
-    throw new Error(`Cloudinary upload failed: ${error.message}`);
+    throw new Error(`Cloudinary upload failed: ${error.message}`, { cause: error });
   }
 };
 
@@ -31,7 +31,7 @@ export const deleteFromCloudinary = async (publicId) => {
     const result = await cloudinary.uploader.destroy(publicId);
     return result;
   } catch (error) {
-    throw new Error(`Cloudinary delete failed: ${error.message}`);
+    throw new Error(`Cloudinary delete failed: ${error.message}`, { cause: error });
   }
 };
 

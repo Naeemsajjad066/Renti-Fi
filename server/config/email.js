@@ -8,7 +8,9 @@ dotenv.config();
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Check if Resend is configured
-const emailEnabled = !!(process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'your_resend_api_key_here');
+const emailEnabled = !!(
+  process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'your_resend_api_key_here'
+);
 
 // Default from address — Resend requires a verified domain
 const FROM_ADDRESS = process.env.FROM_EMAIL || 'noreply@yourdomain.com';
@@ -17,7 +19,7 @@ const FROM_ADDRESS = process.env.FROM_EMAIL || 'noreply@yourdomain.com';
 if (emailEnabled) {
   console.log('✅ Resend email service configured');
   console.log(`📧 From address: ${FROM_ADDRESS}`);
-  
+
   // Optional: Test API key validity (doesn't delay startup)
   setImmediate(async () => {
     try {
@@ -61,7 +63,7 @@ export const emailTemplates = {
           <p>© 2024 Rentifi. All rights reserved.</p>
         </div>
       </div>
-    `
+    `,
   }),
 
   passwordReset: (resetCode, fullName) => ({
@@ -89,7 +91,7 @@ export const emailTemplates = {
           <p>© 2024 Rentifi. All rights reserved.</p>
         </div>
       </div>
-    `
+    `,
   }),
 
   welcome: (user) => ({
@@ -121,7 +123,7 @@ export const emailTemplates = {
           <p>Need help? Contact us at support@rentifi.com</p>
         </div>
       </div>
-    `
+    `,
   }),
 
   bookingConfirmation: (booking, property, user) => ({
@@ -169,7 +171,7 @@ export const emailTemplates = {
           <p>Questions? Contact support@rentifi.com</p>
         </div>
       </div>
-    `
+    `,
   }),
 
   hostBookingNotification: (booking, property, guest, host) => ({
@@ -222,7 +224,7 @@ export const emailTemplates = {
           <p>Host support: support@rentifi.com</p>
         </div>
       </div>
-    `
+    `,
   }),
 
   propertyApproval: (data) => ({
@@ -256,7 +258,7 @@ export const emailTemplates = {
           <p>Host support: support@rentifi.com</p>
         </div>
       </div>
-    `
+    `,
   }),
 
   propertyRejection: (data) => ({
@@ -285,8 +287,8 @@ export const emailTemplates = {
           <p>Questions? Contact support@rentifi.com</p>
         </div>
       </div>
-    `
-  })
+    `,
+  }),
 };
 
 export { resend, emailEnabled, FROM_ADDRESS };

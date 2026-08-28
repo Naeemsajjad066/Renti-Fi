@@ -9,7 +9,7 @@ export const uploadComplaintFile = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: 'No file provided'
+        message: 'No file provided',
       });
     }
 
@@ -23,13 +23,13 @@ export const uploadComplaintFile = async (req, res) => {
     res.json({
       success: true,
       url: result.secure_url,
-      publicId: result.public_id
+      publicId: result.public_id,
     });
   } catch (error) {
     console.error('Error uploading file:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to upload file'
+      message: error.message || 'Failed to upload file',
     });
   }
 };
@@ -44,7 +44,7 @@ export const submitComplaint = async (req, res) => {
     if (!property) {
       return res.status(404).json({
         success: false,
-        message: 'Property not found'
+        message: 'Property not found',
       });
     }
 
@@ -53,7 +53,7 @@ export const submitComplaint = async (req, res) => {
       title: property.title,
       host: property.host._id,
       location: `${property.city}, ${property.state}`,
-      price: property.price
+      price: property.price,
     };
 
     // Create complaint
@@ -66,7 +66,7 @@ export const submitComplaint = async (req, res) => {
       attachments: attachments || [],
       propertySnapshot,
       status: 'pending',
-      priority: 'medium'
+      priority: 'medium',
     });
 
     // Populate complaint details
@@ -85,13 +85,13 @@ export const submitComplaint = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Complaint submitted successfully. Our team will review it shortly.',
-      complaint: populatedComplaint
+      complaint: populatedComplaint,
     });
   } catch (error) {
     console.error('Error submitting complaint:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to submit complaint'
+      message: error.message || 'Failed to submit complaint',
     });
   }
 };
@@ -121,13 +121,13 @@ export const getAllComplaints = async (req, res) => {
       complaints,
       totalPages: Math.ceil(count / limit),
       currentPage: page,
-      total: count
+      total: count,
     });
   } catch (error) {
     console.error('Error fetching complaints:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to fetch complaints'
+      message: error.message || 'Failed to fetch complaints',
     });
   }
 };
@@ -146,19 +146,19 @@ export const getComplaintById = async (req, res) => {
     if (!complaint) {
       return res.status(404).json({
         success: false,
-        message: 'Complaint not found'
+        message: 'Complaint not found',
       });
     }
 
     res.json({
       success: true,
-      complaint
+      complaint,
     });
   } catch (error) {
     console.error('Error fetching complaint:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to fetch complaint'
+      message: error.message || 'Failed to fetch complaint',
     });
   }
 };
@@ -173,7 +173,7 @@ export const updateComplaintStatus = async (req, res) => {
     if (!complaint) {
       return res.status(404).json({
         success: false,
-        message: 'Complaint not found'
+        message: 'Complaint not found',
       });
     }
 
@@ -204,13 +204,13 @@ export const updateComplaintStatus = async (req, res) => {
     res.json({
       success: true,
       message: 'Complaint updated successfully',
-      complaint: updatedComplaint
+      complaint: updatedComplaint,
     });
   } catch (error) {
     console.error('Error updating complaint:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to update complaint'
+      message: error.message || 'Failed to update complaint',
     });
   }
 };
@@ -218,32 +218,25 @@ export const updateComplaintStatus = async (req, res) => {
 // Get complaints statistics (Admin only)
 export const getComplaintStats = async (req, res) => {
   try {
-    const [
-      total,
-      pending,
-      underReview,
-      resolved,
-      dismissed,
-      highPriority,
-      urgent
-    ] = await Promise.all([
-      Complaint.countDocuments(),
-      Complaint.countDocuments({ status: 'pending' }),
-      Complaint.countDocuments({ status: 'under_review' }),
-      Complaint.countDocuments({ status: 'resolved' }),
-      Complaint.countDocuments({ status: 'dismissed' }),
-      Complaint.countDocuments({ priority: 'high' }),
-      Complaint.countDocuments({ priority: 'urgent' })
-    ]);
+    const [total, pending, underReview, resolved, dismissed, highPriority, urgent] =
+      await Promise.all([
+        Complaint.countDocuments(),
+        Complaint.countDocuments({ status: 'pending' }),
+        Complaint.countDocuments({ status: 'under_review' }),
+        Complaint.countDocuments({ status: 'resolved' }),
+        Complaint.countDocuments({ status: 'dismissed' }),
+        Complaint.countDocuments({ priority: 'high' }),
+        Complaint.countDocuments({ priority: 'urgent' }),
+      ]);
 
     // Get complaints by category
     const byCategory = await Complaint.aggregate([
       {
         $group: {
           _id: '$category',
-          count: { $sum: 1 }
-        }
-      }
+          count: { $sum: 1 },
+        },
+      },
     ]);
 
     // Get recent complaints
@@ -261,24 +254,24 @@ export const getComplaintStats = async (req, res) => {
           pending,
           under_review: underReview,
           resolved,
-          dismissed
+          dismissed,
         },
         byPriority: {
           high: highPriority,
-          urgent
+          urgent,
         },
         byCategory: byCategory.reduce((acc, item) => {
           acc[item._id] = item.count;
           return acc;
         }, {}),
-        recentComplaints
-      }
+        recentComplaints,
+      },
     });
   } catch (error) {
     console.error('Error fetching complaint stats:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to fetch complaint statistics'
+      message: error.message || 'Failed to fetch complaint statistics',
     });
   }
 };
@@ -292,13 +285,13 @@ export const getUserComplaints = async (req, res) => {
 
     res.json({
       success: true,
-      complaints
+      complaints,
     });
   } catch (error) {
     console.error('Error fetching user complaints:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to fetch complaints'
+      message: error.message || 'Failed to fetch complaints',
     });
   }
 };
@@ -307,7 +300,7 @@ export const getUserComplaints = async (req, res) => {
 async function sendComplaintNotificationToAdmin(complaint, property) {
   try {
     const adminEmails = process.env.ADMIN_EMAIL || 'rentifi.project@gmail.com';
-    
+
     const emailContent = {
       to: adminEmails,
       subject: `New Complaint: ${complaint.title}`,
@@ -342,12 +335,16 @@ async function sendComplaintNotificationToAdmin(complaint, property) {
             <p><strong>Email:</strong> ${complaint.reporter.email}</p>
           </div>
           
-          ${complaint.attachments && complaint.attachments.length > 0 ? `
+          ${
+            complaint.attachments && complaint.attachments.length > 0
+              ? `
           <div style="margin: 20px 0;">
             <h3>Attachments</h3>
             <p>${complaint.attachments.length} file(s) attached</p>
           </div>
-          ` : ''}
+          `
+              : ''
+          }
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${process.env.CLIENT_URL || 'http://localhost:8080'}/admin/complaints/${complaint._id}" 
@@ -361,7 +358,7 @@ async function sendComplaintNotificationToAdmin(complaint, property) {
             This is an automated notification from Rentifi complaint system.
           </p>
         </div>
-      `
+      `,
     };
 
     await sendEmail(emailContent.to, emailContent.subject, emailContent.html);

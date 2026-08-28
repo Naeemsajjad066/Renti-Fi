@@ -6,7 +6,7 @@ export const requireAdmin = (req, res, next) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({
       success: false,
-      message: 'Admin access required'
+      message: 'Admin access required',
     });
   }
   next();
@@ -16,16 +16,15 @@ export const requireAdmin = (req, res, next) => {
 export const logAdminAction = async (req, res, next) => {
   const startTime = Date.now();
   const originalSend = res.send;
-  
-  res.send = function(data) {
+
+  res.send = function (data) {
     const responseTime = Date.now() - startTime;
-    
+
     if (req.user && req.user.role === 'admin') {
       // Extract entity information from request
       let entityType = 'system';
       let entityId = null;
-      let entityName = '';
-      
+
       // Determine entity type from URL pattern
       const pathParts = req.originalUrl.split('/');
       if (pathParts.includes('users')) {
@@ -41,7 +40,7 @@ export const logAdminAction = async (req, res, next) => {
         entityType = 'review';
         entityId = req.params.reviewId;
       }
-      
+
       // Determine action type from HTTP method
       let actionType = 'other';
       switch (req.method) {
@@ -59,7 +58,7 @@ export const logAdminAction = async (req, res, next) => {
           actionType = 'view';
           break;
       }
-      
+
       const logData = {
         admin: req.user._id,
         action: `${req.method} ${req.originalUrl}`,
@@ -78,26 +77,26 @@ export const logAdminAction = async (req, res, next) => {
         statusCode: res.statusCode,
         responseTime,
         severity: res.statusCode >= 400 ? 'medium' : 'low',
-        tags: ['admin-action', entityType, actionType]
+        tags: ['admin-action', entityType, actionType],
       };
-      
+
       // Add error information if applicable
       if (res.statusCode >= 400) {
         logData.error = {
           message: typeof data === 'object' ? data.message : 'Error occurred',
-          stack: process.env.NODE_ENV === 'development' ? data.stack : undefined
+          stack: process.env.NODE_ENV === 'development' ? data.stack : undefined,
         };
       }
-      
+
       // Save log asynchronously (don't wait for it)
-      AdminLog.create(logData).catch(error => {
+      AdminLog.create(logData).catch((error) => {
         console.error('Failed to save admin log:', error);
       });
     }
-    
+
     originalSend.call(this, data);
   };
-  
+
   next();
 };
 
@@ -107,8 +106,8 @@ export const adminRateLimit = {
   max: 100, // limit each IP to 100 requests per windowMs
   message: {
     success: false,
-    message: 'Too many requests from this IP, please try again later.'
-  }
+    message: 'Too many requests from this IP, please try again later.',
+  },
 };
 
 // Permission validation middleware
@@ -116,23 +115,23 @@ export const validateAdminPermissions = (requiredPermissions = []) => {
   return (req, res, next) => {
     // In a real application, you'd check user permissions from database
     // For now, we'll assume all admins have full permissions
-    
+
     if (requiredPermissions.length > 0) {
       // Here you would check if req.user has the required permissions
       const userPermissions = req.user.permissions || ['all']; // Default to all permissions
-      
-      const hasPermission = requiredPermissions.some(permission => 
-        userPermissions.includes(permission) || userPermissions.includes('all')
+
+      const hasPermission = requiredPermissions.some(
+        (permission) => userPermissions.includes(permission) || userPermissions.includes('all')
       );
-      
+
       if (!hasPermission) {
         return res.status(403).json({
           success: false,
-          message: 'Insufficient permissions for this action'
+          message: 'Insufficient permissions for this action',
         });
       }
     }
-    
+
     next();
   };
 };
@@ -142,20 +141,20 @@ export const auditSensitiveOperations = (operations = []) => {
   return async (req, res, next) => {
     const originalSend = res.send;
     const startTime = Date.now();
-    
-    res.send = function(data) {
+
+    res.send = function (data) {
       const responseTime = Date.now() - startTime;
-      
+
       // Check if this is a sensitive operation
-      const isSensitive = operations.some(op => 
-        req.originalUrl.includes(op.endpoint) && req.method === op.method
+      const isSensitive = operations.some(
+        (op) => req.originalUrl.includes(op.endpoint) && req.method === op.method
       );
-      
+
       if (isSensitive && req.user && req.user.role === 'admin') {
-        const operation = operations.find(op => 
-          req.originalUrl.includes(op.endpoint) && req.method === op.method
+        const operation = operations.find(
+          (op) => req.originalUrl.includes(op.endpoint) && req.method === op.method
         );
-        
+
         const logData = {
           admin: req.user._id,
           action: `Sensitive operation: ${operation.name}`,
@@ -174,15 +173,15 @@ export const auditSensitiveOperations = (operations = []) => {
           statusCode: res.statusCode,
           responseTime,
           severity: 'high',
-          tags: ['sensitive-operation', 'audit-trail', operation.name]
+          tags: ['sensitive-operation', 'audit-trail', operation.name],
         };
-        
+
         AdminLog.create(logData).catch(console.error);
       }
-      
+
       originalSend.call(this, data);
     };
-    
+
     next();
   };
 };

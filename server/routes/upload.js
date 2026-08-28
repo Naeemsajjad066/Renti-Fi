@@ -10,21 +10,21 @@ router.post('/single', uploadSingle('file'), (req, res) => {
     message: 'File uploaded successfully',
     data: {
       filename: req.file.filename,
-      path: `/uploads/${req.file.filename}`
-    }
+      path: `/uploads/${req.file.filename}`,
+    },
   });
 });
 
 router.post('/multiple', uploadMultiple('files', 10), (req, res) => {
-  const files = req.files.map(file => ({
+  const files = req.files.map((file) => ({
     filename: file.filename,
-    path: `/uploads/${file.filename}`
+    path: `/uploads/${file.filename}`,
   }));
-  
+
   res.json({
     success: true,
     message: 'Files uploaded successfully',
-    data: { files }
+    data: { files },
   });
 });
 

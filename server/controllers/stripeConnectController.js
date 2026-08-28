@@ -11,7 +11,7 @@ export const createConnectAccount = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: 'User not found',
       });
     }
 
@@ -19,7 +19,7 @@ export const createConnectAccount = async (req, res) => {
     if (user.stripeAccountId) {
       return res.status(400).json({
         success: false,
-        message: 'Stripe account already exists'
+        message: 'Stripe account already exists',
       });
     }
 
@@ -36,8 +36,8 @@ export const createConnectAccount = async (req, res) => {
       metadata: {
         userId: userId.toString(),
         email: user.email,
-        fullName: user.fullName
-      }
+        fullName: user.fullName,
+      },
     });
 
     // Save Stripe account ID to user
@@ -49,14 +49,13 @@ export const createConnectAccount = async (req, res) => {
     res.json({
       success: true,
       accountId: account.id,
-      message: 'Stripe Connect account created'
+      message: 'Stripe Connect account created',
     });
-
   } catch (error) {
     console.error('Error creating Stripe Connect account:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to create Stripe account'
+      message: error.message || 'Failed to create Stripe account',
     });
   }
 };
@@ -70,7 +69,7 @@ export const createAccountLink = async (req, res) => {
     if (!user || !user.stripeAccountId) {
       return res.status(400).json({
         success: false,
-        message: 'No Stripe account found. Please create one first.'
+        message: 'No Stripe account found. Please create one first.',
       });
     }
 
@@ -84,14 +83,13 @@ export const createAccountLink = async (req, res) => {
 
     res.json({
       success: true,
-      url: accountLink.url
+      url: accountLink.url,
     });
-
   } catch (error) {
     console.error('Error creating account link:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to create onboarding link'
+      message: error.message || 'Failed to create onboarding link',
     });
   }
 };
@@ -106,7 +104,7 @@ export const getAccountStatus = async (req, res) => {
       return res.json({
         success: true,
         connected: false,
-        onboardingComplete: false
+        onboardingComplete: false,
       });
     }
 
@@ -130,14 +128,13 @@ export const getAccountStatus = async (req, res) => {
       accountStatus: account.charges_enabled ? 'active' : 'pending',
       chargesEnabled: account.charges_enabled,
       payoutsEnabled: account.payouts_enabled,
-      detailsSubmitted: account.details_submitted
+      detailsSubmitted: account.details_submitted,
     });
-
   } catch (error) {
     console.error('Error checking account status:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to check account status'
+      message: error.message || 'Failed to check account status',
     });
   }
 };
@@ -151,7 +148,7 @@ export const createDashboardLink = async (req, res) => {
     if (!user || !user.stripeAccountId) {
       return res.status(400).json({
         success: false,
-        message: 'No Stripe account found'
+        message: 'No Stripe account found',
       });
     }
 
@@ -160,14 +157,13 @@ export const createDashboardLink = async (req, res) => {
 
     res.json({
       success: true,
-      url: loginLink.url
+      url: loginLink.url,
     });
-
   } catch (error) {
     console.error('Error creating dashboard link:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to create dashboard link'
+      message: error.message || 'Failed to create dashboard link',
     });
   }
 };
@@ -176,5 +172,5 @@ export default {
   createConnectAccount,
   createAccountLink,
   getAccountStatus,
-  createDashboardLink
+  createDashboardLink,
 };

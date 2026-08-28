@@ -6,7 +6,7 @@ import {
   createReservation,
   processRefund,
   recordArrivalPayment,
-  handleStripeWebhook
+  handleStripeWebhook,
 } from '../controllers/paymentController.js';
 import { protect } from '../middleware/auth.js';
 

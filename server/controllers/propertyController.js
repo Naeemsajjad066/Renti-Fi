@@ -1,8 +1,8 @@
 // controllers/propertyController.js
-import Property from "../models/Property.js";
-import User from "../models/User.js";
-import Booking from "../models/Booking.js";
-import cloudinary from "../lib/cloudinary.js";
+import Property from '../models/Property.js';
+import User from '../models/User.js';
+import Booking from '../models/Booking.js';
+import cloudinary from '../lib/cloudinary.js';
 
 // CREATE Property
 export const createProperty = async (req, res) => {
@@ -13,7 +13,7 @@ export const createProperty = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Please connect your Stripe account before listing a property',
-        requiresStripeSetup: true
+        requiresStripeSetup: true,
       });
     }
 
@@ -35,7 +35,7 @@ export const createProperty = async (req, res) => {
       longitude,
       locationAccuracy,
       paymentOptions,
-      cancellationPolicy
+      cancellationPolicy,
     } = req.body;
 
     // Separate files by field name - uploadFields returns an object
@@ -50,7 +50,7 @@ export const createProperty = async (req, res) => {
         (file) =>
           new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
-              { folder: "properties" },
+              { folder: 'properties' },
               (error, result) => {
                 if (error) reject(error);
                 else resolve(result.secure_url);
@@ -67,7 +67,7 @@ export const createProperty = async (req, res) => {
     if (idCardFile) {
       const idCardUpload = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-          { folder: "verification/id-cards" },
+          { folder: 'verification/id-cards' },
           (error, result) => {
             if (error) reject(error);
             else resolve(result);
@@ -78,7 +78,7 @@ export const createProperty = async (req, res) => {
       idCardData = {
         url: idCardUpload.secure_url,
         publicId: idCardUpload.public_id,
-        uploadedAt: new Date()
+        uploadedAt: new Date(),
       };
     }
 
@@ -89,15 +89,16 @@ export const createProperty = async (req, res) => {
         (file) =>
           new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
-              { folder: "verification/property-docs" },
+              { folder: 'verification/property-docs' },
               (error, result) => {
                 if (error) reject(error);
-                else resolve({
-                  url: result.secure_url,
-                  publicId: result.public_id,
-                  name: file.originalname,
-                  uploadedAt: new Date()
-                });
+                else
+                  resolve({
+                    url: result.secure_url,
+                    publicId: result.public_id,
+                    name: file.originalname,
+                    uploadedAt: new Date(),
+                  });
               }
             );
             stream.end(file.buffer);
@@ -134,7 +135,7 @@ export const createProperty = async (req, res) => {
       stripeAccountId: host.stripeAccountId,
       verificationStatus: 'pending',
       isVerified: false,
-      isActive: false // Property won't be shown until approved
+      isActive: false, // Property won't be shown until approved
     });
 
     return res.json({
@@ -143,53 +144,60 @@ export const createProperty = async (req, res) => {
       property: newProperty,
     });
   } catch (error) {
-    console.error("Error creating property:", error.message);
+    console.error('Error creating property:', error.message);
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 
 // GET all properties
 export const getProperties = async (req, res) => {
   try {
     // Only show approved properties to regular users
     // Admins and hosts can see their own properties regardless of status
-    const filter = { 
-      isActive: true, 
-      verificationStatus: 'approved' 
+    const filter = {
+      isActive: true,
+      verificationStatus: 'approved',
     };
-    
-    const properties = await Property.find(filter).populate("host", "fullName email profilePicture");
-    
+
+    const properties = await Property.find(filter).populate(
+      'host',
+      'fullName email profilePicture'
+    );
+
     // Add caching headers for better performance
     res.set({
       'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
-      'ETag': `"properties-${Date.now()}"`
+      ETag: `"properties-${Date.now()}"`,
     });
-    
+
     res.json({ success: true, properties });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error fetching properties" });
+  } catch {
+    res.status(500).json({ success: false, message: 'Error fetching properties' });
   }
 };
 
 // GET single property by ID
 export const getProperty = async (req, res) => {
   try {
-    const property = await Property.findById(req.params.id).populate("host", "fullName email profilePicture createdAt");
+    const property = await Property.findById(req.params.id).populate(
+      'host',
+      'fullName email profilePicture createdAt'
+    );
     if (!property) {
-      return res.status(404).json({ success: false, message: "Property not found" });
+      return res.status(404).json({ success: false, message: 'Property not found' });
     }
-    
+
     // Add caching headers for better performance
     res.set({
       'Cache-Control': 'public, max-age=600', // Cache for 10 minutes
-      'ETag': `"property-${property._id}-${property.updatedAt}"`
+      ETag: `"property-${property._id}-${property.updatedAt}"`,
     });
-    
+
     res.json({ success: true, property });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error fetching property", error: error.message });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ success: false, message: 'Error fetching property', error: err.message });
   }
 };
 
@@ -199,18 +207,18 @@ export const updateProperty = async (req, res) => {
     const property = await Property.findById(req.params.id);
 
     if (!property) {
-      return res.status(404).json({ success: false, message: "Property not found" });
+      return res.status(404).json({ success: false, message: 'Property not found' });
     }
 
     if (property.host.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: "Unauthorized" });
+      return res.status(403).json({ success: false, message: 'Unauthorized' });
     }
 
     // Handle new images
     let uploadedImages = property.images;
     if (req.files && req.files.length > 0) {
       const uploadPromises = req.files.map((file) =>
-        cloudinary.uploader.upload(file.path, { folder: "properties" })
+        cloudinary.uploader.upload(file.path, { folder: 'properties' })
       );
       const results = await Promise.all(uploadPromises);
       uploadedImages = [...uploadedImages, ...results.map((r) => r.secure_url)];
@@ -223,8 +231,8 @@ export const updateProperty = async (req, res) => {
     );
 
     res.json({ success: true, property: updatedProperty });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error updating property" });
+  } catch {
+    res.status(500).json({ success: false, message: 'Error updating property' });
   }
 };
 
@@ -234,25 +242,26 @@ export const deleteProperty = async (req, res) => {
     const property = await Property.findById(req.params.id);
 
     if (!property) {
-      return res.status(404).json({ success: false, message: "Property not found" });
+      return res.status(404).json({ success: false, message: 'Property not found' });
     }
 
     if (property.host.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: "Unauthorized" });
+      return res.status(403).json({ success: false, message: 'Unauthorized' });
     }
 
     // Check for active bookings (reserved, confirmed, checked-in)
     const activeBookings = await Booking.find({
       property: req.params.id,
-      status: { $in: ['reserved', 'confirmed', 'checked-in'] }
+      status: { $in: ['reserved', 'confirmed', 'checked-in'] },
     });
 
     if (activeBookings.length > 0) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Cannot delete property with active bookings. Please wait until all bookings are completed or cancelled.",
+      return res.status(400).json({
+        success: false,
+        message:
+          'Cannot delete property with active bookings. Please wait until all bookings are completed or cancelled.',
         hasActiveBookings: true,
-        activeBookingsCount: activeBookings.length
+        activeBookingsCount: activeBookings.length,
       });
     }
 
@@ -261,24 +270,25 @@ export const deleteProperty = async (req, res) => {
     const upcomingBookings = await Booking.find({
       property: req.params.id,
       checkIn: { $gte: now },
-      status: { $in: ['reserved', 'confirmed'] }
+      status: { $in: ['reserved', 'confirmed'] },
     });
 
     if (upcomingBookings.length > 0) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Cannot delete property with upcoming bookings. Please cancel all bookings before deleting the property.",
+      return res.status(400).json({
+        success: false,
+        message:
+          'Cannot delete property with upcoming bookings. Please cancel all bookings before deleting the property.',
         hasUpcomingBookings: true,
-        upcomingBookingsCount: upcomingBookings.length
+        upcomingBookingsCount: upcomingBookings.length,
       });
     }
 
     await Property.findByIdAndDelete(req.params.id);
 
-    res.json({ success: true, message: "Property deleted successfully" });
+    res.json({ success: true, message: 'Property deleted successfully' });
   } catch (error) {
     console.error('Error deleting property:', error);
-    res.status(500).json({ success: false, message: "Error deleting property" });
+    res.status(500).json({ success: false, message: 'Error deleting property' });
   }
 };
 
@@ -305,7 +315,7 @@ export const getUserProperties = async (req, res) => {
     if (requestedUserId && requestedUserId !== currentUserId && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
-        message: 'Access denied'
+        message: 'Access denied',
       });
     }
 
@@ -314,7 +324,7 @@ export const getUserProperties = async (req, res) => {
     res.json({ success: true, properties });
   } catch (error) {
     console.error('Error fetching user properties:', error);
-    res.status(500).json({ success: false, message: "Error fetching user properties" });
+    res.status(500).json({ success: false, message: 'Error fetching user properties' });
   }
 };
 
@@ -324,14 +334,16 @@ export const getPublicHostProperties = async (req, res) => {
     const properties = await Property.find({
       host: req.params.hostId,
       isActive: true,
-      verificationStatus: 'approved'
+      verificationStatus: 'approved',
     })
-      .select('-hostIdCard -propertyDocuments -verifiedBy -rejectionReason -adminNotes -stripeAccountId')
+      .select(
+        '-hostIdCard -propertyDocuments -verifiedBy -rejectionReason -adminNotes -stripeAccountId'
+      )
       .populate('host', 'fullName profilePic bio createdAt')
       .sort({ createdAt: -1 });
 
     res.json({ success: true, properties });
-  } catch (error) {
+  } catch {
     res.status(404).json({ success: false, message: 'Host properties not found' });
   }
 };
@@ -340,34 +352,34 @@ export const getPublicHostProperties = async (req, res) => {
 export const getFeaturedProperties = async (req, res) => {
   try {
     const properties = await Property.find({ isActive: true, verificationStatus: 'approved' })
-      .populate("host", "fullName email profilePicture")
+      .populate('host', 'fullName email profilePicture')
       .sort({ createdAt: -1 })
       .limit(6);
-    
+
     // Add caching headers
     res.set({
       'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
-      'ETag': `"featured-${Date.now()}"`
+      ETag: `"featured-${Date.now()}"`,
     });
-    
+
     res.json({ success: true, properties });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error fetching featured properties" });
+  } catch {
+    res.status(500).json({ success: false, message: 'Error fetching featured properties' });
   }
 };
 
 // GET pending properties for admin verification
 export const getPendingProperties = async (req, res) => {
   try {
-    const properties = await Property.find({ 
-      verificationStatus: { $in: ['pending', 'resubmitted'] } 
+    const properties = await Property.find({
+      verificationStatus: { $in: ['pending', 'resubmitted'] },
     })
-      .populate("host", "fullName email profilePicture phone")
+      .populate('host', 'fullName email profilePicture phone')
       .sort({ createdAt: -1 });
-    
+
     res.json({ success: true, properties, count: properties.length });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Error fetching pending properties" });
+  } catch {
+    res.status(500).json({ success: false, message: 'Error fetching pending properties' });
   }
 };
 
@@ -377,16 +389,16 @@ export const approveProperty = async (req, res) => {
     const { propertyId } = req.params;
     const { adminNotes } = req.body;
 
-    const property = await Property.findById(propertyId).populate("host", "fullName email");
+    const property = await Property.findById(propertyId).populate('host', 'fullName email');
 
     if (!property) {
-      return res.status(404).json({ success: false, message: "Property not found" });
+      return res.status(404).json({ success: false, message: 'Property not found' });
     }
 
     console.log('Approving property:', {
       id: property._id,
       title: property.title,
-      hostEmail: property.host.email
+      hostEmail: property.host.email,
     });
 
     // Update property status
@@ -403,7 +415,7 @@ export const approveProperty = async (req, res) => {
     console.log('Property saved with status:', {
       verificationStatus: property.verificationStatus,
       isActive: property.isActive,
-      isVerified: property.isVerified
+      isVerified: property.isVerified,
     });
 
     // Send approval email to host
@@ -414,27 +426,27 @@ export const approveProperty = async (req, res) => {
         hostName: property.host.fullName,
         propertyTitle: property.title,
         propertyId: property._id,
-        verifiedAt: property.verifiedAt
+        verifiedAt: property.verifiedAt,
       });
       emailSent = true;
       console.log('Approval email sent successfully to:', property.host.email);
     } catch (emailError) {
-      console.error("Error sending approval email:", emailError.message);
-      console.error("Email stack:", emailError.stack);
+      console.error('Error sending approval email:', emailError.message);
+      console.error('Email stack:', emailError.stack);
       // Continue even if email fails
     }
 
-    res.json({ 
-      success: true, 
-      message: emailSent 
-        ? "Property approved successfully and email sent to host"
-        : "Property approved successfully (email failed to send)",
+    res.json({
+      success: true,
+      message: emailSent
+        ? 'Property approved successfully and email sent to host'
+        : 'Property approved successfully (email failed to send)',
       property,
-      emailSent
+      emailSent,
     });
   } catch (error) {
-    console.error("Error approving property:", error);
-    res.status(500).json({ success: false, message: "Error approving property" });
+    console.error('Error approving property:', error);
+    res.status(500).json({ success: false, message: 'Error approving property' });
   }
 };
 
@@ -445,13 +457,13 @@ export const rejectProperty = async (req, res) => {
     const { rejectionReason, adminNotes } = req.body;
 
     if (!rejectionReason) {
-      return res.status(400).json({ success: false, message: "Rejection reason is required" });
+      return res.status(400).json({ success: false, message: 'Rejection reason is required' });
     }
 
-    const property = await Property.findById(propertyId).populate("host", "fullName email");
+    const property = await Property.findById(propertyId).populate('host', 'fullName email');
 
     if (!property) {
-      return res.status(404).json({ success: false, message: "Property not found" });
+      return res.status(404).json({ success: false, message: 'Property not found' });
     }
 
     // Update property status
@@ -472,20 +484,20 @@ export const rejectProperty = async (req, res) => {
         hostName: property.host.fullName,
         propertyTitle: property.title,
         rejectionReason,
-        propertyId: property._id
+        propertyId: property._id,
       });
     } catch (emailError) {
-      console.error("Error sending rejection email:", emailError);
+      console.error('Error sending rejection email:', emailError);
       // Continue even if email fails
     }
 
-    res.json({ 
-      success: true, 
-      message: "Property rejected",
-      property 
+    res.json({
+      success: true,
+      message: 'Property rejected',
+      property,
     });
   } catch (error) {
-    console.error("Error rejecting property:", error);
-    res.status(500).json({ success: false, message: "Error rejecting property" });
+    console.error('Error rejecting property:', error);
+    res.status(500).json({ success: false, message: 'Error rejecting property' });
   }
 };

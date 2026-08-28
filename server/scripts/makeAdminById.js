@@ -8,7 +8,7 @@ const makeAdminById = async (userId) => {
     console.log('Connected to MongoDB');
 
     const user = await User.findById(userId);
-    
+
     if (!user) {
       console.log(`User with ID ${userId} not found`);
       process.exit(1);
@@ -30,9 +30,9 @@ const makeAdminById = async (userId) => {
     console.log('Email:', user.email);
     console.log('Role:', user.role);
     console.log('IsHost:', user.isHost);
-    
+
     console.log('\n⚠️  IMPORTANT: Log out and log back in for changes to take effect!');
-    
+
     await mongoose.connection.close();
     process.exit(0);
   } catch (error) {

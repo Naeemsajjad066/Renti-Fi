@@ -8,7 +8,7 @@ const makeAdmin = async (email) => {
     console.log('Connected to MongoDB');
 
     const user = await User.findOne({ email });
-    
+
     if (!user) {
       console.log(`User with email ${email} not found`);
       process.exit(1);
@@ -23,9 +23,9 @@ const makeAdmin = async (email) => {
       name: user.fullName,
       email: user.email,
       role: user.role,
-      isHost: user.isHost
+      isHost: user.isHost,
     });
-    
+
     process.exit(0);
   } catch (error) {
     console.error('Error:', error);

@@ -4,7 +4,7 @@ import {
   createConnectAccount,
   createAccountLink,
   getAccountStatus,
-  createDashboardLink
+  createDashboardLink,
 } from '../controllers/stripeConnectController.js';
 import { protect } from '../middleware/auth.js';
 

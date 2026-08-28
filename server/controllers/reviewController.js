@@ -1,6 +1,5 @@
 // controllers/reviewController.js
 import Review from '../models/Review.js';
-import Property from '../models/Property.js';
 import Booking from '../models/Booking.js';
 
 // @desc    Create a new review
@@ -18,14 +17,14 @@ export const createReview = async (req, res) => {
       communication,
       location,
       checkIn,
-      value
+      value,
     } = req.body;
 
     // Validate required fields
     if (!property || !booking || !rating || !comment) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Property, booking, rating, and comment are required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Property, booking, rating, and comment are required',
       });
     }
 
@@ -47,21 +46,23 @@ export const createReview = async (req, res) => {
 
     // Verify the booking belongs to the requesting user
     if (bookingDoc.guest.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: 'Not authorized to review this booking' });
+      return res
+        .status(403)
+        .json({ success: false, message: 'Not authorized to review this booking' });
     }
 
     // Check if booking is completed or checkout date has passed
     const now = new Date();
     const checkoutDate = new Date(bookingDoc.checkOut);
     const isCheckoutPassed = checkoutDate < now;
-    
+
     if (bookingDoc.status !== 'completed' && !isCheckoutPassed) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'You can only review bookings after checkout date or when marked as completed' 
+      return res.status(400).json({
+        success: false,
+        message: 'You can only review bookings after checkout date or when marked as completed',
       });
     }
-    
+
     // Auto-update booking status to completed if checkout has passed
     if (bookingDoc.status === 'confirmed' && isCheckoutPassed) {
       bookingDoc.status = 'completed';
@@ -71,7 +72,9 @@ export const createReview = async (req, res) => {
     // Check if review already exists for this booking
     const existingReview = await Review.findOne({ booking });
     if (existingReview) {
-      return res.status(400).json({ success: false, message: 'You have already reviewed this booking' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'You have already reviewed this booking' });
     }
 
     // Create review
@@ -86,7 +89,7 @@ export const createReview = async (req, res) => {
       communication,
       location,
       checkIn,
-      value
+      value,
     });
 
     // Populate user details
@@ -95,13 +98,13 @@ export const createReview = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Review submitted successfully',
-      data: review
+      data: review,
     });
   } catch (error) {
     console.error('Create review error:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Error creating review'
+      message: error.message || 'Error creating review',
     });
   }
 };
@@ -120,13 +123,13 @@ export const getPropertyReviews = async (req, res) => {
 
     res.json({
       success: true,
-      data: reviews
+      data: reviews,
     });
   } catch (error) {
     console.error('Get property reviews error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching reviews'
+      message: 'Error fetching reviews',
     });
   }
 };
@@ -142,13 +145,13 @@ export const getPropertyStats = async (req, res) => {
 
     res.json({
       success: true,
-      data: stats
+      data: stats,
     });
   } catch (error) {
     console.error('Get property stats error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching review statistics'
+      message: 'Error fetching review statistics',
     });
   }
 };
@@ -165,13 +168,13 @@ export const getUserReviews = async (req, res) => {
 
     res.json({
       success: true,
-      data: reviews
+      data: reviews,
     });
   } catch (error) {
     console.error('Get user reviews error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching user reviews'
+      message: 'Error fetching user reviews',
     });
   }
 };
@@ -189,13 +192,13 @@ export const getReviewsByUser = async (req, res) => {
 
     res.json({
       success: true,
-      data: reviews
+      data: reviews,
     });
   } catch (error) {
     console.error('Get reviews by user error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching reviews'
+      message: 'Error fetching reviews',
     });
   }
 };
@@ -206,16 +209,8 @@ export const getReviewsByUser = async (req, res) => {
 export const updateReview = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      rating,
-      comment,
-      cleanliness,
-      accuracy,
-      communication,
-      location,
-      checkIn,
-      value
-    } = req.body;
+    const { rating, comment, cleanliness, accuracy, communication, location, checkIn, value } =
+      req.body;
 
     const review = await Review.findById(id);
 
@@ -225,7 +220,9 @@ export const updateReview = async (req, res) => {
 
     // Check ownership
     if (review.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: 'Not authorized to update this review' });
+      return res
+        .status(403)
+        .json({ success: false, message: 'Not authorized to update this review' });
     }
 
     // Update fields
@@ -244,13 +241,13 @@ export const updateReview = async (req, res) => {
     res.json({
       success: true,
       message: 'Review updated successfully',
-      data: review
+      data: review,
     });
   } catch (error) {
     console.error('Update review error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error updating review'
+      message: 'Error updating review',
     });
   }
 };
@@ -270,20 +267,22 @@ export const deleteReview = async (req, res) => {
 
     // Check ownership or admin
     if (review.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Not authorized to delete this review' });
+      return res
+        .status(403)
+        .json({ success: false, message: 'Not authorized to delete this review' });
     }
 
     await review.deleteOne();
 
     res.json({
       success: true,
-      message: 'Review deleted successfully'
+      message: 'Review deleted successfully',
     });
   } catch (error) {
     console.error('Delete review error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error deleting review'
+      message: 'Error deleting review',
     });
   }
 };
@@ -304,7 +303,9 @@ export const addHostResponse = async (req, res) => {
 
     // Check if user is the property host
     if (review.property.host.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: 'Only the property host can respond' });
+      return res
+        .status(403)
+        .json({ success: false, message: 'Only the property host can respond' });
     }
 
     // Check if response already exists
@@ -314,7 +315,7 @@ export const addHostResponse = async (req, res) => {
 
     review.hostResponse = {
       comment,
-      respondedAt: new Date()
+      respondedAt: new Date(),
     };
 
     await review.save();
@@ -323,13 +324,13 @@ export const addHostResponse = async (req, res) => {
     res.json({
       success: true,
       message: 'Response added successfully',
-      data: review
+      data: review,
     });
   } catch (error) {
     console.error('Add host response error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error adding response'
+      message: 'Error adding response',
     });
   }
 };
@@ -349,13 +350,13 @@ export const markReviewHelpful = async (req, res) => {
 
     // Check if user already marked as helpful
     const alreadyMarked = review.helpful.some(
-      userId => userId.toString() === req.user._id.toString()
+      (userId) => userId.toString() === req.user._id.toString()
     );
 
     if (alreadyMarked) {
       // Remove helpful mark
       review.helpful = review.helpful.filter(
-        userId => userId.toString() !== req.user._id.toString()
+        (userId) => userId.toString() !== req.user._id.toString()
       );
       review.helpfulCount = review.helpful.length;
     } else {
@@ -368,13 +369,13 @@ export const markReviewHelpful = async (req, res) => {
 
     res.json({
       success: true,
-      data: review
+      data: review,
     });
   } catch (error) {
     console.error('Mark helpful error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error marking review as helpful'
+      message: 'Error marking review as helpful',
     });
   }
 };
@@ -391,11 +392,11 @@ export const canUserReview = async (req, res) => {
     const bookings = await Booking.find({
       guest: req.user._id,
       property: propertyId,
-      status: { $in: ['completed', 'confirmed'] }
+      status: { $in: ['completed', 'confirmed'] },
     });
-    
+
     // Filter bookings that are completed or past checkout date
-    const completedBookings = bookings.filter(booking => {
+    const completedBookings = bookings.filter((booking) => {
       return booking.status === 'completed' || new Date(booking.checkOut) < now;
     });
 
@@ -403,30 +404,31 @@ export const canUserReview = async (req, res) => {
       return res.json({
         success: true,
         canReview: false,
-        message: 'No completed bookings found'
+        message: 'No completed bookings found',
       });
     }
 
     // Check if user has already reviewed any of these bookings
     const reviewedBookings = await Review.find({
       user: req.user._id,
-      booking: { $in: completedBookings.map(b => b._id) }
+      booking: { $in: completedBookings.map((b) => b._id) },
     });
 
     const unreviewedBookings = completedBookings.filter(
-      booking => !reviewedBookings.some(review => review.booking.toString() === booking._id.toString())
+      (booking) =>
+        !reviewedBookings.some((review) => review.booking.toString() === booking._id.toString())
     );
 
     res.json({
       success: true,
       canReview: unreviewedBookings.length > 0,
-      bookings: unreviewedBookings
+      bookings: unreviewedBookings,
     });
   } catch (error) {
     console.error('Can review check error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error checking review eligibility'
+      message: 'Error checking review eligibility',
     });
   }
 };

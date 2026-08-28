@@ -25,7 +25,7 @@ export const getDashboardStats = async (req, res) => {
       .select('fullName email createdAt')
       .sort({ createdAt: -1 })
       .limit(5);
-    
+
     const recentBookingsData = await Booking.find({ createdAt: { $gte: thirtyDaysAgo } })
       .populate('guest', 'fullName')
       .populate('property', 'title')
@@ -34,7 +34,10 @@ export const getDashboardStats = async (req, res) => {
       .limit(5);
 
     const activeUsers = await User.countDocuments({ isActive: true });
-    const activeProperties = await Property.countDocuments({ verificationStatus: 'approved', isActive: true });
+    const activeProperties = await Property.countDocuments({
+      verificationStatus: 'approved',
+      isActive: true,
+    });
 
     res.json({
       success: true,
@@ -47,8 +50,8 @@ export const getDashboardStats = async (req, res) => {
         totalRevenue,
         pendingProperties,
         recentUsers,
-        recentBookings: recentBookingsData
-      }
+        recentBookings: recentBookingsData,
+      },
     });
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
@@ -59,22 +62,19 @@ export const getDashboardStats = async (req, res) => {
 // GET All Users
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find()
-      .select('-password')
-      .sort({ createdAt: -1 });
+    const users = await User.find().select('-password').sort({ createdAt: -1 });
 
     // Get booking counts for each user
     const usersWithStats = await Promise.all(
       users.map(async (user) => {
         const bookingCount = await Booking.countDocuments({ guest: user._id });
-        const propertyCount = user.role === 'host' 
-          ? await Property.countDocuments({ host: user._id })
-          : 0;
+        const propertyCount =
+          user.role === 'host' ? await Property.countDocuments({ host: user._id }) : 0;
 
         return {
           ...user.toObject(),
           bookingCount,
-          propertyCount
+          propertyCount,
         };
       })
     );
@@ -82,7 +82,7 @@ export const getAllUsers = async (req, res) => {
     res.json({
       success: true,
       users: usersWithStats,
-      count: usersWithStats.length
+      count: usersWithStats.length,
     });
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -100,7 +100,7 @@ export const getAllProperties = async (req, res) => {
     res.json({
       success: true,
       properties,
-      count: properties.length
+      count: properties.length,
     });
   } catch (error) {
     console.error('Error fetching properties:', error);
@@ -120,7 +120,7 @@ export const getAllBookings = async (req, res) => {
     res.json({
       success: true,
       bookings,
-      count: bookings.length
+      count: bookings.length,
     });
   } catch (error) {
     console.error('Error fetching bookings:', error);
@@ -137,11 +137,10 @@ export const adminUpdateUser = async (req, res) => {
     // Don't allow updating password through this endpoint
     delete updates.password;
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      updates,
-      { new: true, runValidators: true }
-    ).select('-password');
+    const user = await User.findByIdAndUpdate(userId, updates, {
+      new: true,
+      runValidators: true,
+    }).select('-password');
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
@@ -155,14 +154,14 @@ export const adminUpdateUser = async (req, res) => {
         targetType: 'User',
         targetId: userId,
         details: `Updated user: ${user.fullName}`,
-        changes: updates
+        changes: updates,
       });
     }
 
     res.json({
       success: true,
       message: 'User updated successfully',
-      user
+      user,
     });
   } catch (error) {
     console.error('Error updating user:', error);
@@ -176,11 +175,10 @@ export const adminUpdateProperty = async (req, res) => {
     const { propertyId } = req.params;
     const updates = req.body;
 
-    const property = await Property.findByIdAndUpdate(
-      propertyId,
-      updates,
-      { new: true, runValidators: true }
-    ).populate('host', 'fullName email');
+    const property = await Property.findByIdAndUpdate(propertyId, updates, {
+      new: true,
+      runValidators: true,
+    }).populate('host', 'fullName email');
 
     if (!property) {
       return res.status(404).json({ success: false, message: 'Property not found' });
@@ -194,14 +192,14 @@ export const adminUpdateProperty = async (req, res) => {
         targetType: 'Property',
         targetId: propertyId,
         details: `Updated property: ${property.title}`,
-        changes: updates
+        changes: updates,
       });
     }
 
     res.json({
       success: true,
       message: 'Property updated successfully',
-      property
+      property,
     });
   } catch (error) {
     console.error('Error updating property:', error);
@@ -223,15 +221,16 @@ export const adminDeleteProperty = async (req, res) => {
     // Check for active bookings (reserved, confirmed, checked-in)
     const activeBookings = await Booking.find({
       property: propertyId,
-      status: { $in: ['reserved', 'confirmed', 'checked-in'] }
+      status: { $in: ['reserved', 'confirmed', 'checked-in'] },
     });
 
     if (activeBookings.length > 0) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Cannot delete property with active bookings. Please wait until all bookings are completed or cancelled.",
+      return res.status(400).json({
+        success: false,
+        message:
+          'Cannot delete property with active bookings. Please wait until all bookings are completed or cancelled.',
         hasActiveBookings: true,
-        activeBookingsCount: activeBookings.length
+        activeBookingsCount: activeBookings.length,
       });
     }
 
@@ -240,15 +239,16 @@ export const adminDeleteProperty = async (req, res) => {
     const upcomingBookings = await Booking.find({
       property: propertyId,
       checkIn: { $gte: now },
-      status: { $in: ['reserved', 'confirmed'] }
+      status: { $in: ['reserved', 'confirmed'] },
     });
 
     if (upcomingBookings.length > 0) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Cannot delete property with upcoming bookings. Please cancel all bookings before deleting the property.",
+      return res.status(400).json({
+        success: false,
+        message:
+          'Cannot delete property with upcoming bookings. Please cancel all bookings before deleting the property.',
         hasUpcomingBookings: true,
-        upcomingBookingsCount: upcomingBookings.length
+        upcomingBookingsCount: upcomingBookings.length,
       });
     }
 
@@ -271,7 +271,7 @@ export const adminDeleteProperty = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Property and associated bookings deleted successfully'
+      message: 'Property and associated bookings deleted successfully',
     });
   } catch (error) {
     console.error('Error deleting property:', error);
@@ -319,7 +319,7 @@ export const adminDeleteUser = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'User and associated data deleted successfully'
+      message: 'User and associated data deleted successfully',
     });
   } catch (error) {
     console.error('Error deleting user:', error);
@@ -333,7 +333,7 @@ export const getAdminLogs = async (req, res) => {
     const { limit = 50, page = 1 } = req.query;
 
     let logs = [];
-    
+
     // Check if AdminLog model exists
     if (AdminLog) {
       logs = await AdminLog.find()
@@ -346,7 +346,7 @@ export const getAdminLogs = async (req, res) => {
     res.json({
       success: true,
       logs,
-      count: logs.length
+      count: logs.length,
     });
   } catch (error) {
     console.error('Error fetching admin logs:', error);
@@ -358,14 +358,14 @@ export const getAdminLogs = async (req, res) => {
 export const verifyHostDocuments = async (req, res) => {
   try {
     const { documentId } = req.params;
-    const { status, notes } = req.body;
+    const { status, notes: _notes } = req.body;
 
     // This is a placeholder - implement based on your document verification needs
     res.json({
       success: true,
       message: 'Document verification updated',
       documentId,
-      status
+      status,
     });
   } catch (error) {
     console.error('Error verifying documents:', error);

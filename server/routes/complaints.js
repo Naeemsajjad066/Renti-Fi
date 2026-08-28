@@ -6,7 +6,7 @@ import {
   updateComplaintStatus,
   getComplaintStats,
   getUserComplaints,
-  uploadComplaintFile
+  uploadComplaintFile,
 } from '../controllers/complaintController.js';
 import { protect } from '../middleware/auth.js';
 import { requireAdmin } from '../middleware/admin.js';

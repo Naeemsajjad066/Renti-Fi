@@ -20,16 +20,16 @@ const createAdmin = async () => {
 
     // Check if admin already exists
     const existingAdmin = await User.findOne({ email: adminEmail });
-    
+
     if (existingAdmin) {
       // Update existing user to admin
       existingAdmin.role = 'admin';
       existingAdmin.isEmailVerified = true;
-      
+
       // Update password if needed
       const salt = await bcrypt.genSalt(10);
       existingAdmin.password = await bcrypt.hash(adminPassword, salt);
-      
+
       await existingAdmin.save();
       console.log('✅ Existing user updated to admin:', adminEmail);
     } else {
@@ -45,7 +45,7 @@ const createAdmin = async () => {
         password: hashedPassword,
         role: 'admin',
         isEmailVerified: true,
-        isActive: true
+        isActive: true,
       });
 
       console.log('✅ Admin user created successfully:', admin.email);

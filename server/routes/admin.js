@@ -10,12 +10,12 @@ import {
   adminUpdateProperty,
   adminDeleteProperty,
   getAdminLogs,
-  verifyHostDocuments
+  verifyHostDocuments,
 } from '../controllers/adminController.js';
-import { 
+import {
   getPendingProperties,
   approveProperty,
-  rejectProperty
+  rejectProperty,
 } from '../controllers/propertyController.js';
 import { adminProtect } from '../middleware/auth.js';
 

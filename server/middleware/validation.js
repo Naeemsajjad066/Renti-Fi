@@ -4,15 +4,15 @@ import { validationResult } from 'express-validator';
 // Custom validation middleware
 export const validateRequest = (req, res, next) => {
   const errors = validationResult(req);
-  
+
   if (!errors.isEmpty()) {
     return res.status(400).json({
       success: false,
       message: 'Validation failed',
-      errors: errors.array()
+      errors: errors.array(),
     });
   }
-  
+
   next();
 };
 
@@ -31,17 +31,21 @@ export const validatePhone = (value) => {
 // Validate property type
 export const validatePropertyType = (value) => {
   const validTypes = [
-    'apartment', 'house', 'villa', 'cabin', 'cottage', 
-    'loft', 'condo', 'townhouse'
+    'apartment',
+    'house',
+    'villa',
+    'cabin',
+    'cottage',
+    'loft',
+    'condo',
+    'townhouse',
   ];
   return validTypes.includes(value);
 };
 
 // Validate booking status
 export const validateBookingStatus = (value) => {
-  const validStatuses = [
-    'pending', 'confirmed', 'cancelled', 'completed', 'expired'
-  ];
+  const validStatuses = ['pending', 'confirmed', 'cancelled', 'completed', 'expired'];
   return validStatuses.includes(value);
 };
 
@@ -72,7 +76,7 @@ export const sanitizeInput = (input) => {
 // Middleware to sanitize all request body fields
 export const sanitizeRequestBody = (req, res, next) => {
   if (req.body) {
-    Object.keys(req.body).forEach(key => {
+    Object.keys(req.body).forEach((key) => {
       if (typeof req.body[key] === 'string') {
         req.body[key] = sanitizeInput(req.body[key]);
       }

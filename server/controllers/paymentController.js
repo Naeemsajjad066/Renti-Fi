@@ -2,8 +2,11 @@
 import { stripe, calculatePaymentBreakdown, calculateRefundAmount } from '../config/stripe.js';
 import Booking from '../models/Booking.js';
 import Property from '../models/Property.js';
-import User from '../models/User.js';
-import { sendEmail, sendBookingConfirmationEmail, sendHostBookingNotification } from '../lib/emailService.js';
+import {
+  sendEmail,
+  sendBookingConfirmationEmail,
+  sendHostBookingNotification,
+} from '../lib/emailService.js';
 
 // Create Stripe Checkout Session for payment
 export const createCheckoutSession = async (req, res) => {
@@ -14,7 +17,7 @@ export const createCheckoutSession = async (req, res) => {
     if (!bookingData || !bookingData.propertyId || !bookingData.totalPrice) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required booking data'
+        message: 'Missing required booking data',
       });
     }
 
@@ -23,23 +26,27 @@ export const createCheckoutSession = async (req, res) => {
     if (!property) {
       return res.status(404).json({
         success: false,
-        message: 'Property not found'
+        message: 'Property not found',
       });
     }
 
     if (!property.isActive || property.verificationStatus !== 'approved') {
       return res.status(400).json({
         success: false,
-        message: 'This property is not available for booking'
+        message: 'This property is not available for booking',
       });
     }
 
     const checkInDate = new Date(bookingData.checkIn);
     const checkOutDate = new Date(bookingData.checkOut);
-    if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime()) || checkOutDate <= checkInDate) {
+    if (
+      Number.isNaN(checkInDate.getTime()) ||
+      Number.isNaN(checkOutDate.getTime()) ||
+      checkOutDate <= checkInDate
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid booking dates'
+        message: 'Invalid booking dates',
       });
     }
 
@@ -50,29 +57,29 @@ export const createCheckoutSession = async (req, res) => {
     if (!property.paymentOptions) {
       return res.status(400).json({
         success: false,
-        message: 'Property does not have payment options configured'
+        message: 'Property does not have payment options configured',
       });
     }
 
     if (!['arrival', 'early'].includes(bookingData.paymentOption)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid payment option'
+        message: 'Invalid payment option',
       });
     }
 
-    if (property.paymentOptions !== 'both' && property.paymentOptions !== bookingData.paymentOption) {
+    if (
+      property.paymentOptions !== 'both' &&
+      property.paymentOptions !== bookingData.paymentOption
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'Selected payment option is not available for this property'
+        message: 'Selected payment option is not available for this property',
       });
     }
 
     // Calculate payment breakdown
-    const breakdown = calculatePaymentBreakdown(
-      totalPrice,
-      bookingData.paymentOption
-    );
+    const breakdown = calculatePaymentBreakdown(totalPrice, bookingData.paymentOption);
 
     // For 'arrival' payment, no checkout needed
     if (bookingData.paymentOption === 'arrival') {
@@ -80,7 +87,7 @@ export const createCheckoutSession = async (req, res) => {
         success: true,
         paymentOption: 'arrival',
         breakdown,
-        message: 'No upfront payment required'
+        message: 'No upfront payment required',
       });
     }
 
@@ -89,19 +96,19 @@ export const createCheckoutSession = async (req, res) => {
     if (!host || !host.stripeAccountId) {
       return res.status(400).json({
         success: false,
-        message: 'Host has not connected their Stripe account'
+        message: 'Host has not connected their Stripe account',
       });
     }
 
     if (!host.stripeOnboardingComplete) {
       return res.status(400).json({
         success: false,
-        message: 'Host Stripe account setup is incomplete'
+        message: 'Host Stripe account setup is incomplete',
       });
     }
 
     // Store host's Stripe account ID in metadata for later transfer
-    const platformFeePercent = 0.05; // 5% platform commission
+    const _platformFeePercent = 0.05; // 5% platform commission — reserved for future use
 
     // Create Checkout Session - payment goes to RentiFi account
     const session = await stripe.checkout.sessions.create({
@@ -165,14 +172,13 @@ export const createCheckoutSession = async (req, res) => {
       success: true,
       sessionId: session.id,
       url: session.url,
-      breakdown
+      breakdown,
     });
-
   } catch (error) {
     console.error('Error creating checkout session:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to create checkout session'
+      message: error.message || 'Failed to create checkout session',
     });
   }
 };
@@ -180,7 +186,7 @@ export const createCheckoutSession = async (req, res) => {
 // Confirm Payment and Create Booking
 export const confirmPayment = async (req, res) => {
   try {
-    const { paymentIntentId, bookingData } = req.body;
+    const { paymentIntentId, bookingData: _bookingData } = req.body;
 
     // Verify payment intent with Stripe
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
@@ -188,7 +194,7 @@ export const confirmPayment = async (req, res) => {
     if (paymentIntent.status !== 'succeeded') {
       return res.status(400).json({
         success: false,
-        message: 'Payment not completed'
+        message: 'Payment not completed',
       });
     }
 
@@ -198,7 +204,7 @@ export const confirmPayment = async (req, res) => {
     if (metadata.guestId !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
-        message: 'Payment does not belong to the authenticated user'
+        message: 'Payment does not belong to the authenticated user',
       });
     }
 
@@ -207,29 +213,33 @@ export const confirmPayment = async (req, res) => {
       return res.json({
         success: true,
         message: 'Payment was already confirmed',
-        booking: existingBooking
+        booking: existingBooking,
       });
     }
-    
+
     // Fetch property
     const property = await Property.findById(metadata.propertyId);
     if (!property) {
       return res.status(404).json({
         success: false,
-        message: 'Property not found'
+        message: 'Property not found',
       });
     }
 
     if (!property.isActive || property.verificationStatus !== 'approved') {
       return res.status(400).json({
         success: false,
-        message: 'This property is no longer available for booking'
+        message: 'This property is no longer available for booking',
       });
     }
 
     const checkInDate = new Date(metadata.checkIn);
     const checkOutDate = new Date(metadata.checkOut);
-    if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime()) || checkOutDate <= checkInDate) {
+    if (
+      Number.isNaN(checkInDate.getTime()) ||
+      Number.isNaN(checkOutDate.getTime()) ||
+      checkOutDate <= checkInDate
+    ) {
       return res.status(400).json({ success: false, message: 'Invalid booking dates' });
     }
 
@@ -241,7 +251,7 @@ export const confirmPayment = async (req, res) => {
     if (overlappingBookings.length > 0) {
       return res.status(409).json({
         success: false,
-        message: 'Property is no longer available for the selected dates'
+        message: 'Property is no longer available for the selected dates',
       });
     }
 
@@ -263,7 +273,7 @@ export const confirmPayment = async (req, res) => {
         adults: parseInt(metadata.guestsAdults, 10) || 1,
         children: parseInt(metadata.guestsChildren, 10) || 0,
         infants: parseInt(metadata.guestsInfants, 10) || 0,
-        pets: parseInt(metadata.guestsPets, 10) || 0
+        pets: parseInt(metadata.guestsPets, 10) || 0,
       },
       basePrice: parseInt(metadata.totalPrice, 10),
       cleaningFee: 0,
@@ -278,7 +288,7 @@ export const confirmPayment = async (req, res) => {
         upfrontPaidAt: new Date(),
         upfrontPaymentIntentId: paymentIntentId,
         arrivalAmount: breakdown.arrivalAmount,
-        arrivalPaid: false
+        arrivalPaid: false,
       },
       stripePaymentIntentId: paymentIntentId,
       stripeChargeId: paymentIntent.charges.data[0]?.id,
@@ -287,7 +297,7 @@ export const confirmPayment = async (req, res) => {
       paidAt: new Date(),
       status: 'confirmed',
       specialRequests: '',
-      verificationCode: Math.floor(100000 + Math.random() * 900000).toString()
+      verificationCode: Math.floor(100000 + Math.random() * 900000).toString(),
     });
 
     // Populate booking details
@@ -305,7 +315,7 @@ export const confirmPayment = async (req, res) => {
         populatedBooking.guest
       );
       console.log('Booking confirmation email sent to guest');
-      
+
       // Send email to host
       await sendHostBookingNotification(
         populatedBooking,
@@ -322,14 +332,13 @@ export const confirmPayment = async (req, res) => {
     res.json({
       success: true,
       message: 'Payment confirmed and booking created',
-      booking: populatedBooking
+      booking: populatedBooking,
     });
-
   } catch (error) {
     console.error('Error confirming payment:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to confirm payment'
+      message: error.message || 'Failed to confirm payment',
     });
   }
 };
@@ -339,7 +348,12 @@ export const createReservation = async (req, res) => {
   try {
     const { bookingData } = req.body;
 
-    if (!bookingData?.propertyId || !bookingData.checkIn || !bookingData.checkOut || !bookingData.guests) {
+    if (
+      !bookingData?.propertyId ||
+      !bookingData.checkIn ||
+      !bookingData.checkOut ||
+      !bookingData.guests
+    ) {
       return res.status(400).json({ success: false, message: 'All booking fields are required' });
     }
 
@@ -348,12 +362,14 @@ export const createReservation = async (req, res) => {
     if (!property) {
       return res.status(404).json({
         success: false,
-        message: 'Property not found'
+        message: 'Property not found',
       });
     }
 
     if (!property.isActive || property.verificationStatus !== 'approved') {
-      return res.status(400).json({ success: false, message: 'This property is not available for booking' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'This property is not available for booking' });
     }
 
     if (property.host.toString() === req.user._id.toString()) {
@@ -364,30 +380,48 @@ export const createReservation = async (req, res) => {
     const checkOutDate = new Date(bookingData.checkOut);
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
-    if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime()) || checkInDate < today || checkOutDate <= checkInDate) {
+    if (
+      Number.isNaN(checkInDate.getTime()) ||
+      Number.isNaN(checkOutDate.getTime()) ||
+      checkInDate < today ||
+      checkOutDate <= checkInDate
+    ) {
       return res.status(400).json({ success: false, message: 'Invalid booking dates' });
     }
 
     const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
-    const guests = typeof bookingData.guests === 'object'
-      ? bookingData.guests
-      : { adults: Number(bookingData.guests), children: 0, infants: 0, pets: 0 };
+    const guests =
+      typeof bookingData.guests === 'object'
+        ? bookingData.guests
+        : { adults: Number(bookingData.guests), children: 0, infants: 0, pets: 0 };
     const guestsObj = {
       adults: Number(guests.adults ?? 0),
       children: Number(guests.children ?? 0),
       infants: Number(guests.infants ?? 0),
-      pets: Number(guests.pets ?? 0)
+      pets: Number(guests.pets ?? 0),
     };
-    if (Object.values(guestsObj).some((count) => !Number.isFinite(count) || count < 0) || guestsObj.adults < 1) {
+    if (
+      Object.values(guestsObj).some((count) => !Number.isFinite(count) || count < 0) ||
+      guestsObj.adults < 1
+    ) {
       return res.status(400).json({ success: false, message: 'Invalid guests value' });
     }
     if (guestsObj.adults + guestsObj.children + guestsObj.infants > property.maxGuests) {
-      return res.status(400).json({ success: false, message: `Property can accommodate maximum ${property.maxGuests} guests` });
+      return res.status(400).json({
+        success: false,
+        message: `Property can accommodate maximum ${property.maxGuests} guests`,
+      });
     }
 
-    const overlappingBookings = await Booking.findOverlappingBookings(bookingData.propertyId, checkInDate, checkOutDate);
+    const overlappingBookings = await Booking.findOverlappingBookings(
+      bookingData.propertyId,
+      checkInDate,
+      checkOutDate
+    );
     if (overlappingBookings.length > 0) {
-      return res.status(400).json({ success: false, message: 'Property is not available for selected dates' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Property is not available for selected dates' });
     }
 
     const totalPrice = property.price * nights;
@@ -396,15 +430,12 @@ export const createReservation = async (req, res) => {
     if (property.paymentOptions === 'early') {
       return res.status(400).json({
         success: false,
-        message: 'This property requires upfront payment'
+        message: 'This property requires upfront payment',
       });
     }
 
     // Calculate payment breakdown
-    const breakdown = calculatePaymentBreakdown(
-      totalPrice,
-      'arrival'
-    );
+    const breakdown = calculatePaymentBreakdown(totalPrice, 'arrival');
 
     // Create booking without payment
     const booking = await Booking.create({
@@ -426,13 +457,13 @@ export const createReservation = async (req, res) => {
         upfrontAmount: 0,
         upfrontPaid: false,
         arrivalAmount: breakdown.arrivalAmount,
-        arrivalPaid: false
+        arrivalPaid: false,
       },
       paymentStatus: 'pending',
       paymentMethod: 'cash',
       status: 'confirmed',
       specialRequests: bookingData.specialRequests || '',
-      verificationCode: Math.floor(100000 + Math.random() * 900000).toString()
+      verificationCode: Math.floor(100000 + Math.random() * 900000).toString(),
     });
 
     // Populate booking details
@@ -450,7 +481,7 @@ export const createReservation = async (req, res) => {
         populatedBooking.guest
       );
       console.log('Booking confirmation email sent to guest');
-      
+
       // Send email to host
       await sendHostBookingNotification(
         populatedBooking,
@@ -467,14 +498,13 @@ export const createReservation = async (req, res) => {
     res.json({
       success: true,
       message: 'Reservation created successfully',
-      booking: populatedBooking
+      booking: populatedBooking,
     });
-
   } catch (error) {
     console.error('Error creating reservation:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to create reservation'
+      message: error.message || 'Failed to create reservation',
     });
   }
 };
@@ -486,13 +516,15 @@ export const processRefund = async (req, res) => {
     const { cancellationReason } = req.body;
 
     // Fetch booking
-    const booking = await Booking.findById(bookingId)
-      .populate('property', 'cancellationPolicy title');
+    const booking = await Booking.findById(bookingId).populate(
+      'property',
+      'cancellationPolicy title'
+    );
 
     if (!booking) {
       return res.status(404).json({
         success: false,
-        message: 'Booking not found'
+        message: 'Booking not found',
       });
     }
 
@@ -500,7 +532,7 @@ export const processRefund = async (req, res) => {
     if (booking.guest.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to cancel this booking'
+        message: 'Not authorized to cancel this booking',
       });
     }
 
@@ -508,18 +540,15 @@ export const processRefund = async (req, res) => {
     if (booking.status === 'cancelled' || booking.status === 'completed') {
       return res.status(400).json({
         success: false,
-        message: 'Booking cannot be cancelled'
+        message: 'Booking cannot be cancelled',
       });
     }
 
     // Calculate refund amount
-    const refundAmount = calculateRefundAmount(
-      booking,
-      booking.property.cancellationPolicy
-    );
+    const refundAmount = calculateRefundAmount(booking, booking.property.cancellationPolicy);
 
     let refund = null;
-    
+
     // Process refund if applicable
     if (refundAmount > 0 && booking.stripeChargeId) {
       refund = await stripe.refunds.create({
@@ -528,8 +557,8 @@ export const processRefund = async (req, res) => {
         reason: 'requested_by_customer',
         metadata: {
           bookingId: bookingId,
-          cancellationReason: cancellationReason || 'Guest requested cancellation'
-        }
+          cancellationReason: cancellationReason || 'Guest requested cancellation',
+        },
       });
     }
 
@@ -541,7 +570,7 @@ export const processRefund = async (req, res) => {
     booking.refundAmount = refundAmount;
     booking.stripeRefundId = refund?.id;
     booking.refundedAt = refund ? new Date() : null;
-    
+
     if (refundAmount > 0) {
       booking.paymentStatus = 'refunded';
     }
@@ -559,14 +588,13 @@ export const processRefund = async (req, res) => {
       success: true,
       message: 'Booking cancelled successfully',
       refundAmount,
-      booking
+      booking,
     });
-
   } catch (error) {
     console.error('Error processing refund:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to process refund'
+      message: error.message || 'Failed to process refund',
     });
   }
 };
@@ -582,7 +610,7 @@ export const recordArrivalPayment = async (req, res) => {
     if (!booking) {
       return res.status(404).json({
         success: false,
-        message: 'Booking not found'
+        message: 'Booking not found',
       });
     }
 
@@ -590,7 +618,7 @@ export const recordArrivalPayment = async (req, res) => {
     if (booking.host.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to update this booking'
+        message: 'Not authorized to update this booking',
       });
     }
 
@@ -605,14 +633,13 @@ export const recordArrivalPayment = async (req, res) => {
     res.json({
       success: true,
       message: 'Arrival payment recorded successfully',
-      booking
+      booking,
     });
-
   } catch (error) {
     console.error('Error recording arrival payment:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to record payment'
+      message: error.message || 'Failed to record payment',
     });
   }
 };
@@ -633,32 +660,37 @@ export const handleStripeWebhook = async (req, res) => {
 
   // Handle the event
   switch (event.type) {
-    case 'checkout.session.completed':
+    case 'checkout.session.completed': {
       const session = event.data.object;
       console.log('Checkout session completed:', session.id);
       await handleCheckoutCompleted(session);
       break;
+    }
 
-    case 'payment_intent.succeeded':
+    case 'payment_intent.succeeded': {
       const paymentIntent = event.data.object;
       console.log('PaymentIntent succeeded:', paymentIntent.id);
       break;
+    }
 
-    case 'payment_intent.payment_failed':
+    case 'payment_intent.payment_failed': {
       const failedPaymentIntent = event.data.object;
       console.log('PaymentIntent failed:', failedPaymentIntent.id);
       await handleFailedPayment(failedPaymentIntent);
       break;
+    }
 
-    case 'charge.refunded':
+    case 'charge.refunded': {
       const refund = event.data.object;
       console.log('Charge refunded:', refund.id);
       break;
+    }
 
-    case 'payout.paid':
+    case 'payout.paid': {
       const payout = event.data.object;
       console.log('Payout completed:', payout.id);
       break;
+    }
 
     default:
       console.log(`Unhandled event type ${event.type}`);
@@ -672,11 +704,11 @@ async function handleCheckoutCompleted(session) {
   try {
     const metadata = session.metadata;
     const paymentIntentMetadata = session.payment_intent_metadata || {};
-    
+
     // Merge metadata from session and payment intent
     const bookingData = {
       ...metadata,
-      ...paymentIntentMetadata
+      ...paymentIntentMetadata,
     };
 
     // Fetch property
@@ -689,8 +721,8 @@ async function handleCheckoutCompleted(session) {
     const existingBooking = await Booking.findOne({
       $or: [
         { stripeCheckoutSessionId: session.id },
-        { stripePaymentIntentId: session.payment_intent }
-      ]
+        { stripePaymentIntentId: session.payment_intent },
+      ],
     });
     if (existingBooking) {
       return;
@@ -713,7 +745,7 @@ async function handleCheckoutCompleted(session) {
       guests: {
         adults: parseInt(bookingData.guestsAdults) || 1,
         children: parseInt(bookingData.guestsChildren) || 0,
-        infants: parseInt(bookingData.guestsInfants) || 0
+        infants: parseInt(bookingData.guestsInfants) || 0,
       },
       basePrice: parseFloat(bookingData.totalPrice),
       totalPrice: parseFloat(bookingData.totalPrice),
@@ -725,7 +757,7 @@ async function handleCheckoutCompleted(session) {
         upfrontPaidAt: new Date(),
         upfrontPaymentIntentId: session.payment_intent,
         arrivalAmount: breakdown.arrivalAmount,
-        arrivalPaid: false
+        arrivalPaid: false,
       },
       stripePaymentIntentId: session.payment_intent,
       stripeCheckoutSessionId: session.id,
@@ -733,7 +765,7 @@ async function handleCheckoutCompleted(session) {
       paymentMethod: 'credit_card',
       paidAt: new Date(),
       status: 'confirmed',
-      verificationCode: Math.floor(100000 + Math.random() * 900000).toString() // Generate 6-digit code
+      verificationCode: Math.floor(100000 + Math.random() * 900000).toString(), // Generate 6-digit code
     });
 
     console.log('Booking created from webhook:', booking._id);
@@ -766,7 +798,9 @@ async function handleCheckoutCompleted(session) {
         booking.hostPayout = hostAmount / 100;
         await booking.save();
 
-        console.log(`Transfer created: ${transfer.id} - Rs ${hostAmount/100} to host (Platform fee: Rs ${platformFee/100})`);
+        console.log(
+          `Transfer created: ${transfer.id} - Rs ${hostAmount / 100} to host (Platform fee: Rs ${platformFee / 100})`
+        );
       }
     } catch (transferError) {
       console.error('Error transferring to host:', transferError);
@@ -788,7 +822,7 @@ async function handleCheckoutCompleted(session) {
         populatedBooking.guest
       );
       console.log('Booking confirmation email sent to guest');
-      
+
       // Send email to host
       await sendHostBookingNotification(
         populatedBooking,
@@ -811,7 +845,7 @@ async function handleFailedPayment(paymentIntent) {
   try {
     // Find booking with this payment intent
     const booking = await Booking.findOne({
-      stripePaymentIntentId: paymentIntent.id
+      stripePaymentIntentId: paymentIntent.id,
     });
 
     if (booking) {
@@ -825,7 +859,7 @@ async function handleFailedPayment(paymentIntent) {
 }
 
 // Email helper functions
-async function sendPaymentConfirmationEmail(booking, property, breakdown) {
+async function _sendPaymentConfirmationEmail(booking, property, breakdown) {
   const emailData = {
     to: booking.guest.email,
     subject: 'Payment Confirmed - Booking Receipt',
@@ -847,13 +881,13 @@ async function sendPaymentConfirmationEmail(booking, property, breakdown) {
       </ul>
       <p>Your booking ID is: ${booking._id}</p>
       <p>Please remember to pay the remaining Rs ${breakdown.arrivalAmount.toLocaleString()} on arrival.</p>
-    `
+    `,
   };
-  
+
   await sendEmail(emailData);
 }
 
-async function sendReservationConfirmationEmail(booking, property) {
+async function _sendReservationConfirmationEmail(booking, property) {
   const emailData = {
     to: booking.guest.email,
     subject: 'Reservation Confirmed',
@@ -870,9 +904,9 @@ async function sendReservationConfirmationEmail(booking, property) {
       </ul>
       <p>Your booking ID is: ${booking._id}</p>
       <p><strong>Payment: Full payment of Rs ${booking.totalPrice.toLocaleString()} is due on arrival.</strong></p>
-    `
+    `,
   };
-  
+
   await sendEmail(emailData);
 }
 
@@ -884,14 +918,18 @@ async function sendCancellationEmail(booking, refundAmount) {
       <h2>Booking Cancelled</h2>
       <p>Hi,</p>
       <p>Your booking (ID: ${booking._id}) has been cancelled.</p>
-      ${refundAmount > 0 ? `
+      ${
+        refundAmount > 0
+          ? `
         <p>A refund of Rs ${refundAmount.toLocaleString()} will be processed to your original payment method within 5-10 business days.</p>
-      ` : `
+      `
+          : `
         <p>As per the cancellation policy, no refund is applicable for this cancellation.</p>
-      `}
-    `
+      `
+      }
+    `,
   };
-  
+
   await sendEmail(emailData);
 }
 
@@ -901,5 +939,5 @@ export default {
   createReservation,
   processRefund,
   recordArrivalPayment,
-  handleStripeWebhook
+  handleStripeWebhook,
 };

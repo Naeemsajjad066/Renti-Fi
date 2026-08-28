@@ -11,7 +11,7 @@ import {
   deleteReview,
   addHostResponse,
   markReviewHelpful,
-  canUserReview
+  canUserReview,
 } from '../controllers/reviewController.js';
 
 const router = express.Router();

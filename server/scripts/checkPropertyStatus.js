@@ -9,9 +9,9 @@ const checkPropertyStatus = async () => {
 
     // Get all properties
     const allProperties = await Property.find().populate('host', 'fullName email');
-    
+
     console.log('=== ALL PROPERTIES IN DATABASE ===\n');
-    
+
     allProperties.forEach((prop, index) => {
       console.log(`${index + 1}. ${prop.title}`);
       console.log(`   ID: ${prop._id}`);
@@ -24,11 +24,11 @@ const checkPropertyStatus = async () => {
     });
 
     console.log('\n=== APPROVED PROPERTIES (Should Show in Listings) ===\n');
-    const approvedProperties = await Property.find({ 
-      isActive: true, 
-      verificationStatus: 'approved' 
+    const approvedProperties = await Property.find({
+      isActive: true,
+      verificationStatus: 'approved',
     });
-    
+
     if (approvedProperties.length === 0) {
       console.log('❌ NO approved properties found!');
       console.log('\nPossible issues:');

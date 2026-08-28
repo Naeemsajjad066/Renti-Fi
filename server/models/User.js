@@ -1,77 +1,80 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const userSchema=new mongoose.Schema({
-    email:{
-        type:String,
-        required:true,
-        unique:true 
-    },idCard:{
-        type:Number,
-        required:true,
-        unique:true
-    }, 
-     phoneNumber: 
-     { type: String, required: true },  // ✅ new field
+const userSchema = new mongoose.Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    idCard: {
+      type: Number,
+      required: true,
+      unique: true,
+    },
+    phoneNumber: { type: String, required: true }, // ✅ new field
 
-    fullName:{
-        type:String,
-        required:true,
+    fullName: {
+      type: String,
+      required: true,
     },
-    password:{
-        type:String,
-        required:true,
-        minlength:6  
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
     },
-    profilePic:{
-        type:String,
-        default:""
+    profilePic: {
+      type: String,
+      default: '',
     },
-    bio:{
-        type:String,
-        default:""
+    bio: {
+      type: String,
+      default: '',
     },
     isEmailVerified: {
-        type: Boolean,
-        default: false
+      type: Boolean,
+      default: false,
     },
     emailVerificationToken: {
-        type: String,
-        default: null
+      type: String,
+      default: null,
     },
     emailVerificationExpires: {
-        type: Date,
-        default: null
+      type: Date,
+      default: null,
     },
     role: {
-        type: String,
-        enum: ['user', 'host', 'admin'],
-        default: 'user'
+      type: String,
+      enum: ['user', 'host', 'admin'],
+      default: 'user',
     },
     isHost: {
-        type: Boolean,
-        default: false
+      type: Boolean,
+      default: false,
     },
     isActive: {
-        type: Boolean,
-        default: true
+      type: Boolean,
+      default: true,
     },
     // Stripe Connect account for hosts
     stripeAccountId: {
-        type: String,
-        default: ''
+      type: String,
+      default: '',
     },
     stripeAccountStatus: {
-        type: String,
-        enum: ['', 'pending', 'active', 'restricted'],
-        default: ''
+      type: String,
+      enum: ['', 'pending', 'active', 'restricted'],
+      default: '',
     },
     stripeOnboardingComplete: {
-        type: Boolean,
-        default: false
-    }
-},{
-    timestamps:true
-})
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-const User=mongoose.model("User",userSchema)
-export default User
+const User = mongoose.model('User', userSchema);
+export default User;

@@ -11,35 +11,38 @@ const getStripe = () => {
     }
     stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: '2023-10-16',
-      typescript: false
+      typescript: false,
     });
   }
   return stripeInstance;
 };
 
-export const stripe = new Proxy({}, {
-  get: (target, prop) => {
-    return getStripe()[prop];
+export const stripe = new Proxy(
+  {},
+  {
+    get: (target, prop) => {
+      return getStripe()[prop];
+    },
   }
-});
+);
 
 // Payment calculation helpers
 export const calculatePaymentBreakdown = (totalPrice, paymentOption) => {
   if (paymentOption === 'early') {
     const upfrontAmount = Math.round(totalPrice * 0.4); // 40%
-    const arrivalAmount = totalPrice - upfrontAmount;   // 60%
-    
+    const arrivalAmount = totalPrice - upfrontAmount; // 60%
+
     return {
       upfrontAmount,
       arrivalAmount,
-      totalAmount: totalPrice
+      totalAmount: totalPrice,
     };
   } else {
     // Payment on arrival - 100% due on arrival
     return {
       upfrontAmount: 0,
       arrivalAmount: totalPrice,
-      totalAmount: totalPrice
+      totalAmount: totalPrice,
     };
   }
 };
@@ -49,7 +52,7 @@ export const calculateRefundAmount = (booking, cancellationPolicy) => {
   const now = new Date();
   const checkIn = new Date(booking.checkIn);
   const daysUntilCheckIn = Math.ceil((checkIn - now) / (1000 * 60 * 60 * 24));
-  
+
   // Only refund if upfront payment was made
   if (!booking.paymentBreakdown?.upfrontPaid) {
     return 0;

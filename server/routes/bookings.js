@@ -8,7 +8,7 @@ import {
   cancelBooking,
   getBookingStats,
   checkAvailability,
-  getBookedRanges
+  getBookedRanges,
 } from '../controllers/bookingController.js';
 import { protect } from '../middleware/auth.js';
 import { bookingLimiter, propertyViewLimiter } from '../middleware/rateLimiter.js';
