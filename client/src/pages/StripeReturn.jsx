@@ -12,14 +12,14 @@ const StripeReturn = () => {
     const checkStripeStatus = async () => {
       try {
         // Wait a moment for Stripe to update their records
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         const response = await fetch(
           `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/stripe-connect/status`,
           {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
           }
         );
 
@@ -42,7 +42,7 @@ const StripeReturn = () => {
           toast({
             title: 'Setup Incomplete',
             description: 'Please complete the bank account setup.',
-            variant: 'destructive'
+            variant: 'destructive',
           });
 
           setTimeout(() => {
@@ -57,7 +57,7 @@ const StripeReturn = () => {
         toast({
           title: 'Error',
           description: 'Failed to verify bank account connection.',
-          variant: 'destructive'
+          variant: 'destructive',
         });
 
         // Still redirect to dashboard after error
@@ -90,11 +90,10 @@ const StripeReturn = () => {
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">All Set!</h2>
             <p className="text-gray-600">
-              Your bank account has been connected successfully. You can now start receiving payouts!
+              Your bank account has been connected successfully. You can now start receiving
+              payouts!
             </p>
-            <p className="text-sm text-gray-500 mt-4">
-              Redirecting to dashboard...
-            </p>
+            <p className="text-sm text-gray-500 mt-4">Redirecting to dashboard...</p>
           </div>
         )}
 
@@ -107,9 +106,7 @@ const StripeReturn = () => {
             <p className="text-gray-600">
               Your bank account setup wasn't completed. You can try again from your dashboard.
             </p>
-            <p className="text-sm text-gray-500 mt-4">
-              Redirecting to dashboard...
-            </p>
+            <p className="text-sm text-gray-500 mt-4">Redirecting to dashboard...</p>
           </div>
         )}
       </div>

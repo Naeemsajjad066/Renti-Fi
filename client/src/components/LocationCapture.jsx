@@ -1,5 +1,5 @@
 // components/LocationCapture.jsx
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, AlertTriangle, CheckCircle, Loader, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ const LocationCapture = ({ onLocationCapture, onLocationError, isRequired = true
     location: null,
     error: null,
     accuracy: null,
-    timestamp: null
+    timestamp: null,
   });
 
   const [hasUserConfirmed, setHasUserConfirmed] = useState(false);
@@ -19,29 +19,29 @@ const LocationCapture = ({ onLocationCapture, onLocationError, isRequired = true
   const captureLocation = () => {
     if (!navigator.geolocation) {
       const error = 'Geolocation is not supported by this browser';
-      setLocationState(prev => ({ ...prev, error }));
+      setLocationState((prev) => ({ ...prev, error }));
       onLocationError?.(error);
       return;
     }
 
-    setLocationState(prev => ({ ...prev, isCapturing: true, error: null }));
+    setLocationState((prev) => ({ ...prev, isCapturing: true, error: null }));
 
     const options = {
       enableHighAccuracy: true,
       timeout: 15000,
-      maximumAge: 0
+      maximumAge: 0,
     };
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude, accuracy } = position.coords;
         const timestamp = new Date();
-        
+
         const locationData = {
           latitude,
           longitude,
           accuracy,
-          timestamp
+          timestamp,
         };
 
         setLocationState({
@@ -49,14 +49,14 @@ const LocationCapture = ({ onLocationCapture, onLocationError, isRequired = true
           location: locationData,
           error: null,
           accuracy,
-          timestamp
+          timestamp,
         });
 
         onLocationCapture?.(locationData);
       },
       (error) => {
         let errorMessage = 'Failed to get location';
-        
+
         switch (error.code) {
           case error.PERMISSION_DENIED:
             errorMessage = 'Location access denied by user';
@@ -72,10 +72,10 @@ const LocationCapture = ({ onLocationCapture, onLocationError, isRequired = true
             break;
         }
 
-        setLocationState(prev => ({
+        setLocationState((prev) => ({
           ...prev,
           isCapturing: false,
-          error: errorMessage
+          error: errorMessage,
         }));
 
         onLocationError?.(errorMessage);
@@ -102,8 +102,9 @@ const LocationCapture = ({ onLocationCapture, onLocationError, isRequired = true
       <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-900/20">
         <AlertTriangle className="h-4 w-4 text-amber-600" />
         <AlertDescription className="text-amber-800 dark:text-amber-200">
-          <strong>Important:</strong> Please make sure you are physically present at the property location 
-          before capturing the location. This helps verify the authenticity of your listing.
+          <strong>Important:</strong> Please make sure you are physically present at the property
+          location before capturing the location. This helps verify the authenticity of your
+          listing.
         </AlertDescription>
       </Alert>
 
@@ -117,7 +118,8 @@ const LocationCapture = ({ onLocationCapture, onLocationError, isRequired = true
           className="mt-1 h-4 w-4 text-earth-brown focus:ring-earth-brown border-gray-300 rounded"
         />
         <label htmlFor="location-confirm" className="text-sm text-gray-700 dark:text-gray-300">
-          I confirm that I am currently at the property location and ready to capture its coordinates.
+          I confirm that I am currently at the property location and ready to capture its
+          coordinates.
         </label>
       </div>
 
@@ -166,13 +168,11 @@ const LocationCapture = ({ onLocationCapture, onLocationError, isRequired = true
               Location Captured Successfully
             </span>
           </div>
-          
+
           <div className="space-y-2 text-xs text-green-700 dark:text-green-300">
             <div>
-              <strong>Coordinates:</strong> {formatCoordinates(
-                locationState.location.latitude, 
-                locationState.location.longitude
-              )}
+              <strong>Coordinates:</strong>{' '}
+              {formatCoordinates(locationState.location.latitude, locationState.location.longitude)}
             </div>
             <div>
               <strong>Accuracy:</strong> {formatAccuracy(locationState.accuracy)}
@@ -197,12 +197,12 @@ const LocationCapture = ({ onLocationCapture, onLocationError, isRequired = true
               Location Capture Failed
             </span>
           </div>
-          <p className="text-xs text-red-700 dark:text-red-300">
-            {locationState.error}
-          </p>
-          
+          <p className="text-xs text-red-700 dark:text-red-300">{locationState.error}</p>
+
           <div className="mt-3 text-xs text-red-600 dark:text-red-400">
-            <p><strong>Troubleshooting:</strong></p>
+            <p>
+              <strong>Troubleshooting:</strong>
+            </p>
             <ul className="list-disc list-inside mt-1 space-y-1">
               <li>Make sure location services are enabled</li>
               <li>Allow location access when prompted</li>
@@ -216,7 +216,9 @@ const LocationCapture = ({ onLocationCapture, onLocationError, isRequired = true
       {/* Optional/Required Status */}
       <div className="text-xs text-gray-500 text-center">
         {isRequired ? (
-          <span className="text-red-500">* Location capture is required for property verification</span>
+          <span className="text-red-500">
+            * Location capture is required for property verification
+          </span>
         ) : (
           <span>Location capture is optional but recommended for better visibility</span>
         )}

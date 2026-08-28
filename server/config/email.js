@@ -4,13 +4,10 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Initialize Resend — it gracefully handles missing API keys
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 // Check if Resend is configured
-const emailEnabled = !!(
-  process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'your_resend_api_key_here'
-);
+const resendApiKey = process.env.RESEND_API_KEY;
+const emailEnabled = !!(resendApiKey && resendApiKey !== 'your_resend_api_key_here');
+const resend = emailEnabled ? new Resend(resendApiKey) : null;
 
 // Default from address — Resend requires a verified domain
 const FROM_ADDRESS = process.env.FROM_EMAIL || 'noreply@yourdomain.com';

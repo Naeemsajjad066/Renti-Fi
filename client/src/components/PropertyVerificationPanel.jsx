@@ -1,9 +1,19 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  MapPin, FileText, CheckCircle, XCircle, Eye, Download,
-  Calendar, Home, Bed, Bath, Users, DollarSign, Clock,
-  AlertCircle, ChevronLeft, ChevronRight, Loader2
+import {
+  MapPin,
+  CheckCircle,
+  XCircle,
+  Eye,
+  Download,
+  Home,
+  Bed,
+  Bath,
+  Users,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -12,7 +22,8 @@ import { Textarea } from './ui/textarea';
 import { usePropertyVerification } from '../contexts/PropertyVerificationContext';
 
 const PropertyVerificationPanel = () => {
-  const { pendingProperties, loading, getPendingProperties, approveProperty, rejectProperty } = usePropertyVerification();
+  const { pendingProperties, loading, getPendingProperties, approveProperty, rejectProperty } =
+    usePropertyVerification();
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [action, setAction] = useState(null); // 'approve' or 'reject'
@@ -67,7 +78,9 @@ const PropertyVerificationPanel = () => {
 
   const prevImage = () => {
     if (selectedProperty?.images) {
-      setCurrentImageIndex((prev) => (prev - 1 + selectedProperty.images.length) % selectedProperty.images.length);
+      setCurrentImageIndex(
+        (prev) => (prev - 1 + selectedProperty.images.length) % selectedProperty.images.length
+      );
     }
   };
 
@@ -79,7 +92,11 @@ const PropertyVerificationPanel = () => {
 
   const prevDoc = () => {
     if (selectedProperty?.propertyDocuments) {
-      setCurrentDocIndex((prev) => (prev - 1 + selectedProperty.propertyDocuments.length) % selectedProperty.propertyDocuments.length);
+      setCurrentDocIndex(
+        (prev) =>
+          (prev - 1 + selectedProperty.propertyDocuments.length) %
+          selectedProperty.propertyDocuments.length
+      );
     }
   };
 
@@ -226,7 +243,9 @@ const PropertyVerificationPanel = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-2xl font-bold text-white">{selectedProperty.title}</h2>
-                    <p className="text-white/90 text-sm">{selectedProperty.city}, {selectedProperty.state}</p>
+                    <p className="text-white/90 text-sm">
+                      {selectedProperty.city}, {selectedProperty.state}
+                    </p>
                   </div>
                   <Button
                     variant="ghost"
@@ -283,21 +302,42 @@ const PropertyVerificationPanel = () => {
                   <div>
                     <h3 className="text-lg font-semibold mb-3">Property Details</h3>
                     <div className="space-y-2 text-sm">
-                      <p><span className="font-medium">Type:</span> {selectedProperty.propertyType}</p>
-                      <p><span className="font-medium">Bedrooms:</span> {selectedProperty.bedrooms}</p>
-                      <p><span className="font-medium">Bathrooms:</span> {selectedProperty.bathrooms}</p>
-                      <p><span className="font-medium">Max Guests:</span> {selectedProperty.maxGuests}</p>
-                      <p><span className="font-medium">Price:</span> Rs {selectedProperty.price?.toLocaleString()}/night</p>
-                      <p><span className="font-medium">Address:</span> {selectedProperty.address}</p>
+                      <p>
+                        <span className="font-medium">Type:</span> {selectedProperty.propertyType}
+                      </p>
+                      <p>
+                        <span className="font-medium">Bedrooms:</span> {selectedProperty.bedrooms}
+                      </p>
+                      <p>
+                        <span className="font-medium">Bathrooms:</span> {selectedProperty.bathrooms}
+                      </p>
+                      <p>
+                        <span className="font-medium">Max Guests:</span>{' '}
+                        {selectedProperty.maxGuests}
+                      </p>
+                      <p>
+                        <span className="font-medium">Price:</span> Rs{' '}
+                        {selectedProperty.price?.toLocaleString()}/night
+                      </p>
+                      <p>
+                        <span className="font-medium">Address:</span> {selectedProperty.address}
+                      </p>
                     </div>
                   </div>
 
                   <div>
                     <h3 className="text-lg font-semibold mb-3">Host Information</h3>
                     <div className="space-y-2 text-sm">
-                      <p><span className="font-medium">Name:</span> {selectedProperty.host?.fullName}</p>
-                      <p><span className="font-medium">Email:</span> {selectedProperty.host?.email}</p>
-                      <p><span className="font-medium">Phone:</span> {selectedProperty.host?.phone || 'Not provided'}</p>
+                      <p>
+                        <span className="font-medium">Name:</span> {selectedProperty.host?.fullName}
+                      </p>
+                      <p>
+                        <span className="font-medium">Email:</span> {selectedProperty.host?.email}
+                      </p>
+                      <p>
+                        <span className="font-medium">Phone:</span>{' '}
+                        {selectedProperty.host?.phone || 'Not provided'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -315,8 +355,10 @@ const PropertyVerificationPanel = () => {
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                       <p className="text-sm text-green-800 flex items-center">
                         <CheckCircle className="w-4 h-4 mr-2" />
-                        Location verified at: {selectedProperty.latitude.toFixed(6)}, {selectedProperty.longitude.toFixed(6)}
-                        {selectedProperty.locationAccuracy && ` (±${selectedProperty.locationAccuracy.toFixed(0)}m)`}
+                        Location verified at: {selectedProperty.latitude.toFixed(6)},{' '}
+                        {selectedProperty.longitude.toFixed(6)}
+                        {selectedProperty.locationAccuracy &&
+                          ` (±${selectedProperty.locationAccuracy.toFixed(0)}m)`}
                       </p>
                     </div>
                   </div>
@@ -469,7 +511,11 @@ const PropertyVerificationPanel = () => {
                 <Button
                   onClick={handleSubmit}
                   disabled={submitting || (action === 'reject' && !rejectionReason.trim())}
-                  className={action === 'approve' ? 'flex-1 bg-green-600 hover:bg-green-700' : 'flex-1 bg-red-600 hover:bg-red-700'}
+                  className={
+                    action === 'approve'
+                      ? 'flex-1 bg-green-600 hover:bg-green-700'
+                      : 'flex-1 bg-red-600 hover:bg-red-700'
+                  }
                 >
                   {submitting ? (
                     <>
@@ -478,7 +524,11 @@ const PropertyVerificationPanel = () => {
                     </>
                   ) : (
                     <>
-                      {action === 'approve' ? <CheckCircle className="w-4 h-4 mr-2" /> : <XCircle className="w-4 h-4 mr-2" />}
+                      {action === 'approve' ? (
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                      ) : (
+                        <XCircle className="w-4 h-4 mr-2" />
+                      )}
                       Confirm {action === 'approve' ? 'Approval' : 'Rejection'}
                     </>
                   )}

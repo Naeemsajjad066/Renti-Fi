@@ -13,12 +13,12 @@ const EmailVerification = () => {
   const [isResending, setIsResending] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const { axios } = useContext(AuthContext);
   const { showLoading, hideLoading } = useLoading();
-  
+
   // Get email and userData from location state (passed from SignUp page)
   const email = location.state?.email;
   const userData = location.state?.userData;
@@ -70,28 +70,28 @@ const EmailVerification = () => {
   const handleVerification = async (e) => {
     e.preventDefault();
     const code = verificationCode.join('');
-    
+
     if (code.length !== 6) {
       toast.error('Please enter the complete 6-digit code');
       return;
     }
 
     setIsLoading(true);
-    showLoading("Verifying your email...");
+    showLoading('Verifying your email...');
 
     try {
       const { data } = await axios.post('/api/auth/verify-email', {
         email,
         code,
-        userData
+        userData,
       });
 
       if (data.success) {
         toast.success('Email verified successfully! 🎉');
         // Redirect to login page after short delay
         setTimeout(() => {
-          navigate('/login', { 
-            state: { message: 'Account created successfully! Please login.' }
+          navigate('/login', {
+            state: { message: 'Account created successfully! Please login.' },
           });
         }, 1500);
       } else {
@@ -114,12 +114,12 @@ const EmailVerification = () => {
     if (!canResend || isResending) return;
 
     setIsResending(true);
-    showLoading("Sending new verification code...");
-    
+    showLoading('Sending new verification code...');
+
     try {
       const { data } = await axios.post('/api/auth/resend-verification', {
         email,
-        fullName: userData?.fullName
+        fullName: userData?.fullName,
       });
 
       if (data.success) {
@@ -127,7 +127,7 @@ const EmailVerification = () => {
         setCountdown(60);
         setCanResend(false);
         setVerificationCode(['', '', '', '', '', '']);
-        
+
         // Restart countdown
         const timer = setInterval(() => {
           setCountdown((prev) => {
@@ -153,7 +153,7 @@ const EmailVerification = () => {
   return (
     <PageTransition>
       <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gray-50">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -175,7 +175,7 @@ const EmailVerification = () => {
           </Link>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
@@ -186,9 +186,7 @@ const EmailVerification = () => {
               <Mail size={32} className="text-blue-600" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Verify Your Email</h1>
-            <p className="text-sm text-gray-600">
-              We've sent a 6-digit verification code to
-            </p>
+            <p className="text-sm text-gray-600">We've sent a 6-digit verification code to</p>
             <p className="text-sm font-semibold text-gray-900">{email}</p>
           </div>
 
@@ -234,21 +232,13 @@ const EmailVerification = () => {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 mb-2">
-              Didn't receive the code?
-            </p>
+            <p className="text-sm text-gray-600 mb-2">Didn't receive the code?</p>
             <button
               onClick={handleResendCode}
               disabled={!canResend || isResending}
               className="text-sm text-primary hover:underline disabled:text-gray-400 disabled:cursor-not-allowed disabled:no-underline"
             >
-              {isResending ? (
-                'Sending...'
-              ) : canResend ? (
-                'Resend Code'
-              ) : (
-                `Resend in ${countdown}s`
-              )}
+              {isResending ? 'Sending...' : canResend ? 'Resend Code' : `Resend in ${countdown}s`}
             </button>
           </div>
 

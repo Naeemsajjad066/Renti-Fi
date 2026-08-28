@@ -1,14 +1,6 @@
 import React, { useState, useRef, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { 
-  ArrowLeft, 
-  Camera, 
-  Eye, 
-  EyeOff, 
-  CheckCircle,
-  User 
-} from 'lucide-react';
+import { ArrowLeft, Camera, Eye, EyeOff, CheckCircle, User } from 'lucide-react';
 import { AuthContext } from '../contexts/AuthContext';
 import PageTransition from '@/components/PageTransition';
 
@@ -19,13 +11,12 @@ const Settings = () => {
     email: 'john.doe@example.com',
     currentPassword: '',
     newPassword: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
 
   // Profile photo state
-  const {authUser}=useContext(AuthContext);
+  const { authUser } = useContext(AuthContext);
 
-  const [profilePhoto, setProfilePhoto] = useState(null);
   const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -40,7 +31,6 @@ const Settings = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setProfilePhoto(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfilePhotoPreview(reader.result);
@@ -59,14 +49,14 @@ const Settings = () => {
     const { name, value } = e.target;
     setUserData({
       ...userData,
-      [name]: value
+      [name]: value,
     });
 
     // Clear error when user types
     if (errors[name]) {
       setErrors({
         ...errors,
-        [name]: ''
+        [name]: '',
       });
     }
 
@@ -107,25 +97,15 @@ const Settings = () => {
       return;
     }
 
-    // Here you would typically send the data to your backend
-    console.log('Updating password:', {
-      currentPassword: userData.currentPassword,
-      newPassword: userData.newPassword
-    });
-
-    if (profilePhoto) {
-      console.log('Uploading profile photo:', profilePhoto);
-    }
-
     // Show success message
     setSuccessMessage('Your settings have been updated successfully!');
-    
+
     // Reset form (except for name and email)
     setUserData({
       ...userData,
       currentPassword: '',
       newPassword: '',
-      confirmPassword: ''
+      confirmPassword: '',
     });
 
     // Hide success message after 5 seconds
@@ -151,14 +131,14 @@ const Settings = () => {
             <div className="md:col-span-1">
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <h2 className="text-lg font-medium text-gray-900 mb-6">Profile Photo</h2>
-                
+
                 <div className="flex flex-col items-center">
                   <div className="relative mb-4">
                     <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                       {profilePhotoPreview ? (
-                        <img 
-                          src={profilePhotoPreview} 
-                          alt="Profile" 
+                        <img
+                          src={profilePhotoPreview}
+                          alt="Profile"
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -179,7 +159,7 @@ const Settings = () => {
                       className="hidden"
                     />
                   </div>
-                  
+
                   <p className="text-sm text-gray-500 text-center">
                     JPG, GIF or PNG. Max size of 2MB
                   </p>
@@ -191,7 +171,7 @@ const Settings = () => {
             <div className="md:col-span-2">
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <h2 className="text-lg font-medium text-gray-900 mb-6">Account Information</h2>
-                
+
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Name field */}
                   <div>
@@ -229,7 +209,10 @@ const Settings = () => {
 
                     {/* Current password */}
                     <div className="mb-4">
-                      <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label
+                        htmlFor="currentPassword"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         Current Password
                       </label>
                       <div className="relative">
@@ -258,7 +241,10 @@ const Settings = () => {
 
                     {/* New password */}
                     <div className="mb-4">
-                      <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label
+                        htmlFor="newPassword"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         New Password
                       </label>
                       <div className="relative">
@@ -287,7 +273,10 @@ const Settings = () => {
 
                     {/* Confirm password */}
                     <div>
-                      <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label
+                        htmlFor="confirmPassword"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
                         Confirm New Password
                       </label>
                       <div className="relative">

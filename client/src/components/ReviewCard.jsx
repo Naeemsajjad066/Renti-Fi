@@ -52,13 +52,17 @@ const ReviewCard = ({ review, onDelete, onEdit, showHostResponse = true }) => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
   const getInitials = (name) => {
     if (!name) return '?';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
   };
 
   return (
@@ -72,13 +76,18 @@ const ReviewCard = ({ review, onDelete, onEdit, showHostResponse = true }) => {
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
-              <AvatarImage src={review.user?.profilePic} alt={review.user?.fullName || review.user?.name} />
+              <AvatarImage
+                src={review.user?.profilePic}
+                alt={review.user?.fullName || review.user?.name}
+              />
               <AvatarFallback className="bg-[#A0937D] text-white">
                 {getInitials(review.user?.fullName || review.user?.name)}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h4 className="font-semibold text-gray-900">{review.user?.fullName || review.user?.name}</h4>
+              <h4 className="font-semibold text-gray-900">
+                {review.user?.fullName || review.user?.name}
+              </h4>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Calendar className="w-3 h-3" />
                 <span>{formatDate(review.createdAt)}</span>
@@ -106,10 +115,7 @@ const ReviewCard = ({ review, onDelete, onEdit, showHostResponse = true }) => {
                     Edit Review
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem
-                  onClick={() => onDelete?.(review._id)}
-                  className="text-red-600"
-                >
+                <DropdownMenuItem onClick={() => onDelete?.(review._id)} className="text-red-600">
                   <Trash2 className="w-4 h-4 mr-2" />
                   Delete Review
                 </DropdownMenuItem>

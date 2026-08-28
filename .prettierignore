@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Build output
+client/dist/
+client/build/
+
+# Lock files — never format these
+package-lock.json
+client/package-lock.json
+server/package-lock.json
+bun.lockb
+client/bun.lockb
+
+# Generated / vendored
+client/src/components/ui/
+client/public/
+
+# Env files
+.env
+.env.*
+
+# Config that ships as-is
+*.min.js
+*.min.css

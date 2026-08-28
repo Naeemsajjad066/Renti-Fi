@@ -1,43 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Upload, 
-  MapPin, 
-  Banknote, 
-  Home, 
-  CalendarIcon, 
-  Check, 
-  X, 
-  Plus, 
-  Image,
-  Bed,
-  Bath,
-  Users,
-  Smartphone,
+import {
+  Upload,
+  Banknote,
+  Check,
+  X,
+  Plus,
   Wifi,
   Tv,
   Utensils,
   Car,
   Wind,
   ArrowRight,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import PageTransition from '@/components/PageTransition';
 import HostSidebar from '@/components/HostSidebar';
@@ -71,7 +60,8 @@ const AddListing = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { showLoading, hideLoading } = useLoading();
-  const { createProperty, updateProperty, fetchPropertyById, selectedProperty } = useContext(PropertyContext);
+  const { createProperty, updateProperty, fetchPropertyById, selectedProperty } =
+    useContext(PropertyContext);
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditMode = Boolean(id);
@@ -100,17 +90,18 @@ const AddListing = () => {
     paymentOptions: '',
     cancellationPolicy: '',
   });
-  
+
   // Location capture state
   const [locationCaptured, setLocationCaptured] = useState(false);
-  
+
   // Load property data in edit mode
   useEffect(() => {
     if (isEditMode && id) {
       fetchPropertyById(id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isEditMode]);
-  
+
   // Populate form data when property is loaded
   useEffect(() => {
     if (isEditMode && selectedProperty) {
@@ -135,81 +126,81 @@ const AddListing = () => {
         paymentOptions: selectedProperty.paymentOptions || '',
         cancellationPolicy: selectedProperty.cancellationPolicy || '',
       });
-      
+
       if (selectedProperty.images && selectedProperty.images.length > 0) {
-        setImages(selectedProperty.images.map((url, index) => ({
-          id: index,
-          preview: url,
-          isExisting: true
-        })));
+        setImages(
+          selectedProperty.images.map((url, index) => ({
+            id: index,
+            preview: url,
+            isExisting: true,
+          }))
+        );
       }
-      
+
       if (selectedProperty.latitude && selectedProperty.longitude) {
         setLocationCaptured(true);
       }
     }
   }, [selectedProperty, isEditMode]);
-  
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  
+
   const handleSelectChange = (name, value) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  
+
   const handleAmenityToggle = (amenityId) => {
-    setFormData(prev => {
+    setFormData((prev) => {
       const selected = [...prev.selectedAmenities];
       if (selected.includes(amenityId)) {
-        return { ...prev, selectedAmenities: selected.filter(id => id !== amenityId) };
+        return { ...prev, selectedAmenities: selected.filter((id) => id !== amenityId) };
       } else {
         return { ...prev, selectedAmenities: [...selected, amenityId] };
       }
     });
   };
 
-
   // Location capture handlers
   const handleLocationCapture = (locationData) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       latitude: locationData.latitude,
       longitude: locationData.longitude,
-      locationAccuracy: locationData.accuracy
+      locationAccuracy: locationData.accuracy,
     }));
     setLocationCaptured(true);
     toast({
-      title: "Location Captured!",
-      description: "Property location has been successfully captured.",
-      variant: "success",
+      title: 'Location Captured!',
+      description: 'Property location has been successfully captured.',
+      variant: 'success',
     });
   };
-  
+
   const handleLocationError = (error) => {
     toast({
-      title: "Location Error",
+      title: 'Location Error',
       description: error,
-      variant: "destructive",
+      variant: 'destructive',
     });
   };
-  
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    
+
     // Create preview URLs for the images
-    const newImages = files.map(file => ({
+    const newImages = files.map((file) => ({
       file,
       preview: URL.createObjectURL(file),
     }));
-    
-    setImages(prev => [...prev, ...newImages]);
+
+    setImages((prev) => [...prev, ...newImages]);
   };
-  
+
   const removeImage = (index) => {
-    setImages(prev => {
+    setImages((prev) => {
       const newImages = [...prev];
       // Revoke the URL to prevent memory leaks
       URL.revokeObjectURL(newImages[index].preview);
@@ -239,16 +230,16 @@ const AddListing = () => {
   // Property documents upload handler
   const handleDocumentUpload = (e) => {
     const files = Array.from(e.target.files);
-    const newDocuments = files.map(file => ({
+    const newDocuments = files.map((file) => ({
       file,
       preview: URL.createObjectURL(file),
       name: file.name,
     }));
-    setPropertyDocuments(prev => [...prev, ...newDocuments]);
+    setPropertyDocuments((prev) => [...prev, ...newDocuments]);
   };
 
   const removeDocument = (index) => {
-    setPropertyDocuments(prev => {
+    setPropertyDocuments((prev) => {
       const newDocs = [...prev];
       URL.revokeObjectURL(newDocs[index].preview);
       newDocs.splice(index, 1);
@@ -256,10 +247,8 @@ const AddListing = () => {
     });
   };
 
-
-  
   const nextStep = () => {
-    setActiveStep(prev => {
+    setActiveStep((prev) => {
       // Skip step 5 (Documents) when in edit mode
       if (isEditMode && prev === 4) {
         return 6;
@@ -268,9 +257,9 @@ const AddListing = () => {
     });
     window.scrollTo(0, 0);
   };
-  
+
   const prevStep = () => {
-    setActiveStep(prev => {
+    setActiveStep((prev) => {
       // Skip step 5 (Documents) when in edit mode
       if (isEditMode && prev === 6) {
         return 4;
@@ -279,45 +268,45 @@ const AddListing = () => {
     });
     window.scrollTo(0, 0);
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     showLoading(isEditMode ? 'Updating property...' : 'Creating listing...');
-  
+
     try {
       const formDataToSend = new FormData();
-  
+
       // Append all text/number/boolean fields
       Object.keys(formData).forEach((key) => {
-        if (key === "selectedAmenities") {
+        if (key === 'selectedAmenities') {
           formDataToSend.append(key, JSON.stringify(formData[key]));
         } else {
           formDataToSend.append(key, formData[key]);
         }
       });
-  
+
       // Append images (only new images with file property)
       if (images.length > 0) {
         images.forEach((img) => {
           if (img.file) {
-            formDataToSend.append("images", img.file);
+            formDataToSend.append('images', img.file);
           }
         });
       }
 
       // Append ID card (only in create mode)
       if (!isEditMode && idCardImage) {
-        formDataToSend.append("idCard", idCardImage.file);
+        formDataToSend.append('idCard', idCardImage.file);
       }
 
       // Append property documents (only in create mode)
       if (!isEditMode && propertyDocuments.length > 0) {
         propertyDocuments.forEach((doc) => {
-          formDataToSend.append("propertyDocuments", doc.file);
+          formDataToSend.append('propertyDocuments', doc.file);
         });
       }
-  
+
       // Call appropriate context function
       let result;
       if (isEditMode) {
@@ -325,99 +314,105 @@ const AddListing = () => {
       } else {
         result = await createProperty(formDataToSend);
       }
-  
+
       if (result.success) {
         toast({
-          title: isEditMode ? "Property Updated!" : "Property Submitted for Verification!",
-          description: isEditMode 
-            ? "Your property has been updated successfully."
+          title: isEditMode ? 'Property Updated!' : 'Property Submitted for Verification!',
+          description: isEditMode
+            ? 'Your property has been updated successfully.'
             : "Your property has been submitted and is pending admin verification. You'll receive an email once it's reviewed.",
-          variant: "success",
+          variant: 'success',
         });
-  
+
         // Navigate to dashboard
-        navigate("/host/dashboard");
+        navigate('/host/dashboard');
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: error.message || "Something went wrong.",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message || 'Something went wrong.',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
       hideLoading();
     }
   };
-  
-  
+
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
-  
+
   return (
     <PageTransition>
       <div className="min-h-screen bg-gray-50 flex">
-        <HostSidebar 
-          isMobile={isMobile}
-          isOpen={sidebarOpen}
-          onToggle={toggleSidebar}
-        />
-        
+        <HostSidebar isMobile={isMobile} isOpen={sidebarOpen} onToggle={toggleSidebar} />
+
         <div className="flex-1 flex flex-col">
           <header className="bg-white shadow-sm sticky top-0 z-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
               <h1 className="text-2xl font-display font-bold text-gray-900">
                 {isEditMode ? 'Edit Listing' : 'Add New Listing'}
               </h1>
-              
-              <Link 
-                to="/host/dashboard" 
-                className="text-gray-600 hover:text-gray-900"
-              >
+
+              <Link to="/host/dashboard" className="text-gray-600 hover:text-gray-900">
                 Cancel
               </Link>
             </div>
           </header>
-          
+
           <main className="flex-1 p-6">
             <div className="max-w-4xl mx-auto">
               {/* Progress steps */}
               <div className="mb-8">
                 <div className="flex items-center justify-between">
-                  {[1, 2, 3, 4, 5, 6].filter(step => !(isEditMode && step === 5)).map((step) => (
-                    <div key={step} className="flex flex-col items-center">
-                      <div 
-                        className={cn(
-                          "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium mb-2 transition-colors",
-                          activeStep >= step 
-                            ? "bg-primary text-white" 
-                            : "bg-gray-200 text-gray-600"
-                        )}
-                      >
-                        {step}
+                  {[1, 2, 3, 4, 5, 6]
+                    .filter((step) => !(isEditMode && step === 5))
+                    .map((step) => (
+                      <div key={step} className="flex flex-col items-center">
+                        <div
+                          className={cn(
+                            'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium mb-2 transition-colors',
+                            activeStep >= step
+                              ? 'bg-primary text-white'
+                              : 'bg-gray-200 text-gray-600'
+                          )}
+                        >
+                          {step}
+                        </div>
+                        <div className="text-xs text-gray-600 text-center">
+                          {step === 1 && 'Basic Info'}
+                          {step === 2 && 'Location'}
+                          {step === 3 && 'Details'}
+                          {step === 4 && 'Photos'}
+                          {step === 5 && 'Documents'}
+                          {step === 6 && 'Price'}
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-600 text-center">
-                        {step === 1 && "Basic Info"}
-                        {step === 2 && "Location"}
-                        {step === 3 && "Details"}
-                        {step === 4 && "Photos"}
-                        {step === 5 && "Documents"}
-                        {step === 6 && "Price"}
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
                 <div className="mt-2 flex gap-1">
-                  <div className={`flex-1 h-1 rounded-l ${activeStep >= 2 ? 'bg-primary' : 'bg-gray-200'}`}></div>
-                  <div className={`flex-1 h-1 ${activeStep >= 3 ? 'bg-primary' : 'bg-gray-200'}`}></div>
-                  <div className={`flex-1 h-1 ${activeStep >= 4 ? 'bg-primary' : 'bg-gray-200'}`}></div>
-                  <div className={`flex-1 h-1 ${activeStep >= 5 ? 'bg-primary' : 'bg-gray-200'}`}></div>
-                  <div className={`flex-1 h-1 ${activeStep >= 6 ? 'bg-primary' : 'bg-gray-200'}`}></div>
-                  <div className={`flex-1 h-1 rounded-r ${activeStep >= 7 ? 'bg-primary' : 'bg-gray-200'}`}></div>
+                  <div
+                    className={`flex-1 h-1 rounded-l ${activeStep >= 2 ? 'bg-primary' : 'bg-gray-200'}`}
+                  ></div>
+                  <div
+                    className={`flex-1 h-1 ${activeStep >= 3 ? 'bg-primary' : 'bg-gray-200'}`}
+                  ></div>
+                  <div
+                    className={`flex-1 h-1 ${activeStep >= 4 ? 'bg-primary' : 'bg-gray-200'}`}
+                  ></div>
+                  <div
+                    className={`flex-1 h-1 ${activeStep >= 5 ? 'bg-primary' : 'bg-gray-200'}`}
+                  ></div>
+                  <div
+                    className={`flex-1 h-1 ${activeStep >= 6 ? 'bg-primary' : 'bg-gray-200'}`}
+                  ></div>
+                  <div
+                    className={`flex-1 h-1 rounded-r ${activeStep >= 7 ? 'bg-primary' : 'bg-gray-200'}`}
+                  ></div>
                 </div>
               </div>
-              
+
               <form onSubmit={handleSubmit}>
                 {/* Step 1: Basic Info */}
                 {activeStep === 1 && (
@@ -428,8 +423,10 @@ const AddListing = () => {
                     transition={{ duration: 0.3 }}
                     className="bg-white p-6 rounded-lg shadow-sm"
                   >
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Property Basic Information</h2>
-                    
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                      Property Basic Information
+                    </h2>
+
                     <div className="space-y-6">
                       <div>
                         <Label htmlFor="title" className="text-sm font-medium text-gray-700">
@@ -445,7 +442,7 @@ const AddListing = () => {
                           className="mt-1"
                         />
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="description" className="text-sm font-medium text-gray-700">
                           Description
@@ -461,7 +458,7 @@ const AddListing = () => {
                           rows={5}
                         />
                       </div>
-                      
+
                       <div>
                         <Label htmlFor="propertyType" className="text-sm font-medium text-gray-700">
                           Property Type
@@ -482,7 +479,7 @@ const AddListing = () => {
                           </SelectContent>
                         </Select>
                       </div>
-                      
+
                       <div>
                         <Label className="text-sm font-medium text-gray-700 block mb-3">
                           Location
@@ -547,7 +544,7 @@ const AddListing = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="mt-8 flex justify-end">
                       <Button type="button" onClick={nextStep}>
                         Next <ArrowRight size={16} className="ml-2" />
@@ -555,7 +552,7 @@ const AddListing = () => {
                     </div>
                   </motion.div>
                 )}
-                
+
                 {/* Step 2: Location Verification */}
                 {activeStep === 2 && (
                   <motion.div
@@ -565,27 +562,30 @@ const AddListing = () => {
                     transition={{ duration: 0.3 }}
                     className="bg-white p-6 rounded-lg shadow-sm"
                   >
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Property Location Verification</h2>
-                    
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                      Property Location Verification
+                    </h2>
+
                     <div className="mb-6">
                       <p className="text-gray-600 mb-4">
-                        To ensure the authenticity of your listing, we need to verify the property's location. 
-                        This helps build trust with potential guests and improves your listing's credibility.
+                        To ensure the authenticity of your listing, we need to verify the property's
+                        location. This helps build trust with potential guests and improves your
+                        listing's credibility.
                       </p>
                     </div>
-                    
+
                     <LocationCapture
                       onLocationCapture={handleLocationCapture}
                       onLocationError={handleLocationError}
                       isRequired={true}
                     />
-                    
+
                     <div className="mt-8 flex justify-between">
                       <Button type="button" onClick={prevStep} variant="outline">
                         Back
                       </Button>
-                      <Button 
-                        type="button" 
+                      <Button
+                        type="button"
                         onClick={nextStep}
                         disabled={!locationCaptured}
                         className={locationCaptured ? '' : 'opacity-50 cursor-not-allowed'}
@@ -595,7 +595,7 @@ const AddListing = () => {
                     </div>
                   </motion.div>
                 )}
-                
+
                 {/* Step 3: Details & selectedAmenities */}
                 {activeStep === 3 && (
                   <motion.div
@@ -605,17 +605,24 @@ const AddListing = () => {
                     transition={{ duration: 0.3 }}
                     className="bg-white p-6 rounded-lg shadow-sm"
                   >
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Property Details & selectedAmenities</h2>
-                    
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                      Property Details & selectedAmenities
+                    </h2>
+
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                          <Label htmlFor="bedrooms" className="text-sm font-medium text-gray-700 block mb-2">
+                          <Label
+                            htmlFor="bedrooms"
+                            className="text-sm font-medium text-gray-700 block mb-2"
+                          >
                             Bedrooms
                           </Label>
                           <Select
                             value={formData.bedrooms.toString()}
-                            onValueChange={(value) => handleSelectChange('bedrooms', parseInt(value))}
+                            onValueChange={(value) =>
+                              handleSelectChange('bedrooms', parseInt(value))
+                            }
                           >
                             <SelectTrigger className="w-full">
                               <SelectValue />
@@ -629,14 +636,19 @@ const AddListing = () => {
                             </SelectContent>
                           </Select>
                         </div>
-                        
+
                         <div>
-                          <Label htmlFor="bathrooms" className="text-sm font-medium text-gray-700 block mb-2">
+                          <Label
+                            htmlFor="bathrooms"
+                            className="text-sm font-medium text-gray-700 block mb-2"
+                          >
                             Bathrooms
                           </Label>
                           <Select
                             value={formData.bathrooms.toString()}
-                            onValueChange={(value) => handleSelectChange('bathrooms', parseInt(value))}
+                            onValueChange={(value) =>
+                              handleSelectChange('bathrooms', parseInt(value))
+                            }
                           >
                             <SelectTrigger className="w-full">
                               <SelectValue />
@@ -650,29 +662,36 @@ const AddListing = () => {
                             </SelectContent>
                           </Select>
                         </div>
-                        
+
                         <div>
-                          <Label htmlFor="maxGuests" className="text-sm font-medium text-gray-700 block mb-2">
+                          <Label
+                            htmlFor="maxGuests"
+                            className="text-sm font-medium text-gray-700 block mb-2"
+                          >
                             Max Guests
                           </Label>
                           <Select
                             value={formData.maxGuests.toString()}
-                            onValueChange={(value) => handleSelectChange('maxGuests', parseInt(value))}
+                            onValueChange={(value) =>
+                              handleSelectChange('maxGuests', parseInt(value))
+                            }
                           >
                             <SelectTrigger className="w-full">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent className="bg-white">
-                              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((num) => (
-                                <SelectItem key={num} value={num.toString()}>
-                                  {num} {num === 1 ? 'guest' : 'guests'}
-                                </SelectItem>
-                              ))}
+                              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map(
+                                (num) => (
+                                  <SelectItem key={num} value={num.toString()}>
+                                    {num} {num === 1 ? 'guest' : 'guests'}
+                                  </SelectItem>
+                                )
+                              )}
                             </SelectContent>
                           </Select>
                         </div>
                       </div>
-                      
+
                       <div>
                         <Label className="text-sm font-medium text-gray-700 block mb-3">
                           Property Size
@@ -704,7 +723,7 @@ const AddListing = () => {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div>
                         <Label className="text-sm font-medium text-gray-700 block mb-3">
                           Available selectedAmenities
@@ -712,12 +731,12 @@ const AddListing = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {selectedAmenities.map((amenity) => (
                             <div key={amenity.id} className="flex items-center space-x-2">
-                              <Switch 
+                              <Switch
                                 checked={formData.selectedAmenities.includes(amenity.id)}
                                 onCheckedChange={() => handleAmenityToggle(amenity.id)}
                                 id={`amenity-${amenity.id}`}
                               />
-                              <Label 
+                              <Label
                                 htmlFor={`amenity-${amenity.id}`}
                                 className="cursor-pointer flex items-center"
                               >
@@ -729,7 +748,7 @@ const AddListing = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="mt-8 flex justify-between">
                       <Button type="button" variant="outline" onClick={prevStep}>
                         Back
@@ -740,7 +759,7 @@ const AddListing = () => {
                     </div>
                   </motion.div>
                 )}
-                
+
                 {/* Step 3: Photos */}
                 {activeStep === 4 && (
                   <motion.div
@@ -751,18 +770,21 @@ const AddListing = () => {
                     className="bg-white p-6 rounded-lg shadow-sm"
                   >
                     <h2 className="text-xl font-semibold text-gray-900 mb-6">Upload Photos</h2>
-                    
+
                     <div className="mb-6">
                       <p className="text-gray-600 mb-4">
-                        Upload high-quality photos of your property. Add at least 5 photos including the exterior, living room, bedrooms, and bathrooms.
+                        Upload high-quality photos of your property. Add at least 5 photos including
+                        the exterior, living room, bedrooms, and bathrooms.
                       </p>
-                      
+
                       <label className="block">
                         <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
                           <Upload className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-                          <p className="text-sm text-gray-600 mb-1">Drag and drop files here, or click to browse</p>
+                          <p className="text-sm text-gray-600 mb-1">
+                            Drag and drop files here, or click to browse
+                          </p>
                           <p className="text-xs text-gray-500">JPG, PNG or WEBP (max. 10MB each)</p>
-                          <input 
+                          <input
                             type="file"
                             multiple
                             accept="image/*"
@@ -772,7 +794,7 @@ const AddListing = () => {
                         </div>
                       </label>
                     </div>
-                    
+
                     {images.length > 0 && (
                       <div className="mt-6">
                         <h3 className="text-sm font-medium text-gray-700 mb-3">Uploaded Photos</h3>
@@ -780,9 +802,9 @@ const AddListing = () => {
                           {images.map((image, index) => (
                             <div key={index} className="relative group">
                               <div className="aspect-square rounded-lg overflow-hidden">
-                                <img 
-                                  src={image.preview} 
-                                  alt={`Preview ${index + 1}`} 
+                                <img
+                                  src={image.preview}
+                                  alt={`Preview ${index + 1}`}
                                   className="w-full h-full object-cover"
                                 />
                               </div>
@@ -795,11 +817,11 @@ const AddListing = () => {
                               </button>
                             </div>
                           ))}
-                          
+
                           <label className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
                             <Plus size={24} className="text-gray-400 mb-1" />
                             <span className="text-xs text-gray-500">Add More</span>
-                            <input 
+                            <input
                               type="file"
                               multiple
                               accept="image/*"
@@ -810,22 +832,18 @@ const AddListing = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     <div className="mt-8 flex justify-between">
                       <Button type="button" variant="outline" onClick={prevStep}>
                         Back
                       </Button>
-                      <Button 
-                        type="button" 
-                        onClick={nextStep}
-                        disabled={images.length === 0}
-                      >
+                      <Button type="button" onClick={nextStep} disabled={images.length === 0}>
                         Next <ArrowRight size={16} className="ml-2" />
                       </Button>
                     </div>
                   </motion.div>
                 )}
-                
+
                 {/* Step 5: Verification Documents */}
                 {!isEditMode && activeStep === 5 && (
                   <motion.div
@@ -835,13 +853,17 @@ const AddListing = () => {
                     transition={{ duration: 0.3 }}
                     className="bg-white p-6 rounded-lg shadow-sm"
                   >
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Verification Documents</h2>
-                    
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                      Verification Documents
+                    </h2>
+
                     <div className="mb-6">
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                         <p className="text-sm text-blue-800">
-                          <strong>Why do we need these documents?</strong> To ensure the safety and authenticity of all listings, 
-                          we require verification documents. Your information is kept secure and will only be used for verification purposes.
+                          <strong>Why do we need these documents?</strong> To ensure the safety and
+                          authenticity of all listings, we require verification documents. Your
+                          information is kept secure and will only be used for verification
+                          purposes.
                         </p>
                       </div>
                     </div>
@@ -853,16 +875,17 @@ const AddListing = () => {
                           Host ID Card/Passport * <span className="text-red-500">(Required)</span>
                         </Label>
                         <p className="text-xs text-gray-600 mb-3">
-                          Upload a clear photo of your government-issued ID card or passport for identity verification.
+                          Upload a clear photo of your government-issued ID card or passport for
+                          identity verification.
                         </p>
-                        
+
                         {!idCardImage ? (
                           <label className="block">
                             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer">
                               <Upload className="mx-auto h-10 w-10 text-gray-400 mb-2" />
                               <p className="text-sm text-gray-600 mb-1">Click to upload ID card</p>
                               <p className="text-xs text-gray-500">JPG, PNG (max. 10MB)</p>
-                              <input 
+                              <input
                                 type="file"
                                 accept="image/*"
                                 className="hidden"
@@ -873,9 +896,9 @@ const AddListing = () => {
                         ) : (
                           <div className="relative inline-block">
                             <div className="w-64 h-40 rounded-lg overflow-hidden border-2 border-green-500">
-                              <img 
-                                src={idCardImage.preview} 
-                                alt="ID Card" 
+                              <img
+                                src={idCardImage.preview}
+                                alt="ID Card"
                                 className="w-full h-full object-cover"
                               />
                             </div>
@@ -897,18 +920,22 @@ const AddListing = () => {
                       {/* Property Documents Upload */}
                       <div>
                         <Label className="text-sm font-medium text-gray-700 block mb-3">
-                          Property Documents * <span className="text-red-500">(Required - At least 1 document)</span>
+                          Property Documents *{' '}
+                          <span className="text-red-500">(Required - At least 1 document)</span>
                         </Label>
                         <p className="text-xs text-gray-600 mb-3">
-                          Upload proof of ownership or authorization (e.g., property deed, rental agreement, authorization letter, utility bills).
+                          Upload proof of ownership or authorization (e.g., property deed, rental
+                          agreement, authorization letter, utility bills).
                         </p>
-                        
+
                         <label className="block">
                           <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer">
                             <Upload className="mx-auto h-10 w-10 text-gray-400 mb-2" />
-                            <p className="text-sm text-gray-600 mb-1">Click to upload property documents</p>
+                            <p className="text-sm text-gray-600 mb-1">
+                              Click to upload property documents
+                            </p>
                             <p className="text-xs text-gray-500">JPG, PNG, PDF (max. 10MB each)</p>
-                            <input 
+                            <input
                               type="file"
                               multiple
                               accept="image/*,.pdf"
@@ -920,24 +947,30 @@ const AddListing = () => {
 
                         {propertyDocuments.length > 0 && (
                           <div className="mt-4">
-                            <h3 className="text-sm font-medium text-gray-700 mb-2">Uploaded Documents ({propertyDocuments.length})</h3>
+                            <h3 className="text-sm font-medium text-gray-700 mb-2">
+                              Uploaded Documents ({propertyDocuments.length})
+                            </h3>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                               {propertyDocuments.map((doc, index) => (
                                 <div key={index} className="relative group">
                                   <div className="aspect-video rounded-lg overflow-hidden border-2 border-gray-200">
                                     {doc.file.type === 'application/pdf' ? (
                                       <div className="w-full h-full bg-red-50 flex flex-col items-center justify-center">
-                                        <svg className="w-12 h-12 text-red-500 mb-1" fill="currentColor" viewBox="0 0 20 20">
-                                          <path d="M4 18h12V6h-4V2H4v16zm-2 1V0h12l4 4v16H2v-1z"/>
+                                        <svg
+                                          className="w-12 h-12 text-red-500 mb-1"
+                                          fill="currentColor"
+                                          viewBox="0 0 20 20"
+                                        >
+                                          <path d="M4 18h12V6h-4V2H4v16zm-2 1V0h12l4 4v16H2v-1z" />
                                         </svg>
                                         <span className="text-xs text-gray-600 px-2 text-center truncate w-full">
                                           {doc.name}
                                         </span>
                                       </div>
                                     ) : (
-                                      <img 
-                                        src={doc.preview} 
-                                        alt={`Document ${index + 1}`} 
+                                      <img
+                                        src={doc.preview}
+                                        alt={`Document ${index + 1}`}
                                         className="w-full h-full object-cover"
                                       />
                                     )}
@@ -951,11 +984,11 @@ const AddListing = () => {
                                   </button>
                                 </div>
                               ))}
-                              
+
                               <label className="aspect-video rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
                                 <Plus size={20} className="text-gray-400 mb-1" />
                                 <span className="text-xs text-gray-500">Add More</span>
-                                <input 
+                                <input
                                   type="file"
                                   multiple
                                   accept="image/*,.pdf"
@@ -968,16 +1001,20 @@ const AddListing = () => {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="mt-8 flex justify-between">
                       <Button type="button" variant="outline" onClick={prevStep}>
                         Back
                       </Button>
-                      <Button 
-                        type="button" 
+                      <Button
+                        type="button"
                         onClick={nextStep}
                         disabled={!idCardImage || propertyDocuments.length === 0}
-                        className={(!idCardImage || propertyDocuments.length === 0) ? 'opacity-50 cursor-not-allowed' : ''}
+                        className={
+                          !idCardImage || propertyDocuments.length === 0
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
+                        }
                       >
                         Next <ArrowRight size={16} className="ml-2" />
                       </Button>
@@ -995,10 +1032,13 @@ const AddListing = () => {
                     className="bg-white p-6 rounded-lg shadow-sm"
                   >
                     <h2 className="text-xl font-semibold text-gray-900 mb-6">Pricing & Payment</h2>
-                    
+
                     <div className="space-y-6">
                       <div>
-                        <Label htmlFor="price" className="text-sm font-medium text-gray-700 block mb-3">
+                        <Label
+                          htmlFor="price"
+                          className="text-sm font-medium text-gray-700 block mb-3"
+                        >
                           Price Per Night/Day *
                         </Label>
                         <div className="relative">
@@ -1020,32 +1060,42 @@ const AddListing = () => {
 
                       {/* Payment Options */}
                       <div>
-                        <Label htmlFor="paymentOptions" className="text-sm font-medium text-gray-700 block mb-3">
+                        <Label
+                          htmlFor="paymentOptions"
+                          className="text-sm font-medium text-gray-700 block mb-3"
+                        >
                           Payment Options * <span className="text-red-500">(Required)</span>
                         </Label>
                         <p className="text-xs text-gray-600 mb-3">
                           Select how guests can pay for their bookings
                         </p>
-                        <Select 
-                          value={formData.paymentOptions} 
-                          onValueChange={(value) => setFormData(prev => ({...prev, paymentOptions: value}))}
+                        <Select
+                          value={formData.paymentOptions}
+                          onValueChange={(value) =>
+                            setFormData((prev) => ({ ...prev, paymentOptions: value }))
+                          }
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select payment option" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="arrival">Pay on Arrival Only (Cash)</SelectItem>
-                            <SelectItem value="early">Online Payment Only (40% upfront + 60% on arrival)</SelectItem>
+                            <SelectItem value="early">
+                              Online Payment Only (40% upfront + 60% on arrival)
+                            </SelectItem>
                             <SelectItem value="both">Both Options Available</SelectItem>
                           </SelectContent>
                         </Select>
-                        
+
                         {formData.paymentOptions && (
                           <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                             <p className="text-xs text-blue-900">
-                              {formData.paymentOptions === 'arrival' && '✓ Guests will pay the full amount in cash when they check in.'}
-                              {formData.paymentOptions === 'early' && '✓ Guests will pay 40% online via Stripe to confirm booking, and 60% on arrival.'}
-                              {formData.paymentOptions === 'both' && '✓ Guests can choose between paying online (40% upfront) or paying full amount on arrival.'}
+                              {formData.paymentOptions === 'arrival' &&
+                                '✓ Guests will pay the full amount in cash when they check in.'}
+                              {formData.paymentOptions === 'early' &&
+                                '✓ Guests will pay 40% online via Stripe to confirm booking, and 60% on arrival.'}
+                              {formData.paymentOptions === 'both' &&
+                                '✓ Guests can choose between paying online (40% upfront) or paying full amount on arrival.'}
                             </p>
                           </div>
                         )}
@@ -1053,29 +1103,42 @@ const AddListing = () => {
 
                       {/* Cancellation Policy */}
                       <div>
-                        <Label htmlFor="cancellationPolicy" className="text-sm font-medium text-gray-700 block mb-3">
+                        <Label
+                          htmlFor="cancellationPolicy"
+                          className="text-sm font-medium text-gray-700 block mb-3"
+                        >
                           Cancellation Policy * <span className="text-red-500">(Required)</span>
                         </Label>
                         <p className="text-xs text-gray-600 mb-3">
                           Choose your cancellation policy for refunds
                         </p>
-                        <Select 
-                          value={formData.cancellationPolicy} 
-                          onValueChange={(value) => setFormData(prev => ({...prev, cancellationPolicy: value}))}
+                        <Select
+                          value={formData.cancellationPolicy}
+                          onValueChange={(value) =>
+                            setFormData((prev) => ({ ...prev, cancellationPolicy: value }))
+                          }
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select cancellation policy" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="flexible">Flexible - Full refund 1 day before check-in</SelectItem>
-                            <SelectItem value="moderate">Moderate - Full refund 7 days before check-in</SelectItem>
-                            <SelectItem value="strict">Strict - Full refund 14 days before check-in</SelectItem>
+                            <SelectItem value="flexible">
+                              Flexible - Full refund 1 day before check-in
+                            </SelectItem>
+                            <SelectItem value="moderate">
+                              Moderate - Full refund 7 days before check-in
+                            </SelectItem>
+                            <SelectItem value="strict">
+                              Strict - Full refund 14 days before check-in
+                            </SelectItem>
                           </SelectContent>
                         </Select>
-                        
+
                         {formData.cancellationPolicy && (
                           <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                            <p className="text-xs text-amber-900 font-medium mb-2">Refund Schedule:</p>
+                            <p className="text-xs text-amber-900 font-medium mb-2">
+                              Refund Schedule:
+                            </p>
                             <ul className="text-xs text-amber-900 space-y-1">
                               {formData.cancellationPolicy === 'flexible' && (
                                 <>
@@ -1101,29 +1164,40 @@ const AddListing = () => {
                           </div>
                         )}
                       </div>
-                      
                     </div>
-                    
+
                     <div className="mt-8 flex justify-between">
                       <Button type="button" variant="outline" onClick={prevStep}>
                         Back
                       </Button>
-                      <Button 
-                        type="submit" 
-                        disabled={loading || !formData.paymentOptions || !formData.cancellationPolicy}
-                        className={(!formData.paymentOptions || !formData.cancellationPolicy) ? 'opacity-50 cursor-not-allowed' : ''}
+                      <Button
+                        type="submit"
+                        disabled={
+                          loading || !formData.paymentOptions || !formData.cancellationPolicy
+                        }
+                        className={
+                          !formData.paymentOptions || !formData.cancellationPolicy
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
+                        }
                       >
                         {loading ? (
-                          <><span className="mr-2">Publishing...</span><Loader2 className="h-4 w-4 animate-spin" /></>
+                          <>
+                            <span className="mr-2">Publishing...</span>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          </>
                         ) : (
-                          <>Publish Listing <Check size={16} className="ml-2" /></>
+                          <>
+                            Publish Listing <Check size={16} className="ml-2" />
+                          </>
                         )}
                       </Button>
                     </div>
-                    
+
                     {(!formData.paymentOptions || !formData.cancellationPolicy) && (
                       <p className="text-sm text-red-600 text-center mt-4">
-                        Please configure payment options and cancellation policy to publish your listing.
+                        Please configure payment options and cancellation policy to publish your
+                        listing.
                       </p>
                     )}
                   </motion.div>

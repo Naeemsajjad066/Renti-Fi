@@ -4,7 +4,6 @@ import { X } from 'lucide-react';
 import StarRating from './StarRating';
 import { useReview } from '../contexts/ReviewContext';
 import { Button } from './ui/button';
-import { Card } from './ui/card';
 
 const ReviewForm = ({ booking, onClose, onSuccess }) => {
   const { submitReview } = useReview();
@@ -18,7 +17,7 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
     communication: 0,
     location: 0,
     checkIn: 0,
-    value: 0
+    value: 0,
   });
 
   const [errors, setErrors] = useState({});
@@ -29,7 +28,7 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
     { key: 'communication', label: 'Communication', description: 'How was host communication?' },
     { key: 'location', label: 'Location', description: 'How convenient was the location?' },
     { key: 'checkIn', label: 'Check-in', description: 'Was check-in smooth and easy?' },
-    { key: 'value', label: 'Value', description: 'Was it worth the price?' }
+    { key: 'value', label: 'Value', description: 'Was it worth the price?' },
   ];
 
   const validateForm = () => {
@@ -73,7 +72,7 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
     const reviewData = {
       ...formData,
       property: propertyId,
-      booking: booking._id
+      booking: booking._id,
     };
 
     const result = await submitReview(reviewData);
@@ -88,9 +87,9 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
   };
 
   const handleRatingChange = (category, value) => {
-    setFormData(prev => ({ ...prev, [category]: value }));
+    setFormData((prev) => ({ ...prev, [category]: value }));
     if (errors[category]) {
-      setErrors(prev => ({ ...prev, [category]: null }));
+      setErrors((prev) => ({ ...prev, [category]: null }));
     }
   };
 
@@ -107,7 +106,7 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
           initial={{ scale: 0.95, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 20 }}
-          transition={{ type: "spring", duration: 0.5 }}
+          transition={{ type: 'spring', duration: 0.5 }}
           onClick={(e) => e.stopPropagation()}
           className="w-full max-w-3xl max-h-[85vh] overflow-hidden rounded-2xl shadow-2xl"
         >
@@ -116,12 +115,8 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
               {/* Header */}
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-1">
-                    Write a Review
-                  </h2>
-                  <p className="text-white/90 text-sm line-clamp-1">
-                    {booking.property.title}
-                  </p>
+                  <h2 className="text-2xl font-bold text-white mb-1">Write a Review</h2>
+                  <p className="text-white/90 text-sm line-clamp-1">{booking.property.title}</p>
                 </div>
                 <button
                   onClick={onClose}
@@ -161,9 +156,9 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
                   <textarea
                     value={formData.comment}
                     onChange={(e) => {
-                      setFormData(prev => ({ ...prev, comment: e.target.value }));
+                      setFormData((prev) => ({ ...prev, comment: e.target.value }));
                       if (errors.comment) {
-                        setErrors(prev => ({ ...prev, comment: null }));
+                        setErrors((prev) => ({ ...prev, comment: null }));
                       }
                     }}
                     placeholder="Tell us about your stay..."
@@ -174,13 +169,9 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
                     {errors.comment ? (
                       <p className="text-sm text-red-600">{errors.comment}</p>
                     ) : (
-                      <p className="text-xs text-gray-500">
-                        Minimum 10 characters
-                      </p>
+                      <p className="text-xs text-gray-500">Minimum 10 characters</p>
                     )}
-                    <p className="text-xs text-gray-500">
-                      {formData.comment.length}/1000
-                    </p>
+                    <p className="text-xs text-gray-500">{formData.comment.length}/1000</p>
                   </div>
                 </div>
 
@@ -195,12 +186,8 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
                         key={category.key}
                         className="p-3 bg-gradient-to-br from-[#F6E6CB] to-white rounded-xl border border-[#E7D4B5] hover:shadow-md transition-all"
                       >
-                        <p className="font-medium text-gray-900 text-sm mb-0.5">
-                          {category.label}
-                        </p>
-                        <p className="text-xs text-gray-600 mb-2">
-                          {category.description}
-                        </p>
+                        <p className="font-medium text-gray-900 text-sm mb-0.5">{category.label}</p>
+                        <p className="text-xs text-gray-600 mb-2">{category.description}</p>
                         <StarRating
                           rating={formData[category.key]}
                           onRatingChange={(value) => handleRatingChange(category.key, value)}
@@ -230,12 +217,26 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
                     {isSubmitting ? (
                       <span className="flex items-center justify-center gap-2">
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
                         </svg>
                         Submitting...
                       </span>
-                    ) : 'Submit Review'}
+                    ) : (
+                      'Submit Review'
+                    )}
                   </Button>
                   <Button
                     type="button"

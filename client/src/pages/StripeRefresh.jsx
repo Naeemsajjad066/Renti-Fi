@@ -17,7 +17,7 @@ const StripeRefresh = () => {
         });
 
         // Wait a moment
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise((resolve) => setTimeout(resolve, 1500));
 
         // Create new onboarding link
         const response = await fetch(
@@ -25,9 +25,9 @@ const StripeRefresh = () => {
           {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
-              'Content-Type': 'application/json'
-            }
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              'Content-Type': 'application/json',
+            },
           }
         );
 
@@ -44,7 +44,7 @@ const StripeRefresh = () => {
         toast({
           title: 'Error',
           description: 'Failed to create new onboarding link. Redirecting to dashboard...',
-          variant: 'destructive'
+          variant: 'destructive',
         });
 
         // Redirect back to dashboard after error
@@ -69,7 +69,8 @@ const StripeRefresh = () => {
           <div className="mt-6 flex items-start gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-blue-800 text-left">
-              Onboarding links expire after a short time for security. You'll be redirected to Stripe to continue your setup.
+              Onboarding links expire after a short time for security. You'll be redirected to
+              Stripe to continue your setup.
             </p>
           </div>
         </div>

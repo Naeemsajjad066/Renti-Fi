@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Home } from 'lucide-react';
 import PageTransition from '@/components/PageTransition';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { useContext } from 'react';
 import toast from 'react-hot-toast';
@@ -23,11 +23,10 @@ const SignUp = () => {
   const navigate = useNavigate();
   // const { user } = useUser();
   const { register } = useContext(AuthContext);
-  const [success, setSuccess] = useState(false);  
 
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
-    
+    const { name, value } = e.target;
+
     // For phone number, only allow digits and limit to 11 characters
     if (name === 'phoneNumber') {
       const digitsOnly = value.replace(/\D/g, ''); // Remove non-digit characters
@@ -39,7 +38,7 @@ const SignUp = () => {
       }
       return;
     }
-    
+
     setFormData({
       ...formData,
       [name]: value,
@@ -48,74 +47,74 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate required fields
     if (!formData.fullName.trim()) {
-      toast.error("Full name is required");
+      toast.error('Full name is required');
       return;
     }
 
     // Validate name format (only letters and spaces)
     const nameRegex = /^[a-zA-Z\s]+$/;
     if (!nameRegex.test(formData.fullName.trim())) {
-      toast.error("Full name can only contain letters and spaces");
+      toast.error('Full name can only contain letters and spaces');
       return;
     }
 
     // Validate name length
     if (formData.fullName.trim().length < 3) {
-      toast.error("Full name must be at least 3 characters long");
+      toast.error('Full name must be at least 3 characters long');
       return;
     }
 
     if (!formData.idCard.trim()) {
-      toast.error("ID card number is required");
+      toast.error('ID card number is required');
       return;
     }
 
     // Validate ID card format (only numbers)
     const idCardRegex = /^[0-9]{13}$/;
     if (!idCardRegex.test(formData.idCard.replace(/[-\s]/g, ''))) {
-      toast.error("ID card must be exactly 13 digits");
+      toast.error('ID card must be exactly 13 digits');
       return;
     }
 
     if (!formData.phoneNumber.trim()) {
-      toast.error("Phone number is required");
+      toast.error('Phone number is required');
       return;
     }
 
     // Validate phone number format (exactly 11 digits, numbers only)
     const phoneRegex = /^[0-9]{11}$/;
     if (!phoneRegex.test(formData.phoneNumber.replace(/\s/g, ''))) {
-      toast.error("Phone number must be exactly 11 digits");
+      toast.error('Phone number must be exactly 11 digits');
       return;
     }
 
     if (!formData.email.trim()) {
-      toast.error("Email address is required");
+      toast.error('Email address is required');
       return;
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      toast.error("Please enter a valid email address");
+      toast.error('Please enter a valid email address');
       return;
     }
 
     if (!formData.password) {
-      toast.error("Password is required");
+      toast.error('Password is required');
       return;
     }
 
     if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters");
+      toast.error('Password must be at least 6 characters');
       return;
     }
 
     if (!formData.confirmPassword) {
-      toast.error("Please confirm your password");
+      toast.error('Please confirm your password');
       return;
     }
 
@@ -136,25 +135,24 @@ const SignUp = () => {
 
       if (result.success && result.requiresVerification) {
         // Navigate to email verification page
-        navigate("/verify-email", {
+        navigate('/verify-email', {
           state: {
             email: result.email,
             userData: {
               fullName: formData.fullName,
               idCard: formData.idCard,
               phoneNumber: formData.phoneNumber,
-              password: formData.password
-            }
-          }
+              password: formData.password,
+            },
+          },
         });
       } else if (result.success) {
         // Direct registration success (fallback)
-        setSuccess(true);
         setTimeout(() => {
-          navigate("/login");
+          navigate('/login');
         }, 1500);
       }
-    } catch (err) {
+    } catch {
       // Error is handled by AuthContext
     }
   };
@@ -185,7 +183,7 @@ const SignUp = () => {
   return (
     <PageTransition>
       <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gray-50 dark:bg-gray-900">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -205,19 +203,21 @@ const SignUp = () => {
               </span>
             </div>
           </Link>
-          <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-gray-100">Create an account</h1>
+          <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
+            Create an account
+          </h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Join our community of hosts and guests
           </p>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900/30"
         >
-          <motion.form 
+          <motion.form
             variants={formVariants}
             initial="hidden"
             animate="visible"
@@ -225,7 +225,10 @@ const SignUp = () => {
             className="space-y-6"
           >
             <motion.div variants={itemVariants}>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="fullName"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Full Name
               </label>
               <input
@@ -244,7 +247,10 @@ const SignUp = () => {
             </motion.div>
 
             <motion.div variants={itemVariants}>
-              <label htmlFor="idCard" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="idCard"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 ID Card Number
               </label>
               <input
@@ -264,7 +270,10 @@ const SignUp = () => {
             </motion.div>
 
             <motion.div variants={itemVariants}>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="phoneNumber"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Phone Number
               </label>
               <input
@@ -282,7 +291,10 @@ const SignUp = () => {
             </motion.div>
 
             <motion.div variants={itemVariants}>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Email Address
               </label>
               <input
@@ -300,7 +312,10 @@ const SignUp = () => {
             </motion.div>
 
             <motion.div variants={itemVariants}>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Password
               </label>
               <div className="relative">
@@ -326,7 +341,10 @@ const SignUp = () => {
             </motion.div>
 
             <motion.div variants={itemVariants}>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Confirm Password
               </label>
               <div className="relative">
@@ -363,8 +381,11 @@ const SignUp = () => {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Already have an account?{" "}
-              <Link to="/login" className="text-primary dark:text-primary-400 hover:underline font-medium">
+              Already have an account?{' '}
+              <Link
+                to="/login"
+                className="text-primary dark:text-primary-400 hover:underline font-medium"
+              >
                 Login
               </Link>
             </p>

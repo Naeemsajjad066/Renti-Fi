@@ -6,11 +6,7 @@ import Loader from './Loader';
 const GlobalLoader = () => {
   const { loading, loadingMessage } = useLoading();
 
-  return (
-    <AnimatePresence>
-      {loading && <Loader message={loadingMessage} />}
-    </AnimatePresence>
-  );
+  return <AnimatePresence>{loading && <Loader message={loadingMessage} />}</AnimatePresence>;
 };
 
 export default GlobalLoader;

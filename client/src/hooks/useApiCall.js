@@ -17,7 +17,7 @@ export const useApiCall = () => {
   return {
     callWithLoading,
     showLoading,
-    hideLoading
+    hideLoading,
   };
 };
 

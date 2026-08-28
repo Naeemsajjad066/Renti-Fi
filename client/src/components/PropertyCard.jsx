@@ -15,17 +15,15 @@ const PropertyCard = ({ property }) => {
     setIsLiked((prev) => !prev);
   };
 
-  const propertyId       = property._id || property.id;
-  const propertyImage    = property.images?.[0] || property.image || '/placeholder.svg';
-  const propertyTitle    = property.title || property.name;
+  const propertyId = property._id || property.id;
+  const propertyImage = property.images?.[0] || property.image || '/placeholder.svg';
+  const propertyTitle = property.title || property.name;
   const propertyLocation =
-    property.city && property.state
-      ? `${property.city}, ${property.state}`
-      : property.location;
-  const propertyRating   = property.rating || 0;
-  const totalReviews     = property.totalReviews || 0;
-  const propertyType     = property.propertyType || property.type || 'Property';
-  const isFeatured       = property.featured || property.isActive;
+    property.city && property.state ? `${property.city}, ${property.state}` : property.location;
+  const propertyRating = property.rating || 0;
+  const totalReviews = property.totalReviews || 0;
+  const propertyType = property.propertyType || property.type || 'Property';
+  const isFeatured = property.featured || property.isActive;
 
   return (
     <motion.div
@@ -103,9 +101,7 @@ const PropertyCard = ({ property }) => {
                 <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                   {propertyRating.toFixed(1)}
                 </span>
-                <span className="text-xs text-gray-400 dark:text-gray-500">
-                  ({totalReviews})
-                </span>
+                <span className="text-xs text-gray-400 dark:text-gray-500">({totalReviews})</span>
               </div>
             ) : (
               <span className="text-xs text-gray-400 dark:text-gray-500">New listing</span>

@@ -1,10 +1,10 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import axios from "../lib/api";
-import toast from "react-hot-toast";
-import { AuthContext } from "./AuthContext";
-import { useLoading } from "./LoadingContext";
+import { createContext, useContext, useEffect, useState } from 'react';
+import axios from '../lib/api';
+import toast from 'react-hot-toast';
+import { AuthContext } from './AuthContext';
+import { useLoading } from './LoadingContext';
 
-export const BookingContext = createContext();
+export const BookingContext = createContext(); // eslint-disable-line react-refresh/only-export-components
 
 export const BookingProvider = ({ children }) => {
   const { authUser } = useContext(AuthContext);
@@ -36,14 +36,14 @@ export const BookingProvider = ({ children }) => {
   // ✅ Fetch all bookings for current user (both as guest and host)
   const fetchAllBookings = async () => {
     if (!authUser?._id) return;
-    
+
     try {
       setLoading(true);
       setError(null);
-      
+
       const [guestResponse, hostResponse] = await Promise.all([
         axios.get('/api/bookings?type=guest'),
-        axios.get(`/api/bookings/user/${authUser._id}?type=host`)
+        axios.get(`/api/bookings/user/${authUser._id}?type=host`),
       ]);
 
       if (guestResponse?.data?.success) {
@@ -57,10 +57,9 @@ export const BookingProvider = ({ children }) => {
       // Combine all bookings
       const allBookings = [
         ...(guestResponse?.data?.bookings || []),
-        ...(hostResponse?.data?.bookings || [])
+        ...(hostResponse?.data?.bookings || []),
       ];
       setBookings(allBookings);
-
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to fetch bookings');
     } finally {
@@ -71,19 +70,21 @@ export const BookingProvider = ({ children }) => {
   // ✅ Fetch guest bookings only
   const fetchGuestBookings = async () => {
     if (!authUser) return;
-    
+
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await axios.get('/api/bookings?type=guest');
-      
+
       if (response?.data?.success) {
         const fetched = response.data.bookings || [];
         setGuestBookings(fetched);
         // Also refresh the combined bookings array so all consumers stay in sync
-        setBookings(prev => {
-          const hostOnly = prev.filter(b => b.host?._id === authUser._id || b.host === authUser._id);
+        setBookings((prev) => {
+          const hostOnly = prev.filter(
+            (b) => b.host?._id === authUser._id || b.host === authUser._id
+          );
           return [...hostOnly, ...fetched];
         });
       } else {
@@ -99,11 +100,11 @@ export const BookingProvider = ({ children }) => {
   // ✅ Fetch host bookings only
   const fetchHostBookings = async () => {
     if (!authUser?._id) return;
-    
+
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await axios.get(`/api/bookings/user/${authUser._id}?type=host`);
 
       if (response?.data?.success) {
@@ -141,30 +142,32 @@ export const BookingProvider = ({ children }) => {
   const fetchBookingById = async (id, { skipCache = false } = {}) => {
     try {
       setLoading(true);
-      
+
       // Check cache first (unless caller asks to skip)
       const cacheKey = `booking_${id}`;
       const cachedBooking = cache.get(cacheKey);
       const now = Date.now();
-      
-      if (!skipCache && cachedBooking && (now - cachedBooking.timestamp) < 300000) {
+
+      if (!skipCache && cachedBooking && now - cachedBooking.timestamp < 300000) {
         setSelectedBooking(cachedBooking.data);
         setLoading(false);
         return cachedBooking.data;
       }
 
       const response = await axios.get(`/api/bookings/${id}`);
-      
+
       if (response?.data?.success) {
         const booking = response.data.booking;
         setSelectedBooking(booking);
-        
+
         // Cache the booking data
-        setCache(prev => new Map(prev).set(cacheKey, {
-          data: booking,
-          timestamp: now
-        }));
-        
+        setCache((prev) =>
+          new Map(prev).set(cacheKey, {
+            data: booking,
+            timestamp: now,
+          })
+        );
+
         return booking;
       } else {
         throw new Error(response?.data?.message || 'Booking not found');
@@ -180,17 +183,17 @@ export const BookingProvider = ({ children }) => {
 
   // ✅ Create new booking
   const createBooking = async (bookingData) => {
-    showLoading("Creating booking...");
+    showLoading('Creating booking...');
     try {
       const response = await axios.post('/api/bookings', bookingData);
-      
+
       if (response?.data?.success) {
         const newBooking = response.data.booking;
-        
+
         // Update relevant state
-        setGuestBookings(prev => [...prev, newBooking]);
-        setBookings(prev => [...prev, newBooking]);
-        
+        setGuestBookings((prev) => [...prev, newBooking]);
+        setBookings((prev) => [...prev, newBooking]);
+
         toast.success(response.data.message || 'Booking created successfully');
         return { success: true, booking: newBooking };
       } else {
@@ -210,30 +213,26 @@ export const BookingProvider = ({ children }) => {
   const updateBookingStatus = async (bookingId, status) => {
     try {
       const response = await axios.put(`/api/bookings/${bookingId}/status`, { status });
-      
+
       if (response.data.success) {
         // Update booking in all relevant states
         const updateBookingInArray = (bookings) =>
-          bookings.map(booking => 
-            booking._id === bookingId 
-              ? { ...booking, status } 
-              : booking
-          );
+          bookings.map((booking) => (booking._id === bookingId ? { ...booking, status } : booking));
 
-        setHostBookings(prev => updateBookingInArray(prev));
-        setBookings(prev => updateBookingInArray(prev));
-        
+        setHostBookings((prev) => updateBookingInArray(prev));
+        setBookings((prev) => updateBookingInArray(prev));
+
         if (selectedBooking?._id === bookingId) {
-          setSelectedBooking(prev => ({ ...prev, status }));
+          setSelectedBooking((prev) => ({ ...prev, status }));
         }
 
         // Clear cache for this booking
-        setCache(prev => {
+        setCache((prev) => {
           const newCache = new Map(prev);
           newCache.delete(`booking_${bookingId}`);
           return newCache;
         });
-        
+
         const actionText = status === 'confirmed' ? 'accepted' : 'declined';
         toast.success(`Booking ${actionText} successfully`);
         return { success: true };
@@ -250,28 +249,26 @@ export const BookingProvider = ({ children }) => {
 
   // ✅ Cancel booking (for guests)
   const cancelBooking = async (bookingId, reason = 'Cancelled by guest') => {
-    showLoading("Cancelling booking...");
+    showLoading('Cancelling booking...');
     try {
       const response = await axios.post(`/api/bookings/${bookingId}/cancel`, { reason });
-      
+
       if (response.data.success) {
         // Update booking in all relevant states
         const updateBookingInArray = (bookings) =>
-          bookings.map(booking => 
-            booking._id === bookingId 
-              ? { ...booking, status: 'cancelled' } 
-              : booking
+          bookings.map((booking) =>
+            booking._id === bookingId ? { ...booking, status: 'cancelled' } : booking
           );
 
-        setGuestBookings(prev => updateBookingInArray(prev));
-        setBookings(prev => updateBookingInArray(prev));
-        
+        setGuestBookings((prev) => updateBookingInArray(prev));
+        setBookings((prev) => updateBookingInArray(prev));
+
         if (selectedBooking?._id === bookingId) {
-          setSelectedBooking(prev => ({ ...prev, status: 'cancelled' }));
+          setSelectedBooking((prev) => ({ ...prev, status: 'cancelled' }));
         }
 
         // Clear cache for this booking
-        setCache(prev => {
+        setCache((prev) => {
           const newCache = new Map(prev);
           newCache.delete(`booking_${bookingId}`);
           return newCache;
@@ -294,19 +291,19 @@ export const BookingProvider = ({ children }) => {
 
   // ✅ Submit review for completed booking
   const submitReview = async (bookingId, reviewData) => {
-    showLoading("Submitting review...");
+    showLoading('Submitting review...');
     try {
       const response = await axios.post(`/api/bookings/${bookingId}/review`, reviewData);
-      
+
       if (response.data.success) {
         // Mark booking as reviewed
-        setReviewedBookings(prev => [...prev, bookingId]);
-        
+        setReviewedBookings((prev) => [...prev, bookingId]);
+
         // Reset review modal state
         setShowReviewModal({ show: false, selectedBooking: null });
         setRating(0);
         setReviewText('');
-        
+
         toast.success('Review submitted successfully');
         return { success: true };
       } else {
@@ -327,64 +324,64 @@ export const BookingProvider = ({ children }) => {
     const today = new Date();
     const checkIn = new Date(booking.checkIn);
     const checkOut = new Date(booking.checkOut);
-    
+
     if (booking.status === 'cancelled') return 'cancelled';
     if (today < checkIn) return 'upcoming';
     if (today >= checkIn && today <= checkOut) return 'active';
     if (today > checkOut) return 'completed';
-    
+
     return booking.status;
   };
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      confirmed: { 
-        variant: 'default', 
+      confirmed: {
+        variant: 'default',
         className: 'bg-green-100 text-green-800 border-green-200',
-        label: 'Confirmed'
+        label: 'Confirmed',
       },
-      reserved: { 
-        variant: 'default', 
+      reserved: {
+        variant: 'default',
         className: 'bg-green-100 text-green-800 border-green-200',
-        label: 'Confirmed'
+        label: 'Confirmed',
       },
-      pending: { 
-        variant: 'secondary', 
+      pending: {
+        variant: 'secondary',
         className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-        label: 'Pending'
+        label: 'Pending',
       },
-      cancelled: { 
-        variant: 'destructive', 
+      cancelled: {
+        variant: 'destructive',
         className: 'bg-red-100 text-red-800 border-red-200',
-        label: 'Cancelled'
+        label: 'Cancelled',
       },
-      completed: { 
-        variant: 'outline', 
+      completed: {
+        variant: 'outline',
         className: 'bg-blue-100 text-blue-800 border-blue-200',
-        label: 'Completed'
+        label: 'Completed',
       },
       'checked-in': {
         variant: 'default',
         className: 'bg-purple-100 text-purple-800 border-purple-200',
-        label: 'Checked In'
+        label: 'Checked In',
       },
       expired: {
         variant: 'outline',
         className: 'bg-gray-100 text-gray-800 border-gray-200',
-        label: 'Expired'
+        label: 'Expired',
       },
       upcoming: {
         variant: 'secondary',
         className: 'bg-blue-100 text-blue-800 border-blue-200',
-        label: 'Upcoming'
+        label: 'Upcoming',
       },
       active: {
         variant: 'default',
         className: 'bg-green-100 text-green-800 border-green-200',
-        label: 'Active'
-      }
+        label: 'Active',
+      },
     };
-    
+
     return statusConfig[status] || statusConfig.pending;
   };
 
@@ -392,7 +389,7 @@ export const BookingProvider = ({ children }) => {
     return new Intl.NumberFormat('en-PK', {
       style: 'currency',
       currency: 'PKR',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -400,7 +397,7 @@ export const BookingProvider = ({ children }) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -415,26 +412,27 @@ export const BookingProvider = ({ children }) => {
   const getBookingStats = (bookingsList = hostBookings) => {
     return {
       total: bookingsList.length,
-      confirmed: bookingsList.filter(b => b.status === 'confirmed').length,
-      pending: bookingsList.filter(b => b.status === 'pending').length,
-      cancelled: bookingsList.filter(b => b.status === 'cancelled').length,
-      completed: bookingsList.filter(b => b.status === 'completed').length,
+      confirmed: bookingsList.filter((b) => b.status === 'confirmed').length,
+      pending: bookingsList.filter((b) => b.status === 'pending').length,
+      cancelled: bookingsList.filter((b) => b.status === 'cancelled').length,
+      completed: bookingsList.filter((b) => b.status === 'completed').length,
       totalRevenue: bookingsList
-        .filter(b => b.status === 'confirmed' || b.status === 'completed')
-        .reduce((sum, b) => sum + (b.totalAmount || b.totalPrice || 0), 0)
+        .filter((b) => b.status === 'confirmed' || b.status === 'completed')
+        .reduce((sum, b) => sum + (b.totalAmount || b.totalPrice || 0), 0),
     };
   };
 
   // ✅ Filter bookings
   const getFilteredBookings = (bookingsList, filterType = filter, search = searchTerm) => {
-    return bookingsList.filter(booking => {
+    return bookingsList.filter((booking) => {
       const matchesFilter = filterType === 'all' || booking.status === filterType;
-      const matchesSearch = !search || 
+      const matchesSearch =
+        !search ||
         booking.guest?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
         booking.property?.title?.toLowerCase().includes(search.toLowerCase()) ||
         booking.property?.city?.toLowerCase().includes(search.toLowerCase()) ||
         booking.host?.fullName?.toLowerCase().includes(search.toLowerCase());
-      
+
       return matchesFilter && matchesSearch;
     });
   };
@@ -442,21 +440,22 @@ export const BookingProvider = ({ children }) => {
   // ✅ Get bookings by tab for guest bookings
   const getBookingsByTab = (tab = activeTab) => {
     if (tab === 'all') {
-      return guestBookings.map(booking => ({ 
-        ...booking, 
-        status: getStatusFromDates(booking) 
+      return guestBookings.map((booking) => ({
+        ...booking,
+        status: getStatusFromDates(booking),
       }));
     }
-    
+
     return guestBookings
-      .map(booking => ({ 
-        ...booking, 
-        status: getStatusFromDates(booking) 
+      .map((booking) => ({
+        ...booking,
+        status: getStatusFromDates(booking),
       }))
-      .filter(b => b.status === tab);
+      .filter((b) => b.status === tab);
   };
 
   // ✅ Initialize bookings when user changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (authUser) {
       fetchAllBookings();
@@ -469,6 +468,7 @@ export const BookingProvider = ({ children }) => {
       setError(null);
       setCache(new Map());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authUser]);
 
   const value = {
@@ -480,7 +480,7 @@ export const BookingProvider = ({ children }) => {
     loading,
     error,
     refreshing,
-    
+
     // Filter states
     filter,
     setFilter,
@@ -488,7 +488,7 @@ export const BookingProvider = ({ children }) => {
     setSearchTerm,
     activeTab,
     setActiveTab,
-    
+
     // Review states
     showReviewModal,
     setShowReviewModal,
@@ -498,7 +498,7 @@ export const BookingProvider = ({ children }) => {
     setRating,
     reviewedBookings,
     setReviewedBookings,
-    
+
     // API functions
     fetchAllBookings,
     fetchGuestBookings,
@@ -509,7 +509,7 @@ export const BookingProvider = ({ children }) => {
     cancelBooking,
     submitReview,
     refreshBookings,
-    
+
     // Utility functions
     getStatusFromDates,
     getStatusBadge,
@@ -518,17 +518,13 @@ export const BookingProvider = ({ children }) => {
     getTotalGuests,
     getBookingStats,
     getFilteredBookings,
-    getBookingsByTab
+    getBookingsByTab,
   };
 
-  return (
-    <BookingContext.Provider value={value}>
-      {children}
-    </BookingContext.Provider>
-  );
+  return <BookingContext.Provider value={value}>{children}</BookingContext.Provider>;
 };
 
-// Custom hook for using booking context
+// eslint-disable-next-line react-refresh/only-export-components
 export const useBooking = () => {
   const context = useContext(BookingContext);
   if (!context) {

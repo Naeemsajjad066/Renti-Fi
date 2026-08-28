@@ -1,6 +1,6 @@
 // src/pages/UserProfile.jsx
-import React, { useState, useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   User,
   Mail,
@@ -12,43 +12,45 @@ import {
   Check,
   X,
   ChevronLeft,
-  Camera,
-} from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import PageTransition from "@/components/PageTransition";
-import ProfilePictureUpload from "@/components/ProfilePictureUpload";
-import { AuthContext } from "../contexts/AuthContext";
+} from 'lucide-react';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import PageTransition from '@/components/PageTransition';
+import ProfilePictureUpload from '@/components/ProfilePictureUpload';
+import { AuthContext } from '../contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const UserProfile = () => {
   const { authUser, updateProfile } = useContext(AuthContext);
-  
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState('profile');
   const [profileImage, setProfileImage] = useState(null);
 
   // Local form state initialized from authUser
   const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phoneNumber: "",
-    bio: "",
-    location: "",
-    profilePic: "",
-    joinDate: "",
+    fullName: '',
+    email: '',
+    phoneNumber: '',
+    bio: '',
+    location: '',
+    profilePic: '',
+    joinDate: '',
   });
 
   useEffect(() => {
     if (authUser) {
       setFormData({
-        fullName: authUser.fullName || "",
-        email: authUser.email || "",
-        phoneNumber: authUser.phoneNumber || "",
-        bio: authUser.bio || "",
-        location: authUser.location || "",
-        profilePic: authUser.profilePic || "",
-        joinDate: authUser.createdAt ? new Date(authUser.createdAt).getFullYear().toString() : "2025",
+        fullName: authUser.fullName || '',
+        email: authUser.email || '',
+        phoneNumber: authUser.phoneNumber || '',
+        bio: authUser.bio || '',
+        location: authUser.location || '',
+        profilePic: authUser.profilePic || '',
+        joinDate: authUser.createdAt
+          ? new Date(authUser.createdAt).getFullYear().toString()
+          : '2025',
       });
       setProfileImage(authUser.profilePic || null);
     }
@@ -68,16 +70,24 @@ const UserProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate full name
     if (formData.fullName && formData.fullName.trim()) {
       const nameRegex = /^[a-zA-Z\s]+$/;
       if (!nameRegex.test(formData.fullName.trim())) {
-        toast.error("Full name can only contain letters and spaces");
+        toast({
+          title: 'Invalid name',
+          description: 'Full name can only contain letters and spaces',
+          variant: 'destructive',
+        });
         return;
       }
       if (formData.fullName.trim().length < 3) {
-        toast.error("Full name must be at least 3 characters long");
+        toast({
+          title: 'Invalid name',
+          description: 'Full name must be at least 3 characters long',
+          variant: 'destructive',
+        });
         return;
       }
     }
@@ -86,7 +96,11 @@ const UserProfile = () => {
     if (formData.phoneNumber && formData.phoneNumber.trim()) {
       const phoneRegex = /^(\+92|0)?[0-9]{10}$/;
       if (!phoneRegex.test(formData.phoneNumber.replace(/\s/g, ''))) {
-        toast.error("Please enter a valid phone number");
+        toast({
+          title: 'Invalid phone',
+          description: 'Please enter a valid phone number',
+          variant: 'destructive',
+        });
         return;
       }
     }
@@ -97,18 +111,18 @@ const UserProfile = () => {
         bio: formData.bio,
         phoneNumber: formData.phoneNumber,
       };
-      
+
       // Only include profilePic if it has changed
       if (profileImage && profileImage !== authUser.profilePic) {
         updateData.profilePic = profileImage;
       }
-      
+
       const result = await updateProfile(updateData);
       if (result.success) {
         setIsEditing(false);
       }
-    } catch (err) {
-      console.log("Update profile error:", err);
+    } catch {
+      // Error handling is managed by the profile context.
     }
   };
 
@@ -116,13 +130,13 @@ const UserProfile = () => {
     setIsEditing(false);
     setProfileImage(authUser.profilePic || null);
     setFormData({
-      fullName: authUser.fullName || "",
-      email: authUser.email || "",
-      phoneNumber: authUser.phoneNumber || "",
-      bio: authUser.bio || "",
-      location: authUser.location || "",
-      profilePic: authUser.profilePic || "",
-      joinDate: authUser.createdAt ? new Date(authUser.createdAt).getFullYear().toString() : "2025",
+      fullName: authUser.fullName || '',
+      email: authUser.email || '',
+      phoneNumber: authUser.phoneNumber || '',
+      bio: authUser.bio || '',
+      location: authUser.location || '',
+      profilePic: authUser.profilePic || '',
+      joinDate: authUser.createdAt ? new Date(authUser.createdAt).getFullYear().toString() : '2025',
     });
   };
 
@@ -160,15 +174,13 @@ const UserProfile = () => {
                       ) : (
                         <div className="relative mb-4">
                           <img
-                            src={profileImage || "/placeholder.svg"}
+                            src={profileImage || '/placeholder.svg'}
                             alt={formData.fullName}
                             className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md"
                           />
                         </div>
                       )}
-                      <h2 className="text-xl font-bold text-center">
-                        {formData.fullName}
-                      </h2>
+                      <h2 className="text-xl font-bold text-center">{formData.fullName}</h2>
                       <p className="text-gray-500 text-sm text-center">
                         Member since {formData.joinDate}
                       </p>
@@ -176,31 +188,31 @@ const UserProfile = () => {
 
                     <nav className="space-y-2">
                       <button
-                        onClick={() => setActiveTab("profile")}
+                        onClick={() => setActiveTab('profile')}
                         className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
-                          activeTab === "profile"
-                            ? "bg-primary/10 text-primary"
-                            : "hover:bg-gray-100"
+                          activeTab === 'profile'
+                            ? 'bg-primary/10 text-primary'
+                            : 'hover:bg-gray-100'
                         }`}
                       >
                         Profile Information
                       </button>
                       <button
-                        onClick={() => setActiveTab("security")}
+                        onClick={() => setActiveTab('security')}
                         className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
-                          activeTab === "security"
-                            ? "bg-primary/10 text-primary"
-                            : "hover:bg-gray-100"
+                          activeTab === 'security'
+                            ? 'bg-primary/10 text-primary'
+                            : 'hover:bg-gray-100'
                         }`}
                       >
                         Security
                       </button>
                       <button
-                        onClick={() => setActiveTab("payments")}
+                        onClick={() => setActiveTab('payments')}
                         className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
-                          activeTab === "payments"
-                            ? "bg-primary/10 text-primary"
-                            : "hover:bg-gray-100"
+                          activeTab === 'payments'
+                            ? 'bg-primary/10 text-primary'
+                            : 'hover:bg-gray-100'
                         }`}
                       >
                         Payment Methods
@@ -211,12 +223,10 @@ const UserProfile = () => {
 
                 {/* Main Content */}
                 <div className="md:w-3/4">
-                  {activeTab === "profile" && (
+                  {activeTab === 'profile' && (
                     <div className="bg-white rounded-lg shadow-md p-6">
                       <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-xl font-semibold">
-                          Profile Information
-                        </h2>
+                        <h2 className="text-xl font-semibold">Profile Information</h2>
                         {!isEditing ? (
                           <button
                             onClick={() => setIsEditing(true)}
@@ -289,7 +299,7 @@ const UserProfile = () => {
                               <input
                                 type="text"
                                 name="location"
-                                value={formData.location || "Lahore"}
+                                value={formData.location || 'Lahore'}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                               />
@@ -315,9 +325,7 @@ const UserProfile = () => {
                               <User size={20} className="text-gray-500 mr-3" />
                               <div>
                                 <p className="text-sm text-gray-500">Name</p>
-                                <p className="font-medium">
-                                  {formData.fullName}
-                                </p>
+                                <p className="font-medium">{formData.fullName}</p>
                               </div>
                             </div>
                             <div className="flex items-center">
@@ -331,33 +339,21 @@ const UserProfile = () => {
                               <Phone size={20} className="text-gray-500 mr-3" />
                               <div>
                                 <p className="text-sm text-gray-500">Phone</p>
-                                <p className="font-medium">
-                                  {formData.phoneNumber}
-                                </p>
+                                <p className="font-medium">{formData.phoneNumber}</p>
                               </div>
                             </div>
                             <div className="flex items-center">
-                              <MapPin
-                                size={20}
-                                className="text-gray-500 mr-3"
-                              />
+                              <MapPin size={20} className="text-gray-500 mr-3" />
                               <div>
-                                <p className="text-sm text-gray-500">
-                                  Location
-                                </p>
-                                <p className="font-medium">
-                                  {formData.location || "Lahore"}
-                                </p>
+                                <p className="text-sm text-gray-500">Location</p>
+                                <p className="font-medium">{formData.location || 'Lahore'}</p>
                               </div>
                             </div>
                           </div>
 
                           <div className="border-t pt-6">
                             <div className="flex items-start">
-                              <User
-                                size={20}
-                                className="text-gray-500 mr-3 mt-1"
-                              />
+                              <User size={20} className="text-gray-500 mr-3 mt-1" />
                               <div>
                                 <p className="text-sm text-gray-500">About</p>
                                 <p className="text-gray-700">{formData.bio}</p>
@@ -367,17 +363,10 @@ const UserProfile = () => {
 
                           <div className="border-t pt-6">
                             <div className="flex items-center">
-                              <Calendar
-                                size={20}
-                                className="text-gray-500 mr-3"
-                              />
+                              <Calendar size={20} className="text-gray-500 mr-3" />
                               <div>
-                                <p className="text-sm text-gray-500">
-                                  Member since
-                                </p>
-                                <p className="font-medium">
-                                  {formData.joinDate}
-                                </p>
+                                <p className="text-sm text-gray-500">Member since</p>
+                                <p className="font-medium">{formData.joinDate}</p>
                               </div>
                             </div>
                           </div>
@@ -393,21 +382,27 @@ const UserProfile = () => {
                           <h3 className="font-medium mb-4">Change Password</h3>
                           <form className="space-y-4">
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Current Password
+                              </label>
                               <input
                                 type="password"
                                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                New Password
+                              </label>
                               <input
                                 type="password"
                                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Confirm New Password
+                              </label>
                               <input
                                 type="password"
                                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
@@ -421,12 +416,14 @@ const UserProfile = () => {
                             </button>
                           </form>
                         </div>
-                        
+
                         <div>
                           <h3 className="font-medium mb-4">Two-Factor Authentication</h3>
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-sm text-gray-600">Add an extra layer of security to your account</p>
+                              <p className="text-sm text-gray-600">
+                                Add an extra layer of security to your account
+                              </p>
                             </div>
                             <button className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition-colors">
                               Enable
@@ -436,8 +433,7 @@ const UserProfile = () => {
                       </div>
                     </div>
                   )}
-                  
-                  
+
                   {activeTab === 'payments' && (
                     <div className="bg-white rounded-lg shadow-md p-6">
                       <h2 className="text-xl font-semibold mb-6">Payment Methods</h2>
@@ -450,8 +446,6 @@ const UserProfile = () => {
                       </div>
                     </div>
                   )}
-
-
                 </div>
               </div>
             </div>

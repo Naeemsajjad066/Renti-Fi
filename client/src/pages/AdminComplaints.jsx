@@ -2,17 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import {
-  AlertCircle,
-  Filter,
-  Search,
-  Eye,
-  Calendar,
-  User,
-  Home,
-  TrendingUp,
-  Clock
-} from 'lucide-react';
+import { AlertCircle, Search, Eye, Calendar, User, Home, TrendingUp, Clock } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 
 const AdminComplaints = () => {
@@ -24,21 +14,21 @@ const AdminComplaints = () => {
   const [filters, setFilters] = useState({
     status: '',
     priority: '',
-    search: ''
+    search: '',
   });
 
   const statusColors = {
     pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
     under_review: 'bg-blue-100 text-blue-800 border-blue-300',
     resolved: 'bg-green-100 text-green-800 border-green-300',
-    dismissed: 'bg-gray-100 text-gray-800 border-gray-300'
+    dismissed: 'bg-gray-100 text-gray-800 border-gray-300',
   };
 
   const priorityColors = {
     low: 'bg-gray-100 text-gray-800',
     medium: 'bg-blue-100 text-blue-800',
     high: 'bg-orange-100 text-orange-800',
-    urgent: 'bg-red-100 text-red-800'
+    urgent: 'bg-red-100 text-red-800',
   };
 
   const categoryLabels = {
@@ -48,12 +38,13 @@ const AdminComplaints = () => {
     scam_fraud: 'Scam/Fraud',
     property_condition: 'Property Condition',
     host_behavior: 'Host Behavior',
-    other: 'Other'
+    other: 'Other',
   };
 
   useEffect(() => {
     fetchComplaints();
     fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.status, filters.priority]);
 
   const fetchComplaints = async () => {
@@ -66,7 +57,7 @@ const AdminComplaints = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/complaints?${params}`,
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -76,9 +67,9 @@ const AdminComplaints = () => {
     } catch (error) {
       console.error('Error fetching complaints:', error);
       toast({
-        title: "Error",
-        description: "Failed to load complaints",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to load complaints',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -91,7 +82,7 @@ const AdminComplaints = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/complaints/stats`,
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -103,11 +94,12 @@ const AdminComplaints = () => {
     }
   };
 
-  const filteredComplaints = complaints.filter(complaint =>
-    !filters.search ||
-    complaint.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-    complaint.description.toLowerCase().includes(filters.search.toLowerCase()) ||
-    complaint.property?.title.toLowerCase().includes(filters.search.toLowerCase())
+  const filteredComplaints = complaints.filter(
+    (complaint) =>
+      !filters.search ||
+      complaint.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+      complaint.description.toLowerCase().includes(filters.search.toLowerCase()) ||
+      complaint.property?.title.toLowerCase().includes(filters.search.toLowerCase())
   );
 
   if (loading) {
@@ -196,7 +188,10 @@ const AdminComplaints = () => {
           {/* Search */}
           <div className="md:col-span-2">
             <div className="relative">
-              <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search
+                size={20}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              />
               <input
                 type="text"
                 placeholder="Search complaints..."
@@ -261,10 +256,14 @@ const AdminComplaints = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-lg font-semibold text-gray-800">{complaint.title}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[complaint.status]}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[complaint.status]}`}
+                      >
                         {complaint.status.replace('_', ' ').toUpperCase()}
                       </span>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${priorityColors[complaint.priority]}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${priorityColors[complaint.priority]}`}
+                      >
                         {complaint.priority.toUpperCase()}
                       </span>
                     </div>

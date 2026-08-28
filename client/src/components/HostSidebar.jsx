@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  Home, 
-  PlusCircle, 
+import {
+  Home,
+  PlusCircle,
   LogOut,
   User,
   Menu,
@@ -12,12 +11,10 @@ import {
   BarChart2,
   HelpCircle,
 } from 'lucide-react';
-import { useTheme } from '@/hooks/use-theme';
 
 const HostSidebar = ({ isMobile, isOpen, onToggle }) => {
   const location = useLocation();
-  const { toggleTheme } = useTheme();
-  
+
   const menuItems = [
     {
       title: 'Dashboard',
@@ -53,10 +50,14 @@ const HostSidebar = ({ isMobile, isOpen, onToggle }) => {
           onClick={onToggle}
           className="fixed top-4 left-4 z-50 p-2 rounded-md bg-background shadow-md"
         >
-          {isOpen ? <X size={24} className="text-gray-800" /> : <Menu size={24} className="text-gray-800" />}
+          {isOpen ? (
+            <X size={24} className="text-gray-800" />
+          ) : (
+            <Menu size={24} className="text-gray-800" />
+          )}
         </button>
       )}
-      
+
       {/* Sidebar */}
       <div
         className={`${
@@ -82,7 +83,7 @@ const HostSidebar = ({ isMobile, isOpen, onToggle }) => {
               </span>
             </Link>
           </div>
-          
+
           <nav className="flex-1 p-4">
             <ul className="space-y-1">
               {menuItems.map((item) => (
@@ -102,9 +103,12 @@ const HostSidebar = ({ isMobile, isOpen, onToggle }) => {
               ))}
             </ul>
           </nav>
-          
+
           <div className="p-4 mt-auto border-t border-light-beige">
-            <Link to="/" className="flex items-center w-full px-4 py-3 text-gray-700 hover:bg-earth-brown/10 hover:text-gray-900 rounded-md transition-colors">
+            <Link
+              to="/"
+              className="flex items-center w-full px-4 py-3 text-gray-700 hover:bg-earth-brown/10 hover:text-gray-900 rounded-md transition-colors"
+            >
               <User className="mr-3 h-5 w-5" />
               <span>Switch to Guest</span>
             </Link>
@@ -115,13 +119,10 @@ const HostSidebar = ({ isMobile, isOpen, onToggle }) => {
           </div>
         </div>
       </div>
-      
+
       {/* Mobile Overlay */}
       {isMobile && isOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm"
-          onClick={onToggle}
-        ></div>
+        <div className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm" onClick={onToggle}></div>
       )}
     </>
   );

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 
@@ -13,17 +12,17 @@ const PageTransition = ({ children }) => {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: [0.22, 1, 0.36, 1]
-      }
+        ease: [0.22, 1, 0.36, 1],
+      },
     },
     exit: {
       opacity: 0,
       y: 10,
       transition: {
         duration: 0.4,
-        ease: [0.22, 1, 0.36, 1]
-      }
-    }
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
   };
 
   return (

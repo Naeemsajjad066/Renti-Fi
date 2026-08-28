@@ -1,217 +1,17 @@
-import React, { useState, useEffect, useContext } from "react";
-import { AuthContext } from "../contexts/AuthContext";
-import { PropertyContext } from "../contexts/PropertyContext";
-import { motion } from "framer-motion";
-import StripeConnectSetup from "../components/StripeConnectSetup";
-import {
-  ChevronRight,
-  Home,
-  Calendar,
-  Banknote,
-  TrendingUp,
-  MessageSquare,
-  Star,
-  Users,
-  BarChart,
-  Clock,
-  Plus,
-  Search,
-  Filter,
-  ArrowUpRight,
-  MapPin,
-  Percent,
-  CheckCircle,
-  AlertCircle,
-  Shield,
-  Zap,
-  Trash2,
-} from "lucide-react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { toast } from "@/hooks/use-toast";
-import PageTransition from "@/components/PageTransition";
-import HostSidebar from "@/components/HostSidebar";
-import { useIsMobile } from "@/hooks/use-mobile";
-
-// Sample data for dashboard
-const recentBookings = [
-  {
-    id: 1,
-    guest: "Emily Johnson",
-    property: "Luxury Villa with Ocean View",
-    date: "2023-10-15",
-    status: "confirmed",
-    amount: 1050,
-  },
-  {
-    id: 2,
-    guest: "Michael Smith",
-    property: "Modern Downtown Loft",
-    date: "2023-10-20",
-    status: "pending",
-    amount: 600,
-  },
-  {
-    id: 3,
-    guest: "Sarah Davis",
-    property: "Beachfront Cottage",
-    date: "2023-10-25",
-    status: "confirmed",
-    amount: 840,
-  },
-  {
-    id: 4,
-    guest: "James Wilson",
-    property: "Mountain Cabin Retreat",
-    date: "2023-11-02",
-    status: "cancelled",
-    amount: 720,
-  },
-  {
-    id: 5,
-    guest: "Lisa Brown",
-    property: "City Center Apartment",
-    date: "2023-11-10",
-    status: "pending",
-    amount: 550,
-  },
-];
-
-const listings = [
-  {
-    id: 1,
-    title: "Luxury Villa with Sea View",
-    location: "Malibu, CA",
-    rating: 4.9,
-    bookings: 23,
-    income: 13950,
-    occupancy: 82,
-    image:
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 2,
-    title: "Modern F-7 Apartment",
-    location: "Karachi, Sindh",
-    rating: 4.7,
-    bookings: 18,
-    income: 7600,
-    occupancy: 75,
-    image:
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 3,
-    title: "Seaside House",
-    location: "Santa Monica, CA",
-    rating: 4.8,
-    bookings: 15,
-    income: 9200,
-    occupancy: 68,
-    image:
-      "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 4,
-    title: "Mountain Cabin Retreat",
-    location: "Aspen, CO",
-    rating: 4.9,
-    bookings: 12,
-    income: 8400,
-    occupancy: 70,
-    image:
-      "https://images.unsplash.com/photo-1521401830884-6c03c1c87ebb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  },
-];
-
-const activityItems = [
-  {
-    id: 1,
-    type: "booking",
-    title: "New booking request",
-    description: "Emily Johnson requested to book Luxury Villa",
-    time: "2 hours ago",
-    icon: Calendar,
-  },
-  {
-    id: 2,
-    type: "message",
-    title: "New message",
-    description: "Michael Smith sent you a message about check-in details",
-    time: "5 hours ago",
-    icon: MessageSquare,
-  },
-  {
-    id: 3,
-    type: "review",
-    title: "New review",
-    description: "Sarah Davis left a 5-star review for Beachfront Cottage",
-    time: "1 day ago",
-    icon: Star,
-  },
-  {
-    id: 4,
-    type: "payout",
-    title: "Payout processed",
-    description: "Your payout of Rs 84,000 has been processed",
-    time: "2 days ago",
-    icon: Banknote,
-  },
-  {
-    id: 5,
-    type: "system",
-    title: "System update",
-    description: "Rentifi platform updated with new features",
-    time: "3 days ago",
-    icon: Zap,
-  },
-];
-
-const insights = [
-  {
-    title: "Booking Conversion Rate",
-    value: "68%",
-    change: "+5.2%",
-    trend: "up",
-    description: "Percentage of inquiries that convert to bookings",
-    icon: Percent,
-  },
-  {
-    title: "Average Response Time",
-    value: "26 min",
-    change: "-12.5%",
-    trend: "up",
-    description: "How quickly you respond to guest messages",
-    icon: Clock,
-  },
-  {
-    title: "Repeat Guest Rate",
-    value: "32%",
-    change: "+8.3%",
-    trend: "up",
-    description: "Percentage of guests who book again",
-    icon: Users,
-  },
-  {
-    title: "Listing Quality Score",
-    value: "92/100",
-    change: "+3.5%",
-    trend: "up",
-    description: "Based on photos, description and amenities",
-    icon: CheckCircle,
-  },
-];
+import React, { useState, useEffect, useContext } from 'react';
+import { AuthContext } from '../contexts/AuthContext';
+import { PropertyContext } from '../contexts/PropertyContext';
+import { motion } from 'framer-motion';
+import StripeConnectSetup from '../components/StripeConnectSetup';
+import { Star, Plus, Filter, MapPin, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import PageTransition from '@/components/PageTransition';
+import HostSidebar from '@/components/HostSidebar';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const HostDashboard = () => {
   const isMobile = useIsMobile();
@@ -225,30 +25,21 @@ const HostDashboard = () => {
       // if your user id uses `id` instead of `_id`, change accordingly
       fetchUserProperties(authUser._id);
     }
-  }, [authUser]);
+  }, [authUser, fetchUserProperties]);
 
   // Auto-refresh properties every 30 seconds to check for approval updates
   useEffect(() => {
     if (!authUser?._id) return;
-    
+
     const intervalId = setInterval(() => {
       fetchUserProperties(authUser._id);
     }, 30000); // 30 seconds
 
     return () => clearInterval(intervalId);
   }, [authUser, fetchUserProperties]);
-  
-  console.log(userProperties);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
-  };
-
-  const showNotification = () => {
-    toast({
-      title: "Action completed",
-      description: "Your changes have been saved successfully.",
-    });
   };
 
   // Animation variants
@@ -271,12 +62,8 @@ const HostDashboard = () => {
   return (
     <PageTransition>
       <div className="min-h-screen bg-gray-50 flex">
-        <HostSidebar
-          isMobile={isMobile}
-          isOpen={sidebarOpen}
-          onToggle={toggleSidebar}
-        />
-        
+        <HostSidebar isMobile={isMobile} isOpen={sidebarOpen} onToggle={toggleSidebar} />
+
         <div className="flex-1 flex flex-col">
           {/* Hero Section */}
           <div className="bg-gradient-to-r from-earth-brown/10 to-soft-peach/20 border-b border-cream-beige/30">
@@ -287,8 +74,8 @@ const HostDashboard = () => {
                     Welcome to Your Host Dashboard
                   </h1>
                   <p className="text-gray-600 max-w-2xl">
-                    Manage your properties, track bookings, and grow your
-                    hosting business with our comprehensive tools.
+                    Manage your properties, track bookings, and grow your hosting business with our
+                    comprehensive tools.
                   </p>
                 </div>
                 <div className="mt-6 md:mt-0">
@@ -328,9 +115,7 @@ const HostDashboard = () => {
                     <div className="bg-white rounded-xl border border-cream-beige/30 shadow-sm overflow-hidden">
                       <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between border-b border-cream-beige/30">
                         <div>
-                          <h2 className="text-xl font-bold text-gray-900">
-                            Your Properties
-                          </h2>
+                          <h2 className="text-xl font-bold text-gray-900">Your Properties</h2>
                           <p className="text-sm text-gray-500">
                             Manage and monitor performance of your listings
                           </p>
@@ -366,11 +151,9 @@ const HostDashboard = () => {
                             const image =
                               property.images?.[0] ||
                               property.image ||
-                              "https://via.placeholder.com/400";
-                            const bookings =
-                              property.bookings ?? property.bookingsCount ?? 0;
-                            const income =
-                              property.monthlyIncome ?? property.income ?? 0;
+                              'https://via.placeholder.com/400';
+                            const bookings = property.bookings ?? property.bookingsCount ?? 0;
+                            const income = property.monthlyIncome ?? property.income ?? 0;
 
                             return (
                               <Card
@@ -389,7 +172,7 @@ const HostDashboard = () => {
                                         size={12}
                                         className="fill-amber-500 text-amber-500 mr-1"
                                       />
-                                      {property.rating ?? "—"}
+                                      {property.rating ?? '—'}
                                     </Badge>
                                   </div>
                                 </div>
@@ -398,29 +181,18 @@ const HostDashboard = () => {
                                     {property.title}
                                   </h3>
                                   <p className="text-sm text-gray-500 mb-3 flex items-center">
-                                    <MapPin
-                                      size={14}
-                                      className="mr-1 text-earth-brown"
-                                    />
-                                    {property.location || property.city || "—"}
+                                    <MapPin size={14} className="mr-1 text-earth-brown" />
+                                    {property.location || property.city || '—'}
                                   </p>
 
                                   <div className="grid grid-cols-2 gap-4 mt-3 text-center">
                                     <div className="p-2 bg-gray-50 rounded-md">
-                                      <p className="text-xs text-gray-500">
-                                        Bookings
-                                      </p>
-                                      <p className="font-bold text-gray-900">
-                                        {bookings}
-                                      </p>
+                                      <p className="text-xs text-gray-500">Bookings</p>
+                                      <p className="font-bold text-gray-900">{bookings}</p>
                                     </div>
                                     <div className="p-2 bg-gray-50 rounded-md">
-                                      <p className="text-xs text-gray-500">
-                                        Revenue
-                                      </p>
-                                      <p className="font-bold text-earth-brown">
-                                        ${income}
-                                      </p>
+                                      <p className="text-xs text-gray-500">Revenue</p>
+                                      <p className="font-bold text-earth-brown">${income}</p>
                                     </div>
                                   </div>
                                 </CardContent>
@@ -440,7 +212,11 @@ const HostDashboard = () => {
                                       size="sm"
                                       className="text-red-600 hover:text-red-700 hover:bg-red-50 px-3"
                                       onClick={async () => {
-                                        if (window.confirm(`Are you sure you want to delete "${property.title}"? This action cannot be undone.`)) {
+                                        if (
+                                          window.confirm(
+                                            `Are you sure you want to delete "${property.title}"? This action cannot be undone.`
+                                          )
+                                        ) {
                                           const result = await deleteProperty(property._id);
                                           if (result?.success) {
                                             fetchUserProperties(authUser._id);

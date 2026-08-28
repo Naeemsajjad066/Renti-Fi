@@ -13,7 +13,7 @@ const PaymentOptionSelector = ({
   totalPrice,
   propertyPaymentOptions,
 }) => {
-  const upfront  = Math.round(totalPrice * 0.4);
+  const upfront = Math.round(totalPrice * 0.4);
   const onArrival = Math.round(totalPrice * 0.6);
 
   const options = [
@@ -22,9 +22,12 @@ const PaymentOptionSelector = ({
       icon: Banknote,
       title: 'Pay on Arrival',
       subtitle: 'Full cash payment when you check in',
-      pill: { label: 'No card needed', color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400' },
+      pill: {
+        label: 'No card needed',
+        color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400',
+      },
       meta: [
-        { label: 'Due today',    value: 'Rs 0',                     muted: true  },
+        { label: 'Due today', value: 'Rs 0', muted: true },
         { label: 'Due on arrival', value: `Rs ${totalPrice.toLocaleString()}`, bold: true },
       ],
       available: propertyPaymentOptions === 'arrival' || propertyPaymentOptions === 'both',
@@ -34,16 +37,19 @@ const PaymentOptionSelector = ({
       icon: CreditCard,
       title: 'Pay 40% Now',
       subtitle: 'Secure your stay with Stripe',
-      pill: { label: 'Instant confirmation', color: 'text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400' },
+      pill: {
+        label: 'Instant confirmation',
+        color: 'text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400',
+      },
       meta: [
-        { label: 'Due today (40%)',    value: `Rs ${upfront.toLocaleString()}`,   bold: true  },
+        { label: 'Due today (40%)', value: `Rs ${upfront.toLocaleString()}`, bold: true },
         { label: 'Due on arrival (60%)', value: `Rs ${onArrival.toLocaleString()}`, muted: true },
       ],
       available: propertyPaymentOptions === 'early' || propertyPaymentOptions === 'both',
     },
   ];
 
-  const available = options.filter(o => o.available);
+  const available = options.filter((o) => o.available);
 
   if (available.length === 0) {
     return (
@@ -100,7 +106,9 @@ const PaymentOptionSelector = ({
               <div className="flex-1 min-w-0">
                 {/* Title row */}
                 <div className="flex items-center justify-between gap-2">
-                  <span className={`text-sm font-semibold leading-tight ${isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>
+                  <span
+                    className={`text-sm font-semibold leading-tight ${isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}
+                  >
                     {opt.title}
                   </span>
                   {/* Custom radio dot */}
@@ -112,14 +120,14 @@ const PaymentOptionSelector = ({
                         : 'border-gray-300 dark:border-gray-600',
                     ].join(' ')}
                   >
-                    {isSelected && (
-                      <span className="w-[7px] h-[7px] rounded-full bg-white block" />
-                    )}
+                    {isSelected && <span className="w-[7px] h-[7px] rounded-full bg-white block" />}
                   </span>
                 </div>
 
                 {/* Subtitle */}
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 mb-2.5">{opt.subtitle}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 mb-2.5">
+                  {opt.subtitle}
+                </p>
 
                 {/* Amount breakdown */}
                 <div className="space-y-1">
@@ -140,7 +148,9 @@ const PaymentOptionSelector = ({
                 </div>
 
                 {/* Pill */}
-                <span className={`inline-flex items-center gap-1 mt-2.5 text-[11px] font-medium px-2 py-0.5 rounded-full ${opt.pill.color}`}>
+                <span
+                  className={`inline-flex items-center gap-1 mt-2.5 text-[11px] font-medium px-2 py-0.5 rounded-full ${opt.pill.color}`}
+                >
                   {opt.id === 'early' ? <ShieldCheck size={10} /> : <Clock size={10} />}
                   {opt.pill.label}
                 </span>

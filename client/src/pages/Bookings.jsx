@@ -2,14 +2,24 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Calendar, User, MapPin, X, Check, Clock, Star,
-  ExternalLink, Phone, CheckCircle, Loader2,
-  CreditCard, Home, AlertCircle
+  Calendar,
+  User,
+  MapPin,
+  X,
+  Check,
+  Clock,
+  Star,
+  ExternalLink,
+  Phone,
+  CheckCircle,
+  Loader2,
+  CreditCard,
+  Home,
+  AlertCircle,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
-import { Button } from '@/components/ui/button';
 import { useBooking } from '../contexts/BookingContext';
 import { useReview } from '../contexts/ReviewContext';
 import ReviewForm from '../components/ReviewForm';
@@ -19,16 +29,18 @@ import ReviewForm from '../components/ReviewForm';
 const StatusBadge = ({ status, getStatusBadge }) => {
   const cfg = getStatusBadge(status);
   const icons = {
-    upcoming:  <Clock   size={12} className="mr-1" />,
-    active:    <Check   size={12} className="mr-1" />,
-    completed: <Check   size={12} className="mr-1" />,
-    cancelled: <X       size={12} className="mr-1" />,
-    confirmed: <Check   size={12} className="mr-1" />,
-    reserved:  <Check   size={12} className="mr-1" />,
-    pending:   <Clock   size={12} className="mr-1" />,
+    upcoming: <Clock size={12} className="mr-1" />,
+    active: <Check size={12} className="mr-1" />,
+    completed: <Check size={12} className="mr-1" />,
+    cancelled: <X size={12} className="mr-1" />,
+    confirmed: <Check size={12} className="mr-1" />,
+    reserved: <Check size={12} className="mr-1" />,
+    pending: <Clock size={12} className="mr-1" />,
   };
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cfg.className}`}>
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cfg.className}`}
+    >
       {icons[status] ?? null}
       {cfg.label}
     </span>
@@ -48,9 +60,12 @@ const StripeSuccessBanner = ({ onDismiss }) => (
       <CheckCircle size={20} className="text-green-600 dark:text-green-400" />
     </div>
     <div className="flex-1 min-w-0">
-      <p className="font-semibold text-green-800 dark:text-green-300">Payment successful — booking confirmed!</p>
+      <p className="font-semibold text-green-800 dark:text-green-300">
+        Payment successful — booking confirmed!
+      </p>
       <p className="text-sm text-green-700 dark:text-green-400 mt-0.5">
-        Your advance payment was received. Check the details below and watch for a confirmation email.
+        Your advance payment was received. Check the details below and watch for a confirmation
+        email.
       </p>
     </div>
     <button
@@ -67,7 +82,7 @@ const StripeSuccessBanner = ({ onDismiss }) => (
 
 const BookingSkeleton = () => (
   <div className="divide-y divide-gray-100 dark:divide-gray-700/60 animate-pulse">
-    {[0, 1, 2].map(i => (
+    {[0, 1, 2].map((i) => (
       <div key={i} className="p-6 flex gap-5">
         <div className="w-40 h-28 rounded-xl bg-gray-200 dark:bg-gray-700 shrink-0" />
         <div className="flex-1 space-y-3 pt-1">
@@ -112,7 +127,7 @@ const TABS = ['all', 'upcoming', 'active', 'completed', 'cancelled'];
 
 const Bookings = () => {
   const [searchParams] = useSearchParams();
-  const navigate        = useNavigate();
+  const navigate = useNavigate();
 
   const {
     loading: isLoading,
@@ -131,22 +146,27 @@ const Bookings = () => {
 
   /* ── state ── */
   const [selectedBookingForReview, setSelectedBookingForReview] = useState(null);
-  const [reviewedBookingIds, setReviewedBookingIds]             = useState(new Set());
-  const [stripeSuccess, setStripeSuccess]                       = useState(false);
-  const [stripeChecking, setStripeChecking]                     = useState(false);
+  const [reviewedBookingIds, setReviewedBookingIds] = useState(new Set());
+  const [stripeSuccess, setStripeSuccess] = useState(false);
+  const [stripeChecking, setStripeChecking] = useState(false);
 
   /* ── fetch fresh bookings every time this page mounts ── */
-  useEffect(() => { fetchAllBookings(); }, []);
+  useEffect(() => {
+    fetchAllBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* ── load reviews ── */
   const loadReviews = useCallback(async () => {
     const result = await getUserReviews();
     if (result?.success) {
-      setReviewedBookingIds(new Set(result.data.map(r => r.booking)));
+      setReviewedBookingIds(new Set(result.data.map((r) => r.booking)));
     }
   }, [getUserReviews]);
 
-  useEffect(() => { loadReviews(); }, [loadReviews]);
+  useEffect(() => {
+    loadReviews();
+  }, [loadReviews]);
 
   /* ── handle Stripe success redirect ─────────────────────────────────────
      Stripe sends back: /bookings?session_id=cs_xxx
@@ -168,18 +188,18 @@ const Bookings = () => {
 
     const refetchWithRetry = async () => {
       // First fetch after 2 s
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 2000));
       await fetchGuestBookings();
 
       // Second fetch after another 3 s in case webhook was slow
-      await new Promise(r => setTimeout(r, 3000));
+      await new Promise((r) => setTimeout(r, 3000));
       await fetchGuestBookings();
 
       setStripeChecking(false);
     };
 
     refetchWithRetry();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // run once on mount only — searchParams read directly from URL
 
   /* ── cancel ── */
@@ -203,25 +223,28 @@ const Bookings = () => {
         <main className="flex-grow pt-20 pb-16">
           <div className="page-container py-8">
             <div className="max-w-5xl mx-auto">
-
               {/* ── Page header ── */}
               <div className="mb-6">
-                <h1 className="text-2xl font-display font-bold text-gray-900 dark:text-white">My Bookings</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">All your past and upcoming stays in one place</p>
+                <h1 className="text-2xl font-display font-bold text-gray-900 dark:text-white">
+                  My Bookings
+                </h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  All your past and upcoming stays in one place
+                </p>
               </div>
 
               {/* ── Stripe success banner ── */}
               <AnimatePresence>
-                {stripeSuccess && (
-                  <StripeSuccessBanner onDismiss={() => setStripeSuccess(false)} />
-                )}
+                {stripeSuccess && <StripeSuccessBanner onDismiss={() => setStripeSuccess(false)} />}
               </AnimatePresence>
 
               {/* ── Checking / syncing indicator ── */}
               <AnimatePresence>
                 {stripeChecking && (
                   <motion.div
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                     className="mb-4 flex items-center gap-2.5 text-sm text-earth-brown bg-earth-brown/8 dark:bg-earth-brown/15 border border-earth-brown/20 rounded-xl px-4 py-2.5"
                   >
                     <Loader2 size={14} className="animate-spin shrink-0" />
@@ -240,10 +263,9 @@ const Bookings = () => {
 
               {/* ── Main card ── */}
               <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-
                 {/* Tabs */}
                 <div className="flex overflow-x-auto border-b border-gray-100 dark:border-gray-800 scrollbar-none">
-                  {TABS.map(tab => (
+                  {TABS.map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
@@ -272,17 +294,25 @@ const Bookings = () => {
                         className="p-5 sm:p-6 hover:bg-gray-50/60 dark:hover:bg-gray-800/30 transition-colors"
                       >
                         <div className="flex flex-col sm:flex-row gap-4">
-
                           {/* Property image */}
                           <div className="relative w-full sm:w-44 h-32 rounded-xl overflow-hidden shrink-0 bg-gray-100 dark:bg-gray-800">
                             <img
-                              src={booking.property?.images?.[0] || booking.propertyImage || '/placeholder.svg'}
+                              src={
+                                booking.property?.images?.[0] ||
+                                booking.propertyImage ||
+                                '/placeholder.svg'
+                              }
                               alt={booking.property?.title || 'Property'}
                               className="w-full h-full object-cover"
-                              onError={e => { e.target.src = '/placeholder.svg'; }}
+                              onError={(e) => {
+                                e.target.src = '/placeholder.svg';
+                              }}
                             />
                             <div className="absolute top-2 left-2">
-                              <StatusBadge status={booking.status} getStatusBadge={getStatusBadge} />
+                              <StatusBadge
+                                status={booking.status}
+                                getStatusBadge={getStatusBadge}
+                              />
                             </div>
                           </div>
 
@@ -315,33 +345,44 @@ const Bookings = () => {
                             {/* Date + guests row */}
                             <div className="flex flex-wrap gap-4 text-sm mb-4">
                               <div>
-                                <p className="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Check-in</p>
+                                <p className="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">
+                                  Check-in
+                                </p>
                                 <p className="font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1">
                                   <Calendar size={12} className="text-earth-brown" />
                                   {formatDate(booking.checkIn)}
                                 </p>
                               </div>
                               <div>
-                                <p className="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Check-out</p>
+                                <p className="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">
+                                  Check-out
+                                </p>
                                 <p className="font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1">
                                   <Calendar size={12} className="text-earth-brown" />
                                   {formatDate(booking.checkOut)}
                                 </p>
                               </div>
                               <div>
-                                <p className="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Guests</p>
+                                <p className="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">
+                                  Guests
+                                </p>
                                 <p className="font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1">
                                   <User size={12} className="text-earth-brown" />
-                                  {booking.guests?.adults || booking.guests || 1} guest{(booking.guests?.adults || booking.guests || 1) !== 1 ? 's' : ''}
+                                  {booking.guests?.adults || booking.guests || 1} guest
+                                  {(booking.guests?.adults || booking.guests || 1) !== 1 ? 's' : ''}
                                 </p>
                               </div>
                               {/* Payment method pill */}
                               {booking.paymentOption && (
                                 <div>
-                                  <p className="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Payment</p>
+                                  <p className="text-[11px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">
+                                    Payment
+                                  </p>
                                   <p className="font-medium text-gray-800 dark:text-gray-200 flex items-center gap-1">
                                     <CreditCard size={12} className="text-earth-brown" />
-                                    {booking.paymentOption === 'early' ? '40% paid · 60% on arrival' : 'Pay on arrival'}
+                                    {booking.paymentOption === 'early'
+                                      ? '40% paid · 60% on arrival'
+                                      : 'Pay on arrival'}
                                   </p>
                                 </div>
                               )}
@@ -349,20 +390,28 @@ const Bookings = () => {
 
                             {/* Host + actions row */}
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-
                               {/* Host */}
                               <Link
                                 to={`/host/${booking.host?._id || booking.hostId}`}
                                 className="flex items-center gap-2.5 group"
                               >
                                 <img
-                                  src={booking.host?.profilePic || booking.host?.profilePicture || '/placeholder.svg'}
+                                  src={
+                                    booking.host?.profilePic ||
+                                    booking.host?.profilePicture ||
+                                    '/placeholder.svg'
+                                  }
                                   alt={booking.host?.fullName || 'Host'}
                                   className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100 dark:ring-gray-700"
-                                  onError={e => { if (e.target.src !== '/placeholder.svg') e.target.src = '/placeholder.svg'; }}
+                                  onError={(e) => {
+                                    if (e.target.src !== '/placeholder.svg')
+                                      e.target.src = '/placeholder.svg';
+                                  }}
                                 />
                                 <div>
-                                  <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">Hosted by</p>
+                                  <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-none mb-0.5">
+                                    Hosted by
+                                  </p>
                                   <p className="text-xs font-medium text-gray-700 dark:text-gray-300 group-hover:text-earth-brown transition-colors">
                                     {booking.host?.fullName || booking.hostName || 'Host'}
                                   </p>
@@ -403,20 +452,22 @@ const Bookings = () => {
                                   </button>
                                 )}
 
-                                {booking.status === 'completed' && !reviewedBookingIds.has(booking._id) && (
-                                  <button
-                                    onClick={() => setSelectedBookingForReview(booking)}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-lg text-xs font-medium transition-colors"
-                                  >
-                                    <Star size={12} /> Write Review
-                                  </button>
-                                )}
+                                {booking.status === 'completed' &&
+                                  !reviewedBookingIds.has(booking._id) && (
+                                    <button
+                                      onClick={() => setSelectedBookingForReview(booking)}
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-lg text-xs font-medium transition-colors"
+                                    >
+                                      <Star size={12} /> Write Review
+                                    </button>
+                                  )}
 
-                                {booking.status === 'completed' && reviewedBookingIds.has(booking._id) && (
-                                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-xs font-medium">
-                                    <Check size={12} /> Reviewed
-                                  </span>
-                                )}
+                                {booking.status === 'completed' &&
+                                  reviewedBookingIds.has(booking._id) && (
+                                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-xs font-medium">
+                                      <Check size={12} /> Reviewed
+                                    </span>
+                                  )}
                               </div>
                             </div>
                           </div>
@@ -428,7 +479,6 @@ const Bookings = () => {
                   <EmptyState tab={activeTab} />
                 )}
               </div>
-
             </div>
           </div>
         </main>

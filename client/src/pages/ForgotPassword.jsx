@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Mail, Home, Check, AlertCircle, Lock, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Mail, Home, Check, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import PageTransition from '@/components/PageTransition';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,15 +44,15 @@ const ForgotPassword = () => {
 
     try {
       const response = await forgotPassword(email);
-      
+
       if (response.success) {
         setStep(2);
       } else {
         setErrors({ email: response.message });
       }
-    } catch (error) {
-      setErrors({ 
-        email: 'Failed to send reset code. Please try again.' 
+    } catch {
+      setErrors({
+        email: 'Failed to send reset code. Please try again.',
       });
     }
   };
@@ -83,10 +83,10 @@ const ForgotPassword = () => {
 
     try {
       const response = await resetPassword(email, code, newPassword);
-      
+
       if (response.success) {
         setStep(3);
-        
+
         // Redirect to login after a short delay
         setTimeout(() => {
           navigate('/login');
@@ -94,9 +94,9 @@ const ForgotPassword = () => {
       } else {
         setErrors({ code: response.message });
       }
-    } catch (error) {
-      setErrors({ 
-        code: 'Failed to reset password. Please try again.' 
+    } catch {
+      setErrors({
+        code: 'Failed to reset password. Please try again.',
       });
     }
   };
@@ -107,7 +107,7 @@ const ForgotPassword = () => {
       if (response.success) {
         toast.success('Reset code sent again');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to resend code');
     }
   };
@@ -116,7 +116,7 @@ const ForgotPassword = () => {
     <PageTransition>
       <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gray-50">
         {/* Logo */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -152,17 +152,18 @@ const ForgotPassword = () => {
                 {step === 2 && <AlertCircle className="w-8 h-8 text-earth-brown" />}
                 {step === 3 && <Check className="w-8 h-8 text-green-600" />}
               </div>
-              
+
               <CardTitle className="text-2xl font-bold text-gray-900">
-                {step === 1 && "Forgot Password?"}
-                {step === 2 && "Enter Reset Code"}
-                {step === 3 && "Password Reset Successfully!"}
+                {step === 1 && 'Forgot Password?'}
+                {step === 2 && 'Enter Reset Code'}
+                {step === 3 && 'Password Reset Successfully!'}
               </CardTitle>
-              
+
               <CardDescription className="text-gray-600">
                 {step === 1 && "Don't worry, we'll send you reset instructions."}
                 {step === 2 && `We've sent a 6-digit code to ${email}`}
-                {step === 3 && "Your password has been reset successfully. You can now login with your new password."}
+                {step === 3 &&
+                  'Your password has been reset successfully. You can now login with your new password.'}
               </CardDescription>
             </CardHeader>
 
@@ -180,13 +181,11 @@ const ForgotPassword = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       className={errors.email ? 'border-red-500' : ''}
                     />
-                    {errors.email && (
-                      <p className="text-sm text-red-500">{errors.email}</p>
-                    )}
+                    {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                   </div>
 
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="w-full bg-earth-brown hover:bg-earth-brown/90 disabled:opacity-50"
                     disabled={!email || !!errors.email}
                   >
@@ -209,9 +208,7 @@ const ForgotPassword = () => {
                       maxLength={6}
                       className={`text-center text-lg tracking-widest ${errors.code ? 'border-red-500' : ''}`}
                     />
-                    {errors.code && (
-                      <p className="text-sm text-red-500 mt-1">{errors.code}</p>
-                    )}
+                    {errors.code && <p className="text-sm text-red-500 mt-1">{errors.code}</p>}
                   </div>
 
                   <div>
@@ -262,10 +259,12 @@ const ForgotPassword = () => {
                     )}
                   </div>
 
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="w-full bg-earth-brown hover:bg-earth-brown/90 disabled:opacity-50"
-                    disabled={!code || !newPassword || !confirmPassword || newPassword !== confirmPassword}
+                    disabled={
+                      !code || !newPassword || !confirmPassword || newPassword !== confirmPassword
+                    }
                   >
                     Reset Password
                   </Button>
@@ -292,7 +291,7 @@ const ForgotPassword = () => {
                     </AlertDescription>
                   </Alert>
 
-                  <Button 
+                  <Button
                     onClick={() => navigate('/login')}
                     className="w-full bg-earth-brown hover:bg-earth-brown/90"
                   >
@@ -304,8 +303,8 @@ const ForgotPassword = () => {
               {/* Back to Login Link */}
               {step !== 3 && (
                 <div className="text-center pt-4">
-                  <Link 
-                    to="/login" 
+                  <Link
+                    to="/login"
                     className="inline-flex items-center text-sm text-gray-600 hover:text-earth-brown transition-colors"
                   >
                     <ArrowLeft size={16} className="mr-1" />

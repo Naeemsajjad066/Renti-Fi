@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, AlertCircle, Upload, Image as ImageIcon, FileText } from 'lucide-react';
+import { X, AlertCircle, Upload, FileText } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -8,7 +8,7 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
     title: '',
     description: '',
     category: 'other',
-    attachments: []
+    attachments: [],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -21,18 +21,18 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
     { value: 'scam_fraud', label: 'Scam/Fraud' },
     { value: 'property_condition', label: 'Property Condition' },
     { value: 'host_behavior', label: 'Host Behavior' },
-    { value: 'other', label: 'Other' }
+    { value: 'other', label: 'Other' },
   ];
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     setError('');
   };
 
   const handleFileSelect = async (e) => {
     const files = Array.from(e.target.files);
-    
+
     if (files.length + previewFiles.length > 5) {
       setError('Maximum 5 attachments allowed');
       return;
@@ -53,10 +53,10 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
             file,
             preview: e.target.result,
             type: 'image',
-            name: file.name
+            name: file.name,
           });
           if (newPreviews.length === files.length) {
-            setPreviewFiles(prev => [...prev, ...newPreviews]);
+            setPreviewFiles((prev) => [...prev, ...newPreviews]);
           }
         };
         reader.readAsDataURL(file);
@@ -65,18 +65,18 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
           file,
           preview: null,
           type: 'document',
-          name: file.name
+          name: file.name,
         });
       }
     }
 
-    if (!files.some(f => f.type.startsWith('image/'))) {
-      setPreviewFiles(prev => [...prev, ...newPreviews]);
+    if (!files.some((f) => f.type.startsWith('image/'))) {
+      setPreviewFiles((prev) => [...prev, ...newPreviews]);
     }
   };
 
   const removeFile = (index) => {
-    setPreviewFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviewFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const uploadToCloudinary = async (file) => {
@@ -91,15 +91,15 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
       {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
 
     return {
       url: response.data.url,
       publicId: response.data.publicId,
-      type: file.type.startsWith('image/') ? 'image' : 'document'
+      type: file.type.startsWith('image/') ? 'image' : 'document',
     };
   };
 
@@ -141,17 +141,16 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
           title: formData.title,
           description: formData.description,
           category: formData.category,
-          attachments: uploadedAttachments
+          attachments: uploadedAttachments,
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       if (response.data.success) {
-        console.log('Complaint submitted successfully:', response.data);
         // Call success callback
         if (onSuccess) {
           onSuccess();
@@ -191,9 +190,7 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
                 <AlertCircle className="text-red-500" size={24} />
                 Report Property
               </h2>
-              <p className="text-sm text-gray-500 mt-1">
-                Report: {property?.title}
-              </p>
+              <p className="text-sm text-gray-500 mt-1">Report: {property?.title}</p>
             </div>
             <button
               onClick={onClose}
@@ -215,9 +212,7 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
 
             {/* Category */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
               <select
                 name="category"
                 value={formData.category}
@@ -225,7 +220,7 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A0937D] focus:border-transparent"
                 required
               >
-                {categories.map(cat => (
+                {categories.map((cat) => (
                   <option key={cat.value} value={cat.value}>
                     {cat.label}
                   </option>
@@ -235,9 +230,7 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
 
             {/* Title */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
               <input
                 type="text"
                 name="title"
@@ -248,16 +241,12 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A0937D] focus:border-transparent"
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">
-                {formData.title.length}/200 characters
-              </p>
+              <p className="text-xs text-gray-500 mt-1">{formData.title.length}/200 characters</p>
             </div>
 
             {/* Description */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
               <textarea
                 name="description"
                 value={formData.description}
@@ -284,12 +273,8 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
 
               <label className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-[#A0937D] transition">
                 <Upload size={32} className="text-gray-400 mb-2" />
-                <span className="text-sm text-gray-600">
-                  Click to upload or drag and drop
-                </span>
-                <span className="text-xs text-gray-400 mt-1">
-                  PNG, JPG, PDF (max 5MB)
-                </span>
+                <span className="text-sm text-gray-600">Click to upload or drag and drop</span>
+                <span className="text-xs text-gray-400 mt-1">PNG, JPG, PDF (max 5MB)</span>
                 <input
                   type="file"
                   onChange={handleFileSelect}
@@ -319,9 +304,7 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
                           <FileText size={24} className="text-gray-400" />
                         </div>
                       )}
-                      <span className="text-xs text-gray-600 flex-1 truncate">
-                        {item.name}
-                      </span>
+                      <span className="text-xs text-gray-600 flex-1 truncate">{item.name}</span>
                       <button
                         type="button"
                         onClick={() => removeFile(index)}
@@ -338,8 +321,8 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
             {/* Warning */}
             <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <p className="text-sm text-yellow-800">
-                <strong>Note:</strong> False reports may result in account suspension.
-                Our team will review your complaint within 24-48 hours.
+                <strong>Note:</strong> False reports may result in account suspension. Our team will
+                review your complaint within 24-48 hours.
               </p>
             </div>
 

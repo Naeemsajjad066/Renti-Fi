@@ -13,6 +13,7 @@ Rentifi is a two-sided marketplace where hosts list residential properties and g
 ## Features
 
 ### For Guests
+
 - Browse and search verified property listings with filters
 - View property details, amenities, host profile, and reviews
 - Book properties with a date picker that shows unavailable dates
@@ -23,6 +24,7 @@ Rentifi is a two-sided marketplace where hosts list residential properties and g
 - File complaints against properties
 
 ### For Hosts
+
 - List properties with photos, descriptions, pricing, and amenities
 - Dashboard to manage listings, availability, and bookings
 - Receive email notifications for new bookings
@@ -31,6 +33,7 @@ Rentifi is a two-sided marketplace where hosts list residential properties and g
 - Respond to reviews
 
 ### For Admins
+
 - Review and approve or reject property listings
 - Manage user accounts and platform activity
 - Handle complaint reports
@@ -42,36 +45,39 @@ Rentifi is a two-sided marketplace where hosts list residential properties and g
 ## Tech Stack
 
 ### Frontend
-| Layer | Technology |
-|---|---|
-| Framework | React 18 + TypeScript |
-| Build Tool | Vite |
-| Styling | Tailwind CSS + shadcn/ui (Radix UI) |
-| Routing | React Router v6 |
-| State / Data | TanStack Query v5 |
-| Forms | React Hook Form + Zod |
-| Animations | Framer Motion |
-| Payments | Stripe.js + React Stripe |
+
+| Layer        | Technology                          |
+| ------------ | ----------------------------------- |
+| Framework    | React 18 + TypeScript               |
+| Build Tool   | Vite                                |
+| Styling      | Tailwind CSS + shadcn/ui (Radix UI) |
+| Routing      | React Router v6                     |
+| State / Data | TanStack Query v5                   |
+| Forms        | React Hook Form + Zod               |
+| Animations   | Framer Motion                       |
+| Payments     | Stripe.js + React Stripe            |
 
 ### Backend
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js (ESM) |
-| Framework | Express |
-| Database | MongoDB + Mongoose |
-| Auth | JWT (HTTP-only cookies) |
-| Payments | Stripe API + Stripe Connect |
-| Email | Resend |
-| Storage | Cloudinary |
-| Security | Helmet, express-mongo-sanitize, express-rate-limit, xss-clean |
+
+| Layer     | Technology                                                    |
+| --------- | ------------------------------------------------------------- |
+| Runtime   | Node.js (ESM)                                                 |
+| Framework | Express                                                       |
+| Database  | MongoDB + Mongoose                                            |
+| Auth      | JWT (HTTP-only cookies)                                       |
+| Payments  | Stripe API + Stripe Connect                                   |
+| Email     | Resend                                                        |
+| Storage   | Cloudinary                                                    |
+| Security  | Helmet, express-mongo-sanitize, express-rate-limit, xss-clean |
 
 ### Infrastructure
-| Service | Platform |
-|---|---|
-| Backend | Render |
-| Frontend | Vercel |
-| Database | MongoDB Atlas |
-| CI/CD | GitHub Actions |
+
+| Service  | Platform       |
+| -------- | -------------- |
+| Backend  | Render         |
+| Frontend | Vercel         |
+| Database | MongoDB Atlas  |
+| CI/CD    | GitHub Actions |
 
 ---
 
@@ -101,22 +107,23 @@ rentifi/
 
 ## API Endpoints
 
-| Resource | Base Path |
-|---|---|
-| Auth & Users | `/api/auth` |
-| Properties | `/api/properties` |
-| Bookings | `/api/bookings` |
-| Payments | `/api/payments` |
-| Reviews | `/api/reviews` |
-| Admin | `/api/admin` |
+| Resource       | Base Path             |
+| -------------- | --------------------- |
+| Auth & Users   | `/api/auth`           |
+| Properties     | `/api/properties`     |
+| Bookings       | `/api/bookings`       |
+| Payments       | `/api/payments`       |
+| Reviews        | `/api/reviews`        |
+| Admin          | `/api/admin`          |
 | Stripe Connect | `/api/stripe-connect` |
-| Complaints | `/api/complaints` |
+| Complaints     | `/api/complaints`     |
 
 ---
 
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - MongoDB Atlas account (or local MongoDB)
 - Stripe account with Connect enabled
@@ -126,6 +133,7 @@ rentifi/
 ### Environment Variables
 
 **Server** (`server/.env`):
+
 ```env
 # Database
 MONGODB_URI=mongodb+srv://...
@@ -155,6 +163,7 @@ CLOUDINARY_API_SECRET=your-api-secret
 ```
 
 **Client** (`client/.env`):
+
 ```env
 VITE_API_URL=http://localhost:5000
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
@@ -206,11 +215,11 @@ cd server && npm run create-admin
 
 Three GitHub Actions workflows run on every push and pull request:
 
-| Workflow | Trigger | Purpose |
-|---|---|---|
-| `ci.yml` | Push to `main` / `dev` | Lint and build validation |
-| `pr-check.yml` | Pull Request | Code quality checks |
-| `deploy.yml` | Push to `main` | Deploy to Render + Vercel |
+| Workflow       | Trigger                | Purpose                   |
+| -------------- | ---------------------- | ------------------------- |
+| `ci.yml`       | Push to `main` / `dev` | Lint and build validation |
+| `pr-check.yml` | Pull Request           | Code quality checks       |
+| `deploy.yml`   | Push to `main`         | Deploy to Render + Vercel |
 
 Dependabot keeps dependencies current with weekly PRs for both `client/` and `server/`.
 
@@ -219,12 +228,14 @@ Dependabot keeps dependencies current with weekly PRs for both `client/` and `se
 ## Deployment
 
 ### Backend → Render
+
 - Web service pointing to `server/`
 - Start command: `node server.js`
 - Set all server environment variables in Render dashboard
 - Add Stripe webhook endpoint: `https://your-app.onrender.com/api/payments/webhook`
 
 ### Frontend → Vercel
+
 - Root directory: `client/`
 - Build command: `npm run build`
 - Output: `dist/`

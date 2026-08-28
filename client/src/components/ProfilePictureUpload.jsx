@@ -10,7 +10,7 @@ const ProfilePictureUpload = ({ currentImage, onImageChange, disabled = false })
 
   const validateImage = (file) => {
     setError('');
-    
+
     // Check file size (4MB limit to match server)
     const maxSize = 4 * 1024 * 1024; // 4MB
     if (file.size > maxSize) {
@@ -60,7 +60,7 @@ const ProfilePictureUpload = ({ currentImage, onImageChange, disabled = false })
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const file = e.dataTransfer.files[0];
     if (file) {
       handleImageChange(file);
@@ -94,8 +94,8 @@ const ProfilePictureUpload = ({ currentImage, onImageChange, disabled = false })
             isDragging
               ? 'border-primary bg-primary/10'
               : error
-              ? 'border-red-400 bg-red-50'
-              : 'border-gray-300 hover:border-gray-400'
+                ? 'border-red-400 bg-red-50'
+                : 'border-gray-300 hover:border-gray-400'
           } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
@@ -103,11 +103,7 @@ const ProfilePictureUpload = ({ currentImage, onImageChange, disabled = false })
           onClick={() => !disabled && fileInputRef.current?.click()}
         >
           {previewImage ? (
-            <img
-              src={previewImage}
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
+            <img src={previewImage} alt="Profile" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-gray-100 flex items-center justify-center">
               <Camera className="w-8 h-8 text-gray-400" />
@@ -143,9 +139,7 @@ const ProfilePictureUpload = ({ currentImage, onImageChange, disabled = false })
           <Upload className="w-4 h-4 mr-2" />
           Upload Photo
         </button>
-        <p className="text-xs text-gray-500 mt-2">
-          Max 4MB • JPEG, PNG, WEBP
-        </p>
+        <p className="text-xs text-gray-500 mt-2">Max 4MB • JPEG, PNG, WEBP</p>
       </div>
 
       <input

@@ -1,11 +1,10 @@
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
   const { authUser, token, isAuthLoading } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isAuthLoading) {

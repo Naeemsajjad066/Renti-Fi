@@ -3,18 +3,11 @@ import { motion } from 'framer-motion';
 import { Star, Filter, TrendingUp } from 'lucide-react';
 import ReviewCard from './ReviewCard';
 import { useReview } from '../contexts/ReviewContext';
-import { Button } from './ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Card } from './ui/card';
 
 const ReviewList = ({ propertyId }) => {
-  const { getPropertyReviews, getPropertyStats, deleteReview, propertyReviews } = useReview();
+  const { getPropertyReviews, getPropertyStats, deleteReview } = useReview();
   const [reviews, setReviews] = useState([]);
   const [stats, setStats] = useState(null);
   const [sortBy, setSortBy] = useState('recent');
@@ -23,11 +16,12 @@ const ReviewList = ({ propertyId }) => {
 
   useEffect(() => {
     loadReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propertyId]);
 
   const loadReviews = async () => {
     setLoading(true);
-    
+
     // Fetch reviews
     const reviewResult = await getPropertyReviews(propertyId);
     if (reviewResult.success) {
@@ -48,7 +42,7 @@ const ReviewList = ({ propertyId }) => {
 
     const result = await deleteReview(reviewId, propertyId);
     if (result.success) {
-      setReviews(prev => prev.filter(r => r._id !== reviewId));
+      setReviews((prev) => prev.filter((r) => r._id !== reviewId));
       loadReviews(); // Reload to update stats
     } else {
       alert(result.message || 'Failed to delete review');
@@ -57,7 +51,7 @@ const ReviewList = ({ propertyId }) => {
 
   // Filter and sort reviews
   const filteredAndSortedReviews = reviews
-    .filter(review => {
+    .filter((review) => {
       if (filterRating === 'all') return true;
       return review.rating === parseInt(filterRating);
     })
@@ -101,7 +95,8 @@ const ReviewList = ({ propertyId }) => {
                 </span>
               </div>
               <p className="text-sm text-gray-600">
-                Based on {stats.totalReviews || reviews.length} {(stats.totalReviews || reviews.length) === 1 ? 'review' : 'reviews'}
+                Based on {stats.totalReviews || reviews.length}{' '}
+                {(stats.totalReviews || reviews.length) === 1 ? 'review' : 'reviews'}
               </p>
             </div>
 
@@ -109,15 +104,13 @@ const ReviewList = ({ propertyId }) => {
             <div className="col-span-2">
               <h4 className="text-sm font-semibold text-gray-900 mb-3">Rating Distribution</h4>
               <div className="space-y-2">
-                {[5, 4, 3, 2, 1].map(rating => {
-                  const count = reviews.filter(r => r.rating === rating).length;
+                {[5, 4, 3, 2, 1].map((rating) => {
+                  const count = reviews.filter((r) => r.rating === rating).length;
                   const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
-                  
+
                   return (
                     <div key={rating} className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-gray-700 w-12">
-                        {rating} stars
-                      </span>
+                      <span className="text-sm font-medium text-gray-700 w-12">{rating} stars</span>
                       <div className="flex-1 bg-white rounded-full h-2 overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
@@ -144,8 +137,8 @@ const ReviewList = ({ propertyId }) => {
                   { label: 'Communication', value: stats.averageCommunication },
                   { label: 'Location', value: stats.averageLocation },
                   { label: 'Check-in', value: stats.averageCheckIn },
-                  { label: 'Value', value: stats.averageValue }
-                ].map(item => (
+                  { label: 'Value', value: stats.averageValue },
+                ].map((item) => (
                   <div key={item.label} className="text-center">
                     <p className="text-xs text-gray-600 mb-1">{item.label}</p>
                     <p className="text-lg font-bold text-gray-900">
@@ -165,7 +158,7 @@ const ReviewList = ({ propertyId }) => {
           <h3 className="text-xl font-bold text-gray-900">
             All Reviews ({filteredAndSortedReviews.length})
           </h3>
-          
+
           <div className="flex flex-wrap gap-3">
             <Select value={filterRating} onValueChange={setFilterRating}>
               <SelectTrigger className="w-[140px]">
@@ -209,10 +202,7 @@ const ReviewList = ({ propertyId }) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <ReviewCard
-                review={review}
-                onDelete={handleDelete}
-              />
+              <ReviewCard review={review} onDelete={handleDelete} />
             </motion.div>
           ))}
         </div>

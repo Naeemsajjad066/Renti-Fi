@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -16,7 +16,7 @@ import {
   XCircle,
   ExternalLink,
   User,
-  MessageSquare
+  MessageSquare,
 } from 'lucide-react';
 import PageTransition from '@/components/PageTransition';
 import HostSidebar from '@/components/HostSidebar';
@@ -33,15 +33,11 @@ const HostBookingDetails = () => {
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchBookingDetails();
-  }, [id]);
-
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  const fetchBookingDetails = async () => {
+  const fetchBookingDetails = useCallback(async () => {
     try {
       setLoading(true);
       const { data } = await axios.get(`/api/bookings/${id}`);
@@ -55,16 +51,28 @@ const HostBookingDetails = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate]);
+
+  useEffect(() => {
+    fetchBookingDetails();
+  }, [fetchBookingDetails]);
 
   const getStatusBadge = (status) => {
     const badges = {
       reserved: { label: 'Reserved', className: 'bg-blue-100 text-blue-800', icon: Clock },
-      confirmed: { label: 'Confirmed', className: 'bg-green-100 text-green-800', icon: CheckCircle },
-      'checked-in': { label: 'Checked In', className: 'bg-purple-100 text-purple-800', icon: CheckCircle },
+      confirmed: {
+        label: 'Confirmed',
+        className: 'bg-green-100 text-green-800',
+        icon: CheckCircle,
+      },
+      'checked-in': {
+        label: 'Checked In',
+        className: 'bg-purple-100 text-purple-800',
+        icon: CheckCircle,
+      },
       completed: { label: 'Completed', className: 'bg-gray-100 text-gray-800', icon: CheckCircle },
       cancelled: { label: 'Cancelled', className: 'bg-red-100 text-red-800', icon: XCircle },
-      expired: { label: 'Expired', className: 'bg-orange-100 text-orange-800', icon: AlertCircle }
+      expired: { label: 'Expired', className: 'bg-orange-100 text-orange-800', icon: AlertCircle },
     };
     return badges[status] || badges.reserved;
   };
@@ -75,7 +83,7 @@ const HostBookingDetails = () => {
       partial: { label: 'Partially Paid', className: 'bg-blue-100 text-blue-800' },
       paid: { label: 'Fully Paid', className: 'bg-green-100 text-green-800' },
       refunded: { label: 'Refunded', className: 'bg-gray-100 text-gray-800' },
-      failed: { label: 'Failed', className: 'bg-red-100 text-red-800' }
+      failed: { label: 'Failed', className: 'bg-red-100 text-red-800' },
     };
     return badges[status] || badges.pending;
   };
@@ -84,11 +92,7 @@ const HostBookingDetails = () => {
     return (
       <PageTransition>
         <div className="min-h-screen flex bg-gray-50">
-          <HostSidebar
-            isMobile={isMobile}
-            isOpen={sidebarOpen}
-            onToggle={toggleSidebar}
-          />
+          <HostSidebar isMobile={isMobile} isOpen={sidebarOpen} onToggle={toggleSidebar} />
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
@@ -104,17 +108,11 @@ const HostBookingDetails = () => {
     return (
       <PageTransition>
         <div className="min-h-screen flex bg-gray-50">
-          <HostSidebar
-            isMobile={isMobile}
-            isOpen={sidebarOpen}
-            onToggle={toggleSidebar}
-          />
+          <HostSidebar isMobile={isMobile} isOpen={sidebarOpen} onToggle={toggleSidebar} />
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <p className="text-gray-600 mb-4">Booking not found</p>
-              <Button onClick={() => navigate('/host/bookings')}>
-                Back to Bookings
-              </Button>
+              <Button onClick={() => navigate('/host/bookings')}>Back to Bookings</Button>
             </div>
           </div>
         </div>
@@ -132,11 +130,7 @@ const HostBookingDetails = () => {
   return (
     <PageTransition>
       <div className="min-h-screen flex bg-gray-50">
-        <HostSidebar
-          isMobile={isMobile}
-          isOpen={sidebarOpen}
-          onToggle={toggleSidebar}
-        />
+        <HostSidebar isMobile={isMobile} isOpen={sidebarOpen} onToggle={toggleSidebar} />
 
         <div className="flex-1 overflow-auto">
           <div className="px-4 md:px-8 py-6 max-w-7xl mx-auto">
@@ -147,15 +141,17 @@ const HostBookingDetails = () => {
               className="mb-8"
             >
               <div className="flex items-center justify-between mb-4">
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Booking Details
-                </h1>
+                <h1 className="text-3xl font-bold text-gray-900">Booking Details</h1>
                 <div className="flex gap-2">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusBadge.className}`}>
+                  <span
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusBadge.className}`}
+                  >
                     <StatusIcon size={16} className="mr-1" />
                     {statusBadge.label}
                   </span>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${paymentBadge.className}`}>
+                  <span
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${paymentBadge.className}`}
+                  >
                     {paymentBadge.label}
                   </span>
                 </div>
@@ -168,8 +164,12 @@ const HostBookingDetails = () => {
                   <CheckCircle className="text-green-600 mr-3" size={24} />
                   <div>
                     <div className="text-sm text-gray-600 font-medium">Guest Verification Code</div>
-                    <div className="text-3xl font-bold text-green-600 tracking-wider">{booking.verificationCode}</div>
-                    <div className="text-xs text-gray-500 mt-1">Ask guest to show this code at check-in</div>
+                    <div className="text-3xl font-bold text-green-600 tracking-wider">
+                      {booking.verificationCode}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Ask guest to show this code at check-in
+                    </div>
                   </div>
                 </div>
               )}
@@ -205,11 +205,17 @@ const HostBookingDetails = () => {
                     </h2>
                     <div className="flex items-center text-gray-600 mb-4">
                       <MapPin size={16} className="mr-2" />
-                      <span>{booking.property?.address}, {booking.property?.city}, {booking.property?.state}</span>
+                      <span>
+                        {booking.property?.address}, {booking.property?.city},{' '}
+                        {booking.property?.state}
+                      </span>
                     </div>
                     <div className="flex items-center text-gray-600">
                       <Home size={16} className="mr-2" />
-                      <span>{booking.property?.propertyType} • {booking.property?.bedrooms} Bedrooms • {booking.property?.bathrooms} Bathrooms</span>
+                      <span>
+                        {booking.property?.propertyType} • {booking.property?.bedrooms} Bedrooms •{' '}
+                        {booking.property?.bathrooms} Bathrooms
+                      </span>
                     </div>
                   </div>
                 </motion.div>
@@ -239,7 +245,10 @@ const HostBookingDetails = () => {
                   ) : (
                     <div className="text-gray-500">
                       <p>{booking.property?.address}</p>
-                      <p>{booking.property?.city}, {booking.property?.state} {booking.property?.zipCode}</p>
+                      <p>
+                        {booking.property?.city}, {booking.property?.state}{' '}
+                        {booking.property?.zipCode}
+                      </p>
                       <p>{booking.property?.country}</p>
                     </div>
                   )}
@@ -260,11 +269,11 @@ const HostBookingDetails = () => {
                     <div>
                       <div className="text-sm text-gray-500 mb-1">Check-in</div>
                       <div className="text-lg font-semibold text-gray-900">
-                        {checkInDate.toLocaleDateString('en-US', { 
-                          weekday: 'short', 
-                          year: 'numeric', 
-                          month: 'short', 
-                          day: 'numeric' 
+                        {checkInDate.toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
                         })}
                       </div>
                       <div className="flex items-center text-gray-600 mt-1">
@@ -275,11 +284,11 @@ const HostBookingDetails = () => {
                     <div>
                       <div className="text-sm text-gray-500 mb-1">Check-out</div>
                       <div className="text-lg font-semibold text-gray-900">
-                        {checkOutDate.toLocaleDateString('en-US', { 
-                          weekday: 'short', 
-                          year: 'numeric', 
-                          month: 'short', 
-                          day: 'numeric' 
+                        {checkOutDate.toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
                         })}
                       </div>
                       <div className="flex items-center text-gray-600 mt-1">
@@ -291,7 +300,9 @@ const HostBookingDetails = () => {
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Total nights</span>
-                      <span className="font-semibold text-gray-900">{booking.nights} {booking.nights === 1 ? 'night' : 'nights'}</span>
+                      <span className="font-semibold text-gray-900">
+                        {booking.nights} {booking.nights === 1 ? 'night' : 'nights'}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-gray-600 flex items-center">
@@ -300,9 +311,12 @@ const HostBookingDetails = () => {
                       </span>
                       <span className="font-semibold text-gray-900">
                         {booking.guests.adults} {booking.guests.adults === 1 ? 'Adult' : 'Adults'}
-                        {booking.guests.children > 0 && `, ${booking.guests.children} ${booking.guests.children === 1 ? 'Child' : 'Children'}`}
-                        {booking.guests.infants > 0 && `, ${booking.guests.infants} ${booking.guests.infants === 1 ? 'Infant' : 'Infants'}`}
-                        {booking.guests.pets > 0 && `, ${booking.guests.pets} ${booking.guests.pets === 1 ? 'Pet' : 'Pets'}`}
+                        {booking.guests.children > 0 &&
+                          `, ${booking.guests.children} ${booking.guests.children === 1 ? 'Child' : 'Children'}`}
+                        {booking.guests.infants > 0 &&
+                          `, ${booking.guests.infants} ${booking.guests.infants === 1 ? 'Infant' : 'Infants'}`}
+                        {booking.guests.pets > 0 &&
+                          `, ${booking.guests.pets} ${booking.guests.pets === 1 ? 'Pet' : 'Pets'}`}
                       </span>
                     </div>
                   </div>
@@ -431,52 +445,86 @@ const HostBookingDetails = () => {
                     <div className="space-y-3 pt-4 border-t border-gray-200">
                       <div className="flex items-center text-sm text-gray-600 mb-2">
                         <CreditCard size={16} className="mr-2" />
-                        <span className="font-medium">Payment Option: {booking.paymentOption === 'early' ? 'Early Payment' : 'Payment on Arrival'}</span>
+                        <span className="font-medium">
+                          Payment Option:{' '}
+                          {booking.paymentOption === 'early'
+                            ? 'Early Payment'
+                            : 'Payment on Arrival'}
+                        </span>
                       </div>
 
                       {booking.paymentOption === 'early' && booking.paymentBreakdown && (
                         <>
-                          <div className={`flex justify-between items-center ${booking.paymentBreakdown.upfrontPaid ? 'text-green-600' : 'text-gray-600'}`}>
+                          <div
+                            className={`flex justify-between items-center ${booking.paymentBreakdown.upfrontPaid ? 'text-green-600' : 'text-gray-600'}`}
+                          >
                             <span className="flex items-center text-sm">
-                              {booking.paymentBreakdown.upfrontPaid && <CheckCircle size={16} className="mr-2" />}
+                              {booking.paymentBreakdown.upfrontPaid && (
+                                <CheckCircle size={16} className="mr-2" />
+                              )}
                               Upfront (40%)
                             </span>
-                            <span className="font-semibold">Rs {booking.paymentBreakdown.upfrontAmount.toLocaleString()}</span>
+                            <span className="font-semibold">
+                              Rs {booking.paymentBreakdown.upfrontAmount.toLocaleString()}
+                            </span>
                           </div>
-                          {booking.paymentBreakdown.upfrontPaid && booking.paymentBreakdown.upfrontPaidAt && (
-                            <div className="text-xs text-gray-500 ml-6">
-                              Paid on {new Date(booking.paymentBreakdown.upfrontPaidAt).toLocaleDateString()}
-                            </div>
-                          )}
-                          <div className={`flex justify-between items-center ${booking.paymentBreakdown.arrivalPaid ? 'text-green-600' : 'text-orange-600'}`}>
+                          {booking.paymentBreakdown.upfrontPaid &&
+                            booking.paymentBreakdown.upfrontPaidAt && (
+                              <div className="text-xs text-gray-500 ml-6">
+                                Paid on{' '}
+                                {new Date(
+                                  booking.paymentBreakdown.upfrontPaidAt
+                                ).toLocaleDateString()}
+                              </div>
+                            )}
+                          <div
+                            className={`flex justify-between items-center ${booking.paymentBreakdown.arrivalPaid ? 'text-green-600' : 'text-orange-600'}`}
+                          >
                             <span className="flex items-center text-sm">
-                              {booking.paymentBreakdown.arrivalPaid ? <CheckCircle size={16} className="mr-2" /> : <Clock size={16} className="mr-2" />}
+                              {booking.paymentBreakdown.arrivalPaid ? (
+                                <CheckCircle size={16} className="mr-2" />
+                              ) : (
+                                <Clock size={16} className="mr-2" />
+                              )}
                               On Arrival (60%)
                             </span>
-                            <span className="font-semibold">Rs {booking.paymentBreakdown.arrivalAmount.toLocaleString()}</span>
+                            <span className="font-semibold">
+                              Rs {booking.paymentBreakdown.arrivalAmount.toLocaleString()}
+                            </span>
                           </div>
-                          {!booking.paymentBreakdown.arrivalPaid && booking.status !== 'cancelled' && (
-                            <div className="text-xs text-orange-600 ml-6">
-                              To be collected at property
-                            </div>
-                          )}
+                          {!booking.paymentBreakdown.arrivalPaid &&
+                            booking.status !== 'cancelled' && (
+                              <div className="text-xs text-orange-600 ml-6">
+                                To be collected at property
+                              </div>
+                            )}
                         </>
                       )}
 
                       {booking.paymentOption === 'arrival' && (
-                        <div className={`flex justify-between items-center ${booking.paymentStatus === 'paid' ? 'text-green-600' : 'text-orange-600'}`}>
+                        <div
+                          className={`flex justify-between items-center ${booking.paymentStatus === 'paid' ? 'text-green-600' : 'text-orange-600'}`}
+                        >
                           <span className="flex items-center text-sm">
-                            {booking.paymentStatus === 'paid' ? <CheckCircle size={16} className="mr-2" /> : <Clock size={16} className="mr-2" />}
+                            {booking.paymentStatus === 'paid' ? (
+                              <CheckCircle size={16} className="mr-2" />
+                            ) : (
+                              <Clock size={16} className="mr-2" />
+                            )}
                             Full Payment on Arrival
                           </span>
-                          <span className="font-semibold">Rs {booking.totalPrice.toLocaleString()}</span>
+                          <span className="font-semibold">
+                            Rs {booking.totalPrice.toLocaleString()}
+                          </span>
                         </div>
                       )}
 
                       {booking.refundAmount > 0 && (
                         <div className="flex justify-between items-center text-blue-600 pt-3 border-t border-gray-200">
                           <span className="text-sm">Refunded</span>
-                          <span className="font-semibold">Rs {booking.refundAmount.toLocaleString()}</span>
+                          <span className="font-semibold">
+                            Rs {booking.refundAmount.toLocaleString()}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -492,10 +540,7 @@ const HostBookingDetails = () => {
               transition={{ delay: 0.4 }}
               className="mt-8 text-center"
             >
-              <Button
-                variant="outline"
-                onClick={() => navigate('/host/bookings')}
-              >
+              <Button variant="outline" onClick={() => navigate('/host/bookings')}>
                 Back to All Bookings
               </Button>
             </motion.div>

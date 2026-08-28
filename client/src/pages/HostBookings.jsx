@@ -1,27 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
+import {
   Calendar,
   Clock,
-  User,
   Phone,
-  Mail,
   MapPin,
-  Star,
   Users,
   CheckCircle2,
   XCircle,
   AlertCircle,
   DollarSign,
-  Home,
-  Filter,
   Search,
   Eye,
-  MessageSquare,
   MoreVertical,
   Download,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
 import { useBooking } from '../contexts/BookingContext';
 import PageTransition from '@/components/PageTransition';
@@ -31,7 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -48,7 +42,7 @@ import {
 const HostBookings = () => {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  
+
   // Use the booking context
   const {
     hostBookings,
@@ -67,13 +61,13 @@ const HostBookings = () => {
     formatDate,
     getTotalGuests,
     getBookingStats,
-    getFilteredBookings
+    getFilteredBookings,
   } = useBooking();
 
   // Fetch fresh host bookings every time this page is mounted
   useEffect(() => {
     fetchHostBookings();
-  }, []);
+  }, [fetchHostBookings]);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -86,19 +80,17 @@ const HostBookings = () => {
   return (
     <PageTransition>
       <div className="min-h-screen bg-gray-50 flex">
-        <HostSidebar
-          isMobile={isMobile}
-          isOpen={sidebarOpen}
-          onToggle={toggleSidebar}
-        />
-        
+        <HostSidebar isMobile={isMobile} isOpen={sidebarOpen} onToggle={toggleSidebar} />
+
         <div className="flex-1 flex flex-col">
           {/* Header */}
           <div className="bg-white border-b border-gray-200 px-4 md:px-8 py-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Host Bookings</h1>
-                <p className="text-gray-600 mt-1">Manage and monitor all bookings for your properties</p>
+                <p className="text-gray-600 mt-1">
+                  Manage and monitor all bookings for your properties
+                </p>
               </div>
               <div className="flex items-center gap-3 mt-4 md:mt-0">
                 <Button
@@ -125,7 +117,6 @@ const HostBookings = () => {
 
           <div className="flex-1 p-4 md:p-8">
             <div className="max-w-7xl mx-auto space-y-6">
-              
               {/* Statistics Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <Card className="border-earth-brown/20">
@@ -139,7 +130,7 @@ const HostBookings = () => {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="border-green-200">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -151,7 +142,7 @@ const HostBookings = () => {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="border-yellow-200">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -163,7 +154,7 @@ const HostBookings = () => {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="border-red-200">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -175,13 +166,15 @@ const HostBookings = () => {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="border-blue-200">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">Revenue</p>
-                        <p className="text-lg font-bold text-blue-600">{formatCurrency(stats.totalRevenue)}</p>
+                        <p className="text-lg font-bold text-blue-600">
+                          {formatCurrency(stats.totalRevenue)}
+                        </p>
                       </div>
                       <DollarSign className="text-blue-500" size={24} />
                     </div>
@@ -195,7 +188,10 @@ const HostBookings = () => {
                   <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1">
                       <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                        <Search
+                          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                          size={16}
+                        />
                         <Input
                           placeholder="Search by guest name, property title, or city..."
                           value={searchTerm}
@@ -248,17 +244,21 @@ const HostBookings = () => {
                     <div className="p-8 text-center">
                       <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-600 mb-2">
-                        {hostBookings.length === 0 ? 'No bookings found' : 'No bookings match your search criteria'}
+                        {hostBookings.length === 0
+                          ? 'No bookings found'
+                          : 'No bookings match your search criteria'}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {hostBookings.length === 0 ? 'Bookings will appear here when guests book your properties.' : 'Try adjusting your filters or search terms.'}
+                        {hostBookings.length === 0
+                          ? 'Bookings will appear here when guests book your properties.'
+                          : 'Try adjusting your filters or search terms.'}
                       </p>
                     </div>
                   ) : (
                     <div className="divide-y divide-gray-200">
                       {filteredBookings.map((booking, index) => {
                         const statusConfig = getStatusBadge(booking.status);
-                        
+
                         // Get appropriate icon for status
                         const getStatusIcon = (status) => {
                           switch (status) {
@@ -274,9 +274,9 @@ const HostBookings = () => {
                               return Clock;
                           }
                         };
-                        
+
                         const StatusIcon = getStatusIcon(booking.status);
-                        
+
                         return (
                           <motion.div
                             key={booking._id}
@@ -286,10 +286,12 @@ const HostBookings = () => {
                             className="p-6 hover:bg-gray-50 transition-colors"
                           >
                             <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                              
                               {/* Property Image & Info */}
                               <div className="flex items-start gap-4 flex-1">
-                                <Link to={`/properties/${booking.property?._id}`} className="flex-shrink-0">
+                                <Link
+                                  to={`/properties/${booking.property?._id}`}
+                                  className="flex-shrink-0"
+                                >
                                   <img
                                     src={booking.property?.images?.[0] || '/placeholder.svg'}
                                     alt={booking.property?.title || 'Property'}
@@ -299,11 +301,11 @@ const HostBookings = () => {
                                     }}
                                   />
                                 </Link>
-                                
+
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-start justify-between mb-2">
                                     <div>
-                                      <Link 
+                                      <Link
                                         to={`/properties/${booking.property?._id}`}
                                         className="font-semibold text-gray-900 hover:text-earth-brown transition-colors line-clamp-1"
                                       >
@@ -314,13 +316,13 @@ const HostBookings = () => {
                                         <span>{booking.property?.city || 'Location'}</span>
                                       </div>
                                     </div>
-                                    
+
                                     <div className="flex items-center gap-2">
                                       <Badge className={statusConfig.className}>
                                         <StatusIcon size={12} className="mr-1" />
                                         {statusConfig.label}
                                       </Badge>
-                                      
+
                                       <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                           <Button variant="ghost" size="sm" className="p-1 h-8 w-8">
@@ -329,23 +331,30 @@ const HostBookings = () => {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                           <DropdownMenuItem asChild>
-                                            <Link to={`/host/bookings/${booking._id}`} className="flex items-center cursor-pointer">
+                                            <Link
+                                              to={`/host/bookings/${booking._id}`}
+                                              className="flex items-center cursor-pointer"
+                                            >
                                               <Eye size={16} className="mr-2" />
                                               View Details
                                             </Link>
                                           </DropdownMenuItem>
                                           {booking.status === 'pending' && (
                                             <>
-                                              <DropdownMenuItem 
+                                              <DropdownMenuItem
                                                 className="text-green-600"
-                                                onClick={() => updateBookingStatus(booking._id, 'confirmed')}
+                                                onClick={() =>
+                                                  updateBookingStatus(booking._id, 'confirmed')
+                                                }
                                               >
                                                 <CheckCircle2 size={16} className="mr-2" />
                                                 Accept Booking
                                               </DropdownMenuItem>
-                                              <DropdownMenuItem 
+                                              <DropdownMenuItem
                                                 className="text-red-600"
-                                                onClick={() => updateBookingStatus(booking._id, 'cancelled')}
+                                                onClick={() =>
+                                                  updateBookingStatus(booking._id, 'cancelled')
+                                                }
                                               >
                                                 <XCircle size={16} className="mr-2" />
                                                 Decline Booking
@@ -401,7 +410,11 @@ const HostBookings = () => {
                                   </div>
                                   <div className="flex items-center font-semibold text-gray-900 mt-2">
                                     <DollarSign size={12} className="mr-1 text-green-600" />
-                                    <span>{formatCurrency(booking.totalPrice || booking.totalAmount || 0)}</span>
+                                    <span>
+                                      {formatCurrency(
+                                        booking.totalPrice || booking.totalAmount || 0
+                                      )}
+                                    </span>
                                   </div>
                                 </div>
                               </div>

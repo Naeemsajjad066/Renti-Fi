@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useMemo, useState } from
 
 const LoadingContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useLoading = () => {
   const context = useContext(LoadingContext);
   if (!context) {
@@ -24,16 +25,15 @@ export const LoadingProvider = ({ children }) => {
     setLoadingMessage('');
   }, []);
 
-  const value = useMemo(() => ({
-    loading,
-    loadingMessage,
-    showLoading,
-    hideLoading,
-  }), [loading, loadingMessage, showLoading, hideLoading]);
-
-  return (
-    <LoadingContext.Provider value={value}>
-      {children}
-    </LoadingContext.Provider>
+  const value = useMemo(
+    () => ({
+      loading,
+      loadingMessage,
+      showLoading,
+      hideLoading,
+    }),
+    [loading, loadingMessage, showLoading, hideLoading]
   );
+
+  return <LoadingContext.Provider value={value}>{children}</LoadingContext.Provider>;
 };

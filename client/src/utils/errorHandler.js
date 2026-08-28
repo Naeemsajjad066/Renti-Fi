@@ -6,16 +6,17 @@ import toast from 'react-hot-toast';
 export const handleApiError = (error, customMessage) => {
   if (error.response?.status === 401) {
     // Handle unauthorized access
-    localStorage.removeItem("token");
-    delete axios.defaults.headers.common["Authorization"];
+    localStorage.removeItem('token');
+    delete axios.defaults.headers.common['Authorization'];
     return;
   }
 
-  const message = customMessage || 
-    error.response?.data?.message || 
-    error.message || 
+  const message =
+    customMessage ||
+    error.response?.data?.message ||
+    error.message ||
     'An unexpected error occurred';
-  
+
   toast.error(message);
 };
 
@@ -24,7 +25,7 @@ export const handleNetworkError = (error) => {
     toast.error('No internet connection');
     return;
   }
-  
+
   toast.error('Network error. Please try again.');
 };
 

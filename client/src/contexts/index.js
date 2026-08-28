@@ -1,5 +1,5 @@
 // Export the BookingContext and its hook for easy imports
-export { BookingContext, BookingProvider, useBooking } from './BookingContext';
+export { BookingContext, BookingProvider, useBooking } from './BookingContext.jsx';
 
 // Re-export individual functions for direct import if needed
-export default BookingProvider;
+export { BookingProvider as default } from './BookingContext.jsx';

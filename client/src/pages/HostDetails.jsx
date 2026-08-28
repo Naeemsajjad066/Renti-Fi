@@ -14,7 +14,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 const HostDetails = () => {
   const { hostId } = useParams();
-  const navigate   = useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Redirect immediately — replace so the back button skips this page

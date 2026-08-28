@@ -2,23 +2,23 @@
 import { useEffect, useState } from 'react';
 import { useOptimizedImage } from '../hooks/useImagePreloader';
 
-const OptimizedImage = ({ 
-  src, 
-  alt, 
-  className = '', 
+const OptimizedImage = ({
+  src,
+  alt,
+  className = '',
   priority = 'auto',
   placeholder = '/placeholder.svg',
   fallback = '/placeholder.svg',
   onLoad,
   onError,
-  ...props 
+  ...props
 }) => {
   const [showLoader, setShowLoader] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const { currentSrc, isLoaded, hasError } = useOptimizedImage(src, { 
-    priority, 
-    placeholder, 
-    fallback 
+  const { currentSrc, isLoaded } = useOptimizedImage(src, {
+    priority,
+    placeholder,
+    fallback,
   });
 
   useEffect(() => {
@@ -43,12 +43,12 @@ const OptimizedImage = ({
           <div className="w-8 h-8 border-2 border-earth-brown border-t-transparent rounded-full animate-spin"></div>
         </div>
       )}
-      
+
       <img
         src={currentSrc}
         alt={alt}
         className={`transition-opacity duration-300 ${
-          (isLoaded || imageLoaded) ? 'opacity-100' : 'opacity-0'
+          isLoaded || imageLoaded ? 'opacity-100' : 'opacity-0'
         } ${className}`}
         loading={priority === 'high' ? 'eager' : 'lazy'}
         decoding="async"

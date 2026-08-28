@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Home, ArrowLeft } from 'lucide-react';
@@ -18,9 +17,7 @@ const NotFound = () => {
             <div className="text-9xl font-display font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent mb-6">
               404
             </div>
-            <h1 className="text-3xl font-display font-bold text-gray-900 mb-3">
-              Page Not Found
-            </h1>
+            <h1 className="text-3xl font-display font-bold text-gray-900 mb-3">Page Not Found</h1>
             <p className="text-gray-600 mb-8">
               The page you're looking for doesn't exist or has been moved.
             </p>

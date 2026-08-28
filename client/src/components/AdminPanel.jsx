@@ -7,21 +7,17 @@ import {
   Eye,
   Pause,
   Trash2,
-  Check,
-  X,
-  MoreHorizontal,
   TrendingUp,
   Shield,
   Home,
   Calendar,
-  Star,
   MapPin,
   Clock,
-  DollarSign
+  DollarSign,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import PageTransition from '@/components/PageTransition';
 import PropertyVerificationPanel from './PropertyVerificationPanel';
 import { usePropertyVerification } from '../contexts/PropertyVerificationContext';
@@ -54,20 +50,19 @@ const AdminPanel = () => {
     localStorage.setItem('adminActiveTab', activeTab);
   }, [activeTab]);
   const { pendingProperties, getPendingProperties } = usePropertyVerification();
-  const { 
-    dashboardStats, 
+  const {
+    dashboardStats,
     users,
-    properties, 
-    bookings,
-    getDashboardStats, 
+    properties,
+    getDashboardStats,
     getAllUsers,
-    getAllProperties, 
+    getAllProperties,
     getAllBookings,
     updateUser,
     deleteUser,
     updateProperty,
     deleteProperty,
-    loading
+    loading,
   } = useAdmin();
   const { toast } = useToast();
 
@@ -81,20 +76,25 @@ const AdminPanel = () => {
     } else if (activeTab === 'properties') {
       getAllProperties();
     }
-  }, [getPendingProperties, getDashboardStats, getAllUsers, getAllProperties, getAllBookings, activeTab]);
+  }, [
+    getPendingProperties,
+    getDashboardStats,
+    getAllUsers,
+    getAllProperties,
+    getAllBookings,
+    activeTab,
+  ]);
 
-  // Placeholder data for features not yet implemented
-  const complaints = [];
-  
   // Navigate to complaints page
   const handleViewComplaints = () => {
     navigate('/admin/complaints');
   };
 
-  const filteredUsers = (users || []).filter(user => {
-    const matchesSearch = user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredUsers = (users || []).filter((user) => {
+    const matchesSearch =
+      user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     if (userFilter === 'hosts') {
       return matchesSearch && (user.isHost || user.role === 'host');
     } else if (userFilter === 'guests') {
@@ -103,10 +103,11 @@ const AdminPanel = () => {
     return matchesSearch;
   });
 
-  const filteredProperties = (properties || []).filter(property => {
-    const matchesSearch = property.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredProperties = (properties || []).filter((property) => {
+    const matchesSearch =
+      property.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       property.city?.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     if (propertyFilter === 'active') {
       return matchesSearch && property.isActive === true;
     } else if (propertyFilter === 'blocked') {
@@ -123,7 +124,7 @@ const AdminPanel = () => {
           <motion.div
             initial={{ x: -300 }}
             animate={{ x: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
             className="hidden md:flex md:flex-shrink-0 md:sticky md:top-0 md:h-screen"
           >
             <div className="flex flex-col w-64 lg:w-72 bg-white/80 backdrop-blur-lg border-r border-earth-brown/20 shadow-xl">
@@ -158,10 +159,11 @@ const AdminPanel = () => {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setActiveTab(item.id)}
-                        className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl w-full transition-all duration-300 ${activeTab === item.id
+                        className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl w-full transition-all duration-300 ${
+                          activeTab === item.id
                             ? 'bg-gradient-to-r from-earth-brown to-earth-brown/90 text-white shadow-lg'
                             : 'text-gray-700 hover:bg-soft-peach/50 hover:text-earth-brown'
-                          }`}
+                        }`}
                       >
                         <Icon className="mr-3 w-5 h-5" />
                         {item.label}
@@ -182,15 +184,21 @@ const AdminPanel = () => {
                   <div className="space-y-2 text-xs text-gray-600">
                     <div className="flex justify-between">
                       <span>Active Users</span>
-                      <span className="font-medium text-earth-brown">{dashboardStats?.totalUsers || 0}</span>
+                      <span className="font-medium text-earth-brown">
+                        {dashboardStats?.totalUsers || 0}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Pending Verification</span>
-                      <span className="font-medium text-orange-600">{pendingProperties?.length || 0}</span>
+                      <span className="font-medium text-orange-600">
+                        {pendingProperties?.length || 0}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Total Bookings</span>
-                      <span className="font-medium text-blue-600">{dashboardStats?.totalBookings || 0}</span>
+                      <span className="font-medium text-blue-600">
+                        {dashboardStats?.totalBookings || 0}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -216,10 +224,11 @@ const AdminPanel = () => {
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: index * 0.1 }}
                     onClick={() => setActiveTab(item.id)}
-                    className={`p-3 rounded-full transition-all duration-200 ${activeTab === item.id
+                    className={`p-3 rounded-full transition-all duration-200 ${
+                      activeTab === item.id
                         ? 'bg-earth-brown text-white shadow-md'
                         : 'text-gray-700 hover:bg-earth-brown/10'
-                      }`}
+                    }`}
                     title={item.label}
                   >
                     <Icon className="w-4 h-4" />
@@ -247,7 +256,8 @@ const AdminPanel = () => {
                     {activeTab === 'dashboard' && 'Overview of your platform'}
                     {activeTab === 'users' && 'Manage all users and their activities'}
                     {activeTab === 'properties' && 'Manage all property listings'}
-                    {activeTab === 'verification' && 'Review and verify property listings with documents'}
+                    {activeTab === 'verification' &&
+                      'Review and verify property listings with documents'}
                     {activeTab === 'complaints' && 'Review and resolve user complaints'}
                   </p>
                 </div>
@@ -270,138 +280,166 @@ const AdminPanel = () => {
                     </div>
                   ) : (
                     <>
-                  {/* Stats Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                    {[
-                      {
-                        label: 'Total Users',
-                        value: dashboardStats?.totalUsers?.toLocaleString() || '0',
-                        icon: Users,
-                        color: 'from-blue-500 to-blue-600',
-                        change: '+12%'
-                      },
-                      {
-                        label: 'Total Bookings',
-                        value: dashboardStats?.totalBookings?.toLocaleString() || '0',
-                        icon: Calendar,
-                        color: 'from-green-500 to-green-600',
-                        change: '+8%'
-                      },
-                      {
-                        label: 'Revenue',
-                        value: `Rs ${(dashboardStats?.totalRevenue ? dashboardStats.totalRevenue  : 0).toFixed(0)}`,
-                        icon: DollarSign,
-                        color: 'from-earth-brown to-earth-brown/80',
-                        change: '+15%'
-                      },
-                      {
-                        label: 'Active Properties',
-                        value: dashboardStats?.activeProperties?.toString() || '0',
-                        icon: Home,
-                        color: 'from-purple-500 to-purple-600',
-                        change: '+5%'
-                      }
-                    ].map((stat, index) => {
-                      const Icon = stat.icon;
-                      return (
-                        <motion.div
-                          key={stat.label}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          <Card className="relative overflow-hidden border-0 shadow-lg">
-                            <CardContent className="p-6">
-                              <div className="flex items-center justify-between">
+                      {/* Stats Cards */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                        {[
+                          {
+                            label: 'Total Users',
+                            value: dashboardStats?.totalUsers?.toLocaleString() || '0',
+                            icon: Users,
+                            color: 'from-blue-500 to-blue-600',
+                            change: '+12%',
+                          },
+                          {
+                            label: 'Total Bookings',
+                            value: dashboardStats?.totalBookings?.toLocaleString() || '0',
+                            icon: Calendar,
+                            color: 'from-green-500 to-green-600',
+                            change: '+8%',
+                          },
+                          {
+                            label: 'Revenue',
+                            value: `Rs ${(dashboardStats?.totalRevenue ? dashboardStats.totalRevenue : 0).toFixed(0)}`,
+                            icon: DollarSign,
+                            color: 'from-earth-brown to-earth-brown/80',
+                            change: '+15%',
+                          },
+                          {
+                            label: 'Active Properties',
+                            value: dashboardStats?.activeProperties?.toString() || '0',
+                            icon: Home,
+                            color: 'from-purple-500 to-purple-600',
+                            change: '+5%',
+                          },
+                        ].map((stat, index) => {
+                          const Icon = stat.icon;
+                          return (
+                            <motion.div
+                              key={stat.label}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                            >
+                              <Card className="relative overflow-hidden border-0 shadow-lg">
+                                <CardContent className="p-6">
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <p className="text-sm font-medium text-gray-600">
+                                        {stat.label}
+                                      </p>
+                                      <p className="text-3xl font-bold text-gray-900">
+                                        {stat.value}
+                                      </p>
+                                      <p className="text-sm text-green-600 font-medium">
+                                        {stat.change} vs last month
+                                      </p>
+                                    </div>
+                                    <div
+                                      className={`p-3 rounded-full bg-gradient-to-r ${stat.color}`}
+                                    >
+                                      <Icon className="w-6 h-6 text-white" />
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Recent Activity */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                        <Card className="border-0 shadow-lg">
+                          <CardHeader>
+                            <CardTitle className="flex items-center">
+                              <Clock className="w-5 h-5 mr-2 text-earth-brown" />
+                              Recent Activities
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            {dashboardStats?.recentUsers?.length > 0 ? (
+                              dashboardStats.recentUsers.map((user, index) => (
+                                <div
+                                  key={user._id || index}
+                                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                                >
+                                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                  <div className="flex-1">
+                                    <p className="text-sm font-medium text-gray-900">
+                                      New user registered
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      {user.fullName || user.email} •{' '}
+                                      {new Date(user.createdAt).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-gray-500 text-center py-4">
+                                No recent activity
+                              </p>
+                            )}
+                          </CardContent>
+                        </Card>
+
+                        <Card className="border-0 shadow-lg">
+                          <CardHeader>
+                            <CardTitle className="flex items-center">
+                              <AlertTriangle className="w-5 h-5 mr-2 text-orange-500" />
+                              Pending Actions
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                              <div className="flex justify-between items-center">
                                 <div>
-                                  <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                                  <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
-                                  <p className="text-sm text-green-600 font-medium">{stat.change} vs last month</p>
+                                  <p className="font-medium text-yellow-800">
+                                    Property Verifications
+                                  </p>
+                                  <p className="text-sm text-yellow-600">
+                                    {pendingProperties?.length || 0} properties awaiting approval
+                                  </p>
                                 </div>
-                                <div className={`p-3 rounded-full bg-gradient-to-r ${stat.color}`}>
-                                  <Icon className="w-6 h-6 text-white" />
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Recent Activity */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                    <Card className="border-0 shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="flex items-center">
-                          <Clock className="w-5 h-5 mr-2 text-earth-brown" />
-                          Recent Activities
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {dashboardStats?.recentUsers?.length > 0 ? (
-                          dashboardStats.recentUsers.map((user, index) => (
-                            <div key={user._id || index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                              <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-900">New user registered</p>
-                                <p className="text-xs text-gray-500">{user.fullName || user.email} • {new Date(user.createdAt).toLocaleDateString()}</p>
+                                <Badge variant="secondary">{pendingProperties?.length || 0}</Badge>
                               </div>
                             </div>
-                          ))
-                        ) : (
-                          <p className="text-sm text-gray-500 text-center py-4">No recent activity</p>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    <Card className="border-0 shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="flex items-center">
-                          <AlertTriangle className="w-5 h-5 mr-2 text-orange-500" />
-                          Pending Actions
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="font-medium text-yellow-800">Property Verifications</p>
-                              <p className="text-sm text-yellow-600">{pendingProperties?.length || 0} properties awaiting approval</p>
+                            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <p className="font-medium text-blue-800">Recent Bookings</p>
+                                  <p className="text-sm text-blue-600">
+                                    {dashboardStats?.recentBookings?.length || 0} new bookings this
+                                    week
+                                  </p>
+                                </div>
+                                <Badge>{dashboardStats?.recentBookings?.length || 0}</Badge>
+                              </div>
                             </div>
-                            <Badge variant="secondary">{pendingProperties?.length || 0}</Badge>
-                          </div>
-                        </div>
-                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="font-medium text-blue-800">Recent Bookings</p>
-                              <p className="text-sm text-blue-600">{dashboardStats?.recentBookings?.length || 0} new bookings this week</p>
+                            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <p className="font-medium text-green-800">Active Properties</p>
+                                  <p className="text-sm text-green-600">
+                                    {dashboardStats?.activeProperties || 0} properties currently
+                                    active
+                                  </p>
+                                </div>
+                                <Badge variant="default">
+                                  {dashboardStats?.activeProperties || 0}
+                                </Badge>
+                              </div>
                             </div>
-                            <Badge>{dashboardStats?.recentBookings?.length || 0}</Badge>
-                          </div>
-                        </div>
-                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="font-medium text-green-800">Active Properties</p>
-                              <p className="text-sm text-green-600">{dashboardStats?.activeProperties || 0} properties currently active</p>
-                            </div>
-                            <Badge variant="default">{dashboardStats?.activeProperties || 0}</Badge>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </>
                   )}
                 </div>
               )}
 
               {/* Property Verification Tab */}
-              {activeTab === 'verification' && (
-                <PropertyVerificationPanel />
-              )}
+              {activeTab === 'verification' && <PropertyVerificationPanel />}
 
               {/* Property Management Tab */}
               {activeTab === 'properties' && (
@@ -421,25 +459,25 @@ const AdminPanel = () => {
                           />
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <Button 
-                            variant={propertyFilter === 'all' ? 'default' : 'outline'} 
-                            size="sm" 
+                          <Button
+                            variant={propertyFilter === 'all' ? 'default' : 'outline'}
+                            size="sm"
                             className="text-xs sm:text-sm"
                             onClick={() => setPropertyFilter('all')}
                           >
                             All Properties
                           </Button>
-                          <Button 
-                            variant={propertyFilter === 'active' ? 'default' : 'outline'} 
-                            size="sm" 
+                          <Button
+                            variant={propertyFilter === 'active' ? 'default' : 'outline'}
+                            size="sm"
                             className="text-xs sm:text-sm"
                             onClick={() => setPropertyFilter('active')}
                           >
                             Active
                           </Button>
-                          <Button 
-                            variant={propertyFilter === 'blocked' ? 'default' : 'outline'} 
-                            size="sm" 
+                          <Button
+                            variant={propertyFilter === 'blocked' ? 'default' : 'outline'}
+                            size="sm"
                             className="text-xs sm:text-sm"
                             onClick={() => setPropertyFilter('blocked')}
                           >
@@ -463,124 +501,148 @@ const AdminPanel = () => {
                       </CardContent>
                     </Card>
                   ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    {filteredProperties.map((property) => (
-                      <motion.div
-                        key={property._id}
-                        whileHover={{ y: -5 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-                          <CardContent className="p-6">
-                            {property.images?.[0] && (
-                              <div className="mb-4 rounded-lg overflow-hidden h-40">
-                                <img 
-                                  src={property.images[0]} 
-                                  alt={property.title}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            )}
-                            
-                            <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 gap-3">
-                              <div className="min-w-0 flex-1">
-                                <h3 className="font-semibold text-gray-900 truncate">{property.title}</h3>
-                                <p className="text-sm text-gray-600 truncate flex items-center mt-1">
-                                  <MapPin className="w-3 h-3 mr-1" />
-                                  {property.city}
-                                </p>
-                              </div>
-                              <Badge variant={property.isActive ? 'default' : 'destructive'}>
-                                {property.isActive ? 'Active' : 'Blocked'}
-                              </Badge>
-                            </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                      {filteredProperties.map((property) => (
+                        <motion.div
+                          key={property._id}
+                          whileHover={{ y: -5 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+                            <CardContent className="p-6">
+                              {property.images?.[0] && (
+                                <div className="mb-4 rounded-lg overflow-hidden h-40">
+                                  <img
+                                    src={property.images[0]}
+                                    alt={property.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
 
-                            <div className="space-y-2 mb-4">
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Host:</span>
-                                <span className="font-medium text-earth-brown truncate ml-2">{property.host?.fullName || 'Unknown'}</span>
+                              <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 gap-3">
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="font-semibold text-gray-900 truncate">
+                                    {property.title}
+                                  </h3>
+                                  <p className="text-sm text-gray-600 truncate flex items-center mt-1">
+                                    <MapPin className="w-3 h-3 mr-1" />
+                                    {property.city}
+                                  </p>
+                                </div>
+                                <Badge variant={property.isActive ? 'default' : 'destructive'}>
+                                  {property.isActive ? 'Active' : 'Blocked'}
+                                </Badge>
                               </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Price:</span>
-                                <span className="font-medium">Rs {property.price?.toLocaleString()}/night</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Status:</span>
-                                <span className="font-medium capitalize">{property.verificationStatus || 'pending'}</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Listed:</span>
-                                <span className="font-medium">{new Date(property.createdAt).toLocaleDateString()}</span>
-                              </div>
-                            </div>
 
-                            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="flex-1"
-                                onClick={() => window.open(`/property/${property._id}`, '_blank')}
-                              >
-                                <Eye className="w-4 h-4 sm:mr-1" />
-                                <span className="hidden sm:inline">View</span>
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="flex-1"
-                                onClick={async () => {
-                                  if (window.confirm(`Are you sure you want to ${property.isActive ? 'block' : 'unblock'} "${property.title}"?`)) {
-                                    const result = await updateProperty(property._id, { isActive: !property.isActive });
-                                    if (result.success) {
-                                      toast({
-                                        title: "Success",
-                                        description: `Property ${property.isActive ? 'blocked' : 'unblocked'} successfully`,
+                              <div className="space-y-2 mb-4">
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">Host:</span>
+                                  <span className="font-medium text-earth-brown truncate ml-2">
+                                    {property.host?.fullName || 'Unknown'}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">Price:</span>
+                                  <span className="font-medium">
+                                    Rs {property.price?.toLocaleString()}/night
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">Status:</span>
+                                  <span className="font-medium capitalize">
+                                    {property.verificationStatus || 'pending'}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">Listed:</span>
+                                  <span className="font-medium">
+                                    {new Date(property.createdAt).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1"
+                                  onClick={() => window.open(`/property/${property._id}`, '_blank')}
+                                >
+                                  <Eye className="w-4 h-4 sm:mr-1" />
+                                  <span className="hidden sm:inline">View</span>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1"
+                                  onClick={async () => {
+                                    if (
+                                      window.confirm(
+                                        `Are you sure you want to ${property.isActive ? 'block' : 'unblock'} "${property.title}"?`
+                                      )
+                                    ) {
+                                      const result = await updateProperty(property._id, {
+                                        isActive: !property.isActive,
                                       });
-                                      // No need to call getAllProperties() - context already updates local state
-                                    } else {
-                                      toast({
-                                        title: "Error",
-                                        description: result.message || 'Failed to update property',
-                                        variant: "destructive"
-                                      });
+                                      if (result.success) {
+                                        toast({
+                                          title: 'Success',
+                                          description: `Property ${property.isActive ? 'blocked' : 'unblocked'} successfully`,
+                                        });
+                                        // No need to call getAllProperties() - context already updates local state
+                                      } else {
+                                        toast({
+                                          title: 'Error',
+                                          description:
+                                            result.message || 'Failed to update property',
+                                          variant: 'destructive',
+                                        });
+                                      }
                                     }
-                                  }
-                                }}
-                              >
-                                <Pause className="w-4 h-4 sm:mr-1" />
-                                <span className="hidden sm:inline">{property.isActive ? 'Block' : 'Unblock'}</span>
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="text-red-600 hover:text-red-700 sm:flex-none"
-                                onClick={async () => {
-                                  if (window.confirm(`Are you sure you want to delete "${property.title}"? This action cannot be undone.`)) {
-                                    const result = await deleteProperty(property._id);
-                                    if (result.success) {
-                                      toast({
-                                        title: "Success",
-                                        description: 'Property deleted successfully',
-                                      });
-                                      // No need to call getAllProperties() - context already updates local state
-                                    } else {
-                                      toast({
-                                        title: "Error",
-                                        description: result.message || 'Failed to delete property',
-                                        variant: "destructive"
-                                      });
+                                  }}
+                                >
+                                  <Pause className="w-4 h-4 sm:mr-1" />
+                                  <span className="hidden sm:inline">
+                                    {property.isActive ? 'Block' : 'Unblock'}
+                                  </span>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-600 hover:text-red-700 sm:flex-none"
+                                  onClick={async () => {
+                                    if (
+                                      window.confirm(
+                                        `Are you sure you want to delete "${property.title}"? This action cannot be undone.`
+                                      )
+                                    ) {
+                                      const result = await deleteProperty(property._id);
+                                      if (result.success) {
+                                        toast({
+                                          title: 'Success',
+                                          description: 'Property deleted successfully',
+                                        });
+                                        // No need to call getAllProperties() - context already updates local state
+                                      } else {
+                                        toast({
+                                          title: 'Error',
+                                          description:
+                                            result.message || 'Failed to delete property',
+                                          variant: 'destructive',
+                                        });
+                                      }
                                     }
-                                  }
-                                }}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </div>
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      ))}
+                    </div>
                   )}
                 </div>
               )}
@@ -603,25 +665,25 @@ const AdminPanel = () => {
                           />
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <Button 
-                            variant={userFilter === 'all' ? 'default' : 'outline'} 
-                            size="sm" 
+                          <Button
+                            variant={userFilter === 'all' ? 'default' : 'outline'}
+                            size="sm"
                             className="text-xs sm:text-sm"
                             onClick={() => setUserFilter('all')}
                           >
                             All Users
                           </Button>
-                          <Button 
-                            variant={userFilter === 'hosts' ? 'default' : 'outline'} 
-                            size="sm" 
+                          <Button
+                            variant={userFilter === 'hosts' ? 'default' : 'outline'}
+                            size="sm"
                             className="text-xs sm:text-sm"
                             onClick={() => setUserFilter('hosts')}
                           >
                             Hosts
                           </Button>
-                          <Button 
-                            variant={userFilter === 'guests' ? 'default' : 'outline'} 
-                            size="sm" 
+                          <Button
+                            variant={userFilter === 'guests' ? 'default' : 'outline'}
+                            size="sm"
                             className="text-xs sm:text-sm"
                             onClick={() => setUserFilter('guests')}
                           >
@@ -645,130 +707,150 @@ const AdminPanel = () => {
                       </CardContent>
                     </Card>
                   ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    {filteredUsers.map((user) => (
-                      <motion.div
-                        key={user._id}
-                        whileHover={{ y: -5 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-                          <CardContent className="p-6">
-                            <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 gap-3">
-                              <div className="flex items-center space-x-3 flex-1 min-w-0">
-                                <div className="w-12 h-12 rounded-full bg-earth-brown/20 flex items-center justify-center text-earth-brown font-bold flex-shrink-0">
-                                  {user.fullName?.charAt(0).toUpperCase() || 'U'}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                      {filteredUsers.map((user) => (
+                        <motion.div
+                          key={user._id}
+                          whileHover={{ y: -5 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+                            <CardContent className="p-6">
+                              <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 gap-3">
+                                <div className="flex items-center space-x-3 flex-1 min-w-0">
+                                  <div className="w-12 h-12 rounded-full bg-earth-brown/20 flex items-center justify-center text-earth-brown font-bold flex-shrink-0">
+                                    {user.fullName?.charAt(0).toUpperCase() || 'U'}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <h3 className="font-semibold text-gray-900 truncate">
+                                      {user.fullName || 'Unknown User'}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 truncate">{user.email}</p>
+                                  </div>
                                 </div>
-                                <div className="min-w-0 flex-1">
-                                  <h3 className="font-semibold text-gray-900 truncate">{user.fullName || 'Unknown User'}</h3>
-                                  <p className="text-sm text-gray-600 truncate">{user.email}</p>
-                                </div>
+                                <Badge variant={user.isActive ? 'default' : 'destructive'}>
+                                  {user.isActive ? 'Active' : 'Suspended'}
+                                </Badge>
                               </div>
-                              <Badge variant={user.isActive ? 'default' : 'destructive'}>
-                                {user.isActive ? 'Active' : 'Suspended'}
-                              </Badge>
-                            </div>
 
-                            <div className="space-y-2 mb-4">
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Role:</span>
-                                <span className="font-medium text-earth-brown capitalize">{user.role || 'user'}</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Joined:</span>
-                                <span className="font-medium">{new Date(user.createdAt).toLocaleDateString()}</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Email Verified:</span>
-                                <span className="font-medium">{user.isEmailVerified ? '✓' : '✗'}</span>
-                              </div>
-                              {user.phoneNumber && (
+                              <div className="space-y-2 mb-4">
                                 <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600">Phone:</span>
-                                  <span className="font-medium">{user.phoneNumber}</span>
+                                  <span className="text-gray-600">Role:</span>
+                                  <span className="font-medium text-earth-brown capitalize">
+                                    {user.role || 'user'}
+                                  </span>
                                 </div>
-                              )}
-                              {user.bookingCount !== undefined && (
                                 <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600">Bookings:</span>
-                                  <span className="font-medium">{user.bookingCount}</span>
+                                  <span className="text-gray-600">Joined:</span>
+                                  <span className="font-medium">
+                                    {new Date(user.createdAt).toLocaleDateString()}
+                                  </span>
                                 </div>
-                              )}
-                              {user.propertyCount > 0 && (
                                 <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600">Properties:</span>
-                                  <span className="font-medium">{user.propertyCount}</span>
+                                  <span className="text-gray-600">Email Verified:</span>
+                                  <span className="font-medium">
+                                    {user.isEmailVerified ? '✓' : '✗'}
+                                  </span>
                                 </div>
-                              )}
-                            </div>
+                                {user.phoneNumber && (
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">Phone:</span>
+                                    <span className="font-medium">{user.phoneNumber}</span>
+                                  </div>
+                                )}
+                                {user.bookingCount !== undefined && (
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">Bookings:</span>
+                                    <span className="font-medium">{user.bookingCount}</span>
+                                  </div>
+                                )}
+                                {user.propertyCount > 0 && (
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">Properties:</span>
+                                    <span className="font-medium">{user.propertyCount}</span>
+                                  </div>
+                                )}
+                              </div>
 
-                            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="flex-1"
-                                onClick={() => window.open(`/host/${user._id}`, '_blank')}
-                              >
-                                <Eye className="w-4 h-4 sm:mr-1" />
-                                <span className="hidden sm:inline">View</span>
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="flex-1"
-                                onClick={async () => {
-                                  if (window.confirm(`Are you sure you want to ${user.isActive ? 'suspend' : 'activate'} ${user.fullName}?`)) {
-                                    const result = await updateUser(user._id, { isActive: !user.isActive });
-                                    if (result.success) {
-                                      toast({
-                                        title: "Success",
-                                        description: `User ${user.isActive ? 'suspended' : 'activated'} successfully`,
+                              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1"
+                                  onClick={() => window.open(`/host/${user._id}`, '_blank')}
+                                >
+                                  <Eye className="w-4 h-4 sm:mr-1" />
+                                  <span className="hidden sm:inline">View</span>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1"
+                                  onClick={async () => {
+                                    if (
+                                      window.confirm(
+                                        `Are you sure you want to ${user.isActive ? 'suspend' : 'activate'} ${user.fullName}?`
+                                      )
+                                    ) {
+                                      const result = await updateUser(user._id, {
+                                        isActive: !user.isActive,
                                       });
-                                      // No need to call getAllUsers() - context already updates local state
-                                    } else {
-                                      toast({
-                                        title: "Error",
-                                        description: result.message || 'Failed to update user',
-                                        variant: "destructive"
-                                      });
+                                      if (result.success) {
+                                        toast({
+                                          title: 'Success',
+                                          description: `User ${user.isActive ? 'suspended' : 'activated'} successfully`,
+                                        });
+                                        // No need to call getAllUsers() - context already updates local state
+                                      } else {
+                                        toast({
+                                          title: 'Error',
+                                          description: result.message || 'Failed to update user',
+                                          variant: 'destructive',
+                                        });
+                                      }
                                     }
-                                  }
-                                }}
-                              >
-                                <Pause className="w-4 h-4 sm:mr-1" />
-                                <span className="hidden sm:inline">{user.isActive ? 'Suspend' : 'Activate'}</span>
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="text-red-600 hover:text-red-700 sm:flex-none"
-                                onClick={async () => {
-                                  if (window.confirm(`Are you sure you want to delete ${user.fullName}? This action cannot be undone.`)) {
-                                    const result = await deleteUser(user._id);
-                                    if (result.success) {
-                                      toast({
-                                        title: "Success",
-                                        description: 'User deleted successfully',
-                                      });
-                                      // No need to call getAllUsers() - context already updates local state
-                                    } else {
-                                      toast({
-                                        title: "Error",
-                                        description: result.message || 'Failed to delete user',
-                                        variant: "destructive"
-                                      });
+                                  }}
+                                >
+                                  <Pause className="w-4 h-4 sm:mr-1" />
+                                  <span className="hidden sm:inline">
+                                    {user.isActive ? 'Suspend' : 'Activate'}
+                                  </span>
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-600 hover:text-red-700 sm:flex-none"
+                                  onClick={async () => {
+                                    if (
+                                      window.confirm(
+                                        `Are you sure you want to delete ${user.fullName}? This action cannot be undone.`
+                                      )
+                                    ) {
+                                      const result = await deleteUser(user._id);
+                                      if (result.success) {
+                                        toast({
+                                          title: 'Success',
+                                          description: 'User deleted successfully',
+                                        });
+                                        // No need to call getAllUsers() - context already updates local state
+                                      } else {
+                                        toast({
+                                          title: 'Error',
+                                          description: result.message || 'Failed to delete user',
+                                          variant: 'destructive',
+                                        });
+                                      }
                                     }
-                                  }
-                                }}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </div>
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      ))}
+                    </div>
                   )}
                 </div>
               )}
@@ -786,7 +868,7 @@ const AdminPanel = () => {
                         <p className="text-gray-600 mb-6">
                           View and manage all property complaints and reports submitted by users.
                         </p>
-                        <Button 
+                        <Button
                           onClick={handleViewComplaints}
                           size="lg"
                           className="bg-[#A0937D] hover:bg-[#8a7d6b] text-white"
@@ -799,8 +881,6 @@ const AdminPanel = () => {
                   </Card>
                 </div>
               )}
-
-
             </motion.main>
           </div>
         </div>

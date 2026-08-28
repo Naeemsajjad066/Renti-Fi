@@ -11,6 +11,7 @@ export function ThemeProvider({ children }) {
     setTheme(savedTheme);
     updateDocumentClass(savedTheme);
     setIsInitialized(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateDocumentClass = useCallback((theme) => {
@@ -28,19 +29,19 @@ export function ThemeProvider({ children }) {
     updateDocumentClass(newTheme);
   }, [theme, updateDocumentClass]);
 
-  const value = useMemo(() => ({
-    theme,
-    toggleTheme,
-    isInitialized,
-  }), [theme, toggleTheme, isInitialized]);
-
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
+  const value = useMemo(
+    () => ({
+      theme,
+      toggleTheme,
+      isInitialized,
+    }),
+    [theme, toggleTheme, isInitialized]
   );
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (context === null) {

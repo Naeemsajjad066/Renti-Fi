@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, LogOut, Settings, Calendar, ChevronDown, Home, Menu, X, Sun, Moon } from 'lucide-react';
+import { User, LogOut, Calendar, ChevronDown, Home, Menu, X, Sun, Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,7 +14,7 @@ const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const { logout, authUser } = useAuth();
-  const isLoggedIn = !!authUser
+  const isLoggedIn = !!authUser;
 
   // Mock authentication state
   // const [isLoggedIn, setIsLoggedIn] = useState(true); // Changed to true to show settings link
@@ -31,7 +31,7 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  
+
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
   const closeDropdown = () => setIsDropdownOpen(false);
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -40,7 +40,7 @@ const Navbar = () => {
   const navVariants = {
     hidden: {
       opacity: 0,
-      y: -20
+      y: -20,
     },
     visible: {
       opacity: 1,
@@ -48,50 +48,50 @@ const Navbar = () => {
       transition: {
         duration: 0.5,
         staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
+        delayChildren: 0.2,
+      },
+    },
   };
 
   const itemVariants = {
     hidden: {
       opacity: 0,
-      y: -10
+      y: -10,
     },
     visible: {
       opacity: 1,
-      y: 0
-    }
+      y: 0,
+    },
   };
 
   const dropdownVariants = {
     hidden: {
       opacity: 0,
       y: -5,
-      scale: 0.95
+      scale: 0.95,
     },
     visible: {
       opacity: 1,
       y: 0,
       scale: 1,
       transition: {
-        type: "spring",
+        type: 'spring',
         stiffness: 400,
-        damping: 20
-      }
-    }
+        damping: 20,
+      },
+    },
   };
 
   return (
-    <motion.header 
-      initial="hidden" 
-      animate="visible" 
-      variants={navVariants} 
+    <motion.header
+      initial="hidden"
+      animate="visible"
+      variants={navVariants}
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300", 
-        isScrolled 
-          ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm dark:shadow-gray-800/30" 
-          : "bg-transparent"
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        isScrolled
+          ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm dark:shadow-gray-800/30'
+          : 'bg-transparent'
       )}
     >
       <div className="page-container">
@@ -114,39 +114,38 @@ const Navbar = () => {
           </motion.div>
 
           <motion.nav variants={itemVariants} className="hidden md:flex items-center space-x-8">
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className={cn(
-                "nav-item dark:text-gray-300 dark:hover:text-white", 
-                location.pathname === "/" && "active"
+                'nav-item dark:text-gray-300 dark:hover:text-white',
+                location.pathname === '/' && 'active'
               )}
             >
               Home
             </Link>
-            <Link 
-              to="/properties" 
+            <Link
+              to="/properties"
               className={cn(
-                "nav-item dark:text-gray-300 dark:hover:text-white", 
-                location.pathname === "/properties" && "active"
+                'nav-item dark:text-gray-300 dark:hover:text-white',
+                location.pathname === '/properties' && 'active'
               )}
             >
               Properties
             </Link>
-            <Link 
-              to="/bookings" 
+            <Link
+              to="/bookings"
               className={cn(
-                "nav-item dark:text-gray-300 dark:hover:text-white", 
-                location.pathname === "/bookings" && "active"
+                'nav-item dark:text-gray-300 dark:hover:text-white',
+                location.pathname === '/bookings' && 'active'
               )}
             >
               Bookings
             </Link>
- 
           </motion.nav>
 
           <motion.div variants={itemVariants} className="md:hidden">
-            <button 
-              onClick={toggleMobileMenu} 
+            <button
+              onClick={toggleMobileMenu}
               className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-white focus:outline-none"
             >
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -154,7 +153,7 @@ const Navbar = () => {
           </motion.div>
 
           <motion.div variants={itemVariants} className="hidden md:flex items-center space-x-3">
-            <button 
+            <button
               onClick={toggleTheme}
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
@@ -167,32 +166,32 @@ const Navbar = () => {
 
             {isLoggedIn ? (
               <div className="relative">
-                <button 
-                  onClick={toggleDropdown} 
+                <button
+                  onClick={toggleDropdown}
                   className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
                     <User size={18} className="text-primary" />
                   </div>
-                  <ChevronDown 
-                    size={16} 
+                  <ChevronDown
+                    size={16}
                     className={cn(
-                      "text-gray-600 dark:text-gray-300 transition-transform", 
-                      isDropdownOpen && "rotate-180"
-                    )} 
+                      'text-gray-600 dark:text-gray-300 transition-transform',
+                      isDropdownOpen && 'rotate-180'
+                    )}
                   />
                 </button>
 
                 {isDropdownOpen && (
-                  <motion.div 
-                    initial="hidden" 
-                    animate="visible" 
-                    variants={dropdownVariants} 
+                  <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    variants={dropdownVariants}
                     className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50"
                   >
                     <div className="py-1" role="menu" aria-orientation="vertical">
-                      <Link 
-                        to="/profile" 
+                      <Link
+                        to="/profile"
                         className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={closeDropdown}
                       >
@@ -200,19 +199,18 @@ const Navbar = () => {
                         <span>My Profile</span>
                       </Link>
 
-
-                      <Link 
-                        to="/bookings" 
+                      <Link
+                        to="/bookings"
                         className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={closeDropdown}
                       >
                         <Calendar size={16} className="mr-3" />
                         <span>My Bookings</span>
                       </Link>
-                      
+
                       {userType === 'guest' ? (
-                        <Link 
-                          to="/host/dashboard" 
+                        <Link
+                          to="/host/dashboard"
                           className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                           onClick={closeDropdown}
                         >
@@ -220,7 +218,7 @@ const Navbar = () => {
                           <span>Switch to Host</span>
                         </Link>
                       ) : (
-                        <button 
+                        <button
                           className="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                           onClick={() => {
                             setUserType('guest');
@@ -231,12 +229,12 @@ const Navbar = () => {
                           <span>Switch to Guest</span>
                         </button>
                       )}
-                      <button 
+                      <button
                         className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={() => {
-                          logout();         // clear token, user, etc.
-                          closeDropdown();  
-                          navigate("/login");
+                          logout(); // clear token, user, etc.
+                          closeDropdown();
+                          navigate('/login');
                         }}
                       >
                         <LogOut size={16} className="mr-3" />
@@ -248,14 +246,14 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-4">
-                <Link 
-                  to="/login" 
+                <Link
+                  to="/login"
                   className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-white transition-colors"
                 >
                   Login
                 </Link>
-                <Link 
-                  to="/signup" 
+                <Link
+                  to="/signup"
                   className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md transition-colors"
                 >
                   Sign Up
@@ -268,31 +266,30 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           className="md:hidden px-4 py-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700"
         >
           <nav className="flex flex-col space-y-4">
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="px-3 py-2 rounded-md text-base font-medium text-gray-900 dark:text-gray-300"
               onClick={closeMobileMenu}
             >
               Home
             </Link>
-            <Link 
-              to="/bookings" 
+            <Link
+              to="/bookings"
               className="px-3 py-2 rounded-md text-base font-medium text-gray-900 dark:text-gray-300"
               onClick={closeMobileMenu}
             >
               Bookings
             </Link>
 
-            
-            <button 
-              onClick={toggleTheme} 
+            <button
+              onClick={toggleTheme}
               className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-900 dark:text-gray-300"
             >
               {theme === 'dark' ? (
@@ -307,30 +304,28 @@ const Navbar = () => {
                 </>
               )}
             </button>
-            
+
             {isLoggedIn ? (
               <>
                 <div className="h-px my-2 bg-gray-200 dark:bg-gray-700"></div>
-                <Link 
-                  to="/profile" 
+                <Link
+                  to="/profile"
                   className="px-3 py-2 rounded-md text-base font-medium text-gray-900 dark:text-gray-300"
                   onClick={closeMobileMenu}
                 >
                   My Profile
                 </Link>
-                
 
-                
                 {userType === 'guest' ? (
-                  <Link 
-                    to="/host/dashboard" 
+                  <Link
+                    to="/host/dashboard"
                     className="px-3 py-2 rounded-md text-base font-medium text-gray-900 dark:text-gray-300"
                     onClick={closeMobileMenu}
                   >
                     Switch to Host
                   </Link>
                 ) : (
-                  <button 
+                  <button
                     className="px-3 py-2 rounded-md text-base font-medium text-left text-gray-900 dark:text-gray-300"
                     onClick={() => {
                       setUserType('guest');
@@ -340,12 +335,12 @@ const Navbar = () => {
                     Switch to Guest
                   </button>
                 )}
-                <button 
+                <button
                   className="px-3 py-2 rounded-md text-base font-medium text-left text-red-600 dark:text-red-400"
                   onClick={() => {
                     logout();
                     closeMobileMenu();
-                    navigate("/login");
+                    navigate('/login');
                   }}
                 >
                   Logout
@@ -354,15 +349,15 @@ const Navbar = () => {
             ) : (
               <>
                 <div className="h-px my-2 bg-gray-200 dark:bg-gray-700"></div>
-                <Link 
-                  to="/login" 
+                <Link
+                  to="/login"
                   className="px-3 py-2 rounded-md text-base font-medium text-gray-900 dark:text-gray-300"
                   onClick={closeMobileMenu}
                 >
                   Login
                 </Link>
-                <Link 
-                  to="/signup" 
+                <Link
+                  to="/signup"
                   className="px-3 py-2 rounded-md text-base font-medium text-primary dark:text-primary-400"
                   onClick={closeMobileMenu}
                 >

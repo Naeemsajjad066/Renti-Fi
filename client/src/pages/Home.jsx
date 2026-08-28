@@ -2,9 +2,21 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Search, MapPin, Calendar, Home as HomeIcon, Filter,
-  Star, ArrowRight, TrendingUp, CheckCircle, Shield,
-  Zap, Users, Award, ChevronRight, Play, Quote
+  Search,
+  MapPin,
+  Calendar,
+  Home as HomeIcon,
+  Filter,
+  Star,
+  ArrowRight,
+  TrendingUp,
+  CheckCircle,
+  Shield,
+  Zap,
+  Users,
+  Award,
+  ChevronRight,
+  Quote,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -12,8 +24,7 @@ import PropertyCard from '@/components/PropertyCard';
 import PageTransition from '@/components/PageTransition';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useTheme } from '@/hooks/use-theme';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PropertyContext } from '../contexts/PropertyContext';
 
 /* ─── static data ─────────────────────────────────────────────────────────── */
@@ -199,8 +210,8 @@ const Hero = () => {
             variants={fadeUp}
             className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-lg leading-relaxed"
           >
-            Discover handpicked homes, villas, and apartments across Pakistan. 
-            Book instantly, travel freely.
+            Discover handpicked homes, villas, and apartments across Pakistan. Book instantly,
+            travel freely.
           </motion.p>
 
           {/* Search card */}
@@ -210,7 +221,10 @@ const Hero = () => {
           >
             <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
               <div className="flex-1 relative">
-                <MapPin size={18} className="absolute inset-y-0 left-3.5 my-auto text-earth-brown pointer-events-none" />
+                <MapPin
+                  size={18}
+                  className="absolute inset-y-0 left-3.5 my-auto text-earth-brown pointer-events-none"
+                />
                 <input
                   type="text"
                   placeholder="Where to? (city, area…)"
@@ -221,7 +235,10 @@ const Hero = () => {
               </div>
 
               <div className="flex-1 relative">
-                <Calendar size={18} className="absolute inset-y-0 left-3.5 my-auto text-earth-brown pointer-events-none z-10" />
+                <Calendar
+                  size={18}
+                  className="absolute inset-y-0 left-3.5 my-auto text-earth-brown pointer-events-none z-10"
+                />
                 <input
                   type="date"
                   className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-700 dark:text-gray-100 border border-transparent focus:border-earth-brown/40 focus:ring-2 focus:ring-earth-brown/10 outline-none text-sm transition"
@@ -271,9 +288,13 @@ const Hero = () => {
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} size={13} className="fill-amber-400 text-amber-400" />
                 ))}
-                <span className="ml-1 text-sm font-semibold text-gray-800 dark:text-gray-200">4.9</span>
+                <span className="ml-1 text-sm font-semibold text-gray-800 dark:text-gray-200">
+                  4.9
+                </span>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">from 20,000+ happy travelers</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                from 20,000+ happy travelers
+              </p>
             </div>
 
             <div className="hidden sm:flex items-center gap-1.5 ml-2 text-xs text-gray-500 dark:text-gray-400 border-l border-gray-200 dark:border-gray-700 pl-4">
@@ -294,7 +315,12 @@ const Hero = () => {
             {/* Main card */}
             <motion.div
               animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 6, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                repeatType: 'reverse',
+                ease: 'easeInOut',
+              }}
               className="absolute left-8 right-8 mx-auto h-[400px] rounded-3xl overflow-hidden shadow-2xl z-20"
             >
               <img
@@ -306,7 +332,9 @@ const Hero = () => {
               <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                 <div className="flex justify-between items-end">
                   <div>
-                    <p className="text-xs text-white/70 mb-0.5 uppercase tracking-wide">Featured Stay</p>
+                    <p className="text-xs text-white/70 mb-0.5 uppercase tracking-wide">
+                      Featured Stay
+                    </p>
                     <h3 className="text-lg font-semibold leading-tight">Mountain View Retreat</h3>
                     <div className="flex items-center gap-1 mt-1 text-sm text-white/80">
                       <MapPin size={13} />
@@ -356,7 +384,9 @@ const Hero = () => {
                 <CheckCircle size={14} className="text-green-600" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 leading-none">Verified Host</p>
+                <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 leading-none">
+                  Verified Host
+                </p>
                 <p className="text-[10px] text-gray-500 dark:text-gray-400">Instant Booking</p>
               </div>
             </motion.div>
@@ -369,15 +399,17 @@ const Hero = () => {
 
           {/* Trust badges row */}
           <div className="flex flex-wrap justify-center gap-3 mt-4">
-            {['Verified Hosts', 'Instant Booking', 'Free Cancellation', 'Secure Payments'].map((f) => (
-              <span
-                key={f}
-                className="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-cream-beige/60 dark:border-gray-700 rounded-full px-3 py-1.5 shadow-sm"
-              >
-                <CheckCircle size={11} className="text-earth-brown" />
-                {f}
-              </span>
-            ))}
+            {['Verified Hosts', 'Instant Booking', 'Free Cancellation', 'Secure Payments'].map(
+              (f) => (
+                <span
+                  key={f}
+                  className="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-cream-beige/60 dark:border-gray-700 rounded-full px-3 py-1.5 shadow-sm"
+                >
+                  <CheckCircle size={11} className="text-earth-brown" />
+                  {f}
+                </span>
+              )
+            )}
           </div>
         </motion.div>
       </div>
@@ -418,7 +450,8 @@ const HowItWorks = () => (
           Book in 3 easy steps
         </h2>
         <p className="text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
-          From search to check-in — we've made renting a property the simplest thing you'll do today.
+          From search to check-in — we've made renting a property the simplest thing you'll do
+          today.
         </p>
       </div>
 
@@ -560,7 +593,7 @@ const PopularDestinations = () => (
 
 /* ─── Property Type Filter ────────────────────────────────────────────────── */
 
-const PropertyTypeFilter = ({ activeType, setActiveType }) => (
+const PropertyTypeFilter = ({ setActiveType }) => (
   <Tabs defaultValue="All" className="w-full mb-8" onValueChange={setActiveType}>
     <TabsList className="flex flex-wrap items-center gap-2 bg-transparent h-auto p-0">
       {propertyTypes.map((type) => (
@@ -618,7 +651,7 @@ const ExploreProperties = ({ properties, loading }) => {
           </Link>
         </div>
 
-        <PropertyTypeFilter activeType={activeType} setActiveType={setActiveType} />
+        <PropertyTypeFilter setActiveType={setActiveType} />
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -636,7 +669,9 @@ const ExploreProperties = ({ properties, loading }) => {
             <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-5">
               <HomeIcon size={32} className="text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No properties found</h3>
+            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              No properties found
+            </h3>
             <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
               Try a different property type or browse all listings.
             </p>
@@ -706,7 +741,8 @@ const WhyChooseUs = () => (
           A better way to rent
         </h2>
         <p className="text-gray-500 dark:text-gray-400 max-w-xl mx-auto">
-          We've rethought every step of the rental experience so you can focus on what matters — enjoying your stay.
+          We've rethought every step of the rental experience so you can focus on what matters —
+          enjoying your stay.
         </p>
       </div>
 
@@ -722,7 +758,9 @@ const WhyChooseUs = () => (
             whileHover={{ y: -5 }}
             className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 dark:border-gray-700"
           >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${f.color}`}>
+            <div
+              className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${f.color}`}
+            >
               <f.icon size={22} />
             </div>
             <h3 className="text-base font-display font-semibold text-gray-900 dark:text-white mb-2">
@@ -764,13 +802,18 @@ const Testimonials = () => (
             viewport={{ once: true }}
             className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 relative"
           >
-            <Quote size={28} className="text-earth-brown/20 dark:text-earth-brown/30 absolute top-5 right-5" />
+            <Quote
+              size={28}
+              className="text-earth-brown/20 dark:text-earth-brown/30 absolute top-5 right-5"
+            />
             <div className="flex items-center gap-1 mb-4">
               {[...Array(t.rating)].map((_, j) => (
                 <Star key={j} size={13} className="fill-amber-400 text-amber-400" />
               ))}
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-5">"{t.text}"</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-5">
+              "{t.text}"
+            </p>
             <div className="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
               <img
                 src={t.avatar}
@@ -812,11 +855,12 @@ const HostCTA = () => (
               Become a Host
             </Badge>
             <h2 className="text-3xl sm:text-4xl font-display font-bold text-white mb-4 leading-tight">
-              Share your space,<br /> earn real income
+              Share your space,
+              <br /> earn real income
             </h2>
             <p className="text-white/80 text-base mb-7 max-w-md leading-relaxed">
-              Join thousands of hosts earning extra income. Set your own schedule,
-              keep full control, and connect with travelers from across the country.
+              Join thousands of hosts earning extra income. Set your own schedule, keep full
+              control, and connect with travelers from across the country.
             </p>
 
             <div className="flex flex-wrap gap-5 mb-8">

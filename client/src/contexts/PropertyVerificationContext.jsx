@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const PropertyVerificationContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const usePropertyVerification = () => {
   const context = useContext(PropertyVerificationContext);
   if (!context) {
@@ -31,10 +32,9 @@ export const PropertyVerificationProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      const response = await axios.get(
-        `${BASE_URL}/admin/properties/pending`,
-        { headers: getAuthHeader() }
-      );
+      const response = await axios.get(`${BASE_URL}/admin/properties/pending`, {
+        headers: getAuthHeader(),
+      });
 
       if (response.data.success) {
         setPendingProperties(response.data.properties);
@@ -49,96 +49,102 @@ export const PropertyVerificationProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [token, getAuthHeader]);
+  }, [getAuthHeader]);
 
   // Approve property
-  const approveProperty = useCallback(async (propertyId, adminNotes = '') => {
-    try {
-      setLoading(true);
-      setError(null);
+  const approveProperty = useCallback(
+    async (propertyId, adminNotes = '') => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const response = await axios.put(
-        `${BASE_URL}/admin/properties/${propertyId}/approve`,
-        { adminNotes },
-        { headers: getAuthHeader() }
-      );
+        const response = await axios.put(
+          `${BASE_URL}/admin/properties/${propertyId}/approve`,
+          { adminNotes },
+          { headers: getAuthHeader() }
+        );
 
-      if (response.data.success) {
-        // Remove from pending list
-        setPendingProperties(prev => prev.filter(p => p._id !== propertyId));
+        if (response.data.success) {
+          // Remove from pending list
+          setPendingProperties((prev) => prev.filter((p) => p._id !== propertyId));
 
+          toast({
+            title: 'Property Approved!',
+            description: 'The property has been approved and the host has been notified.',
+            variant: 'success',
+          });
+
+          return { success: true, data: response.data.property };
+        }
+
+        return { success: false, message: response.data.message };
+      } catch (err) {
+        const message = err.response?.data?.message || 'Failed to approve property';
+        setError(message);
         toast({
-          title: "Property Approved!",
-          description: "The property has been approved and the host has been notified.",
-          variant: "success",
+          title: 'Approval Failed',
+          description: message,
+          variant: 'destructive',
         });
-
-        return { success: true, data: response.data.property };
+        return { success: false, message };
+      } finally {
+        setLoading(false);
       }
-
-      return { success: false, message: response.data.message };
-    } catch (err) {
-      const message = err.response?.data?.message || 'Failed to approve property';
-      setError(message);
-      toast({
-        title: "Approval Failed",
-        description: message,
-        variant: "destructive",
-      });
-      return { success: false, message };
-    } finally {
-      setLoading(false);
-    }
-  }, [token, getAuthHeader, toast]);
+    },
+    [getAuthHeader, toast]
+  );
 
   // Reject property
-  const rejectProperty = useCallback(async (propertyId, rejectionReason, adminNotes = '') => {
-    try {
-      setLoading(true);
-      setError(null);
+  const rejectProperty = useCallback(
+    async (propertyId, rejectionReason, adminNotes = '') => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      if (!rejectionReason || rejectionReason.trim() === '') {
+        if (!rejectionReason || rejectionReason.trim() === '') {
+          toast({
+            title: 'Rejection Reason Required',
+            description: 'Please provide a reason for rejecting the property.',
+            variant: 'destructive',
+          });
+          return { success: false, message: 'Rejection reason is required' };
+        }
+
+        const response = await axios.put(
+          `${BASE_URL}/admin/properties/${propertyId}/reject`,
+          { rejectionReason, adminNotes },
+          { headers: getAuthHeader() }
+        );
+
+        if (response.data.success) {
+          // Remove from pending list
+          setPendingProperties((prev) => prev.filter((p) => p._id !== propertyId));
+
+          toast({
+            title: 'Property Rejected',
+            description: 'The property has been rejected and the host has been notified.',
+            variant: 'default',
+          });
+
+          return { success: true, data: response.data.property };
+        }
+
+        return { success: false, message: response.data.message };
+      } catch (err) {
+        const message = err.response?.data?.message || 'Failed to reject property';
+        setError(message);
         toast({
-          title: "Rejection Reason Required",
-          description: "Please provide a reason for rejecting the property.",
-          variant: "destructive",
+          title: 'Rejection Failed',
+          description: message,
+          variant: 'destructive',
         });
-        return { success: false, message: 'Rejection reason is required' };
+        return { success: false, message };
+      } finally {
+        setLoading(false);
       }
-
-      const response = await axios.put(
-        `${BASE_URL}/admin/properties/${propertyId}/reject`,
-        { rejectionReason, adminNotes },
-        { headers: getAuthHeader() }
-      );
-
-      if (response.data.success) {
-        // Remove from pending list
-        setPendingProperties(prev => prev.filter(p => p._id !== propertyId));
-
-        toast({
-          title: "Property Rejected",
-          description: "The property has been rejected and the host has been notified.",
-          variant: "default",
-        });
-
-        return { success: true, data: response.data.property };
-      }
-
-      return { success: false, message: response.data.message };
-    } catch (err) {
-      const message = err.response?.data?.message || 'Failed to reject property';
-      setError(message);
-      toast({
-        title: "Rejection Failed",
-        description: message,
-        variant: "destructive",
-      });
-      return { success: false, message };
-    } finally {
-      setLoading(false);
-    }
-  }, [token, getAuthHeader, toast]);
+    },
+    [getAuthHeader, toast]
+  );
 
   const value = {
     pendingProperties,

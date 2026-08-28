@@ -3,16 +3,11 @@ import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Loader2, Lock, CreditCard } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 
-const StripeCheckoutForm = ({ 
-  amount, 
-  bookingData, 
-  onSuccess, 
-  onCancel 
-}) => {
+const StripeCheckoutForm = ({ amount, bookingData, onSuccess, onCancel }) => {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
-  
+
   const [processing, setProcessing] = useState(false);
   const [cardholderName, setCardholderName] = useState('');
   const [billingEmail, setBillingEmail] = useState('');
@@ -65,9 +60,9 @@ const StripeCheckoutForm = ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ bookingData })
+        body: JSON.stringify({ bookingData }),
       });
 
       const data = await response.json();
@@ -76,7 +71,7 @@ const StripeCheckoutForm = ({
         throw new Error(data.message || 'Failed to create payment intent');
       }
 
-      const { clientSecret, paymentIntentId } = data;
+      const { clientSecret } = data;
 
       // Confirm payment with Stripe
       const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
@@ -95,17 +90,20 @@ const StripeCheckoutForm = ({
 
       if (paymentIntent.status === 'succeeded') {
         // Confirm payment on backend and create booking
-        const confirmResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/payments/confirm`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({
-            paymentIntentId: paymentIntent.id,
-            bookingData
-          })
-        });
+        const confirmResponse = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/payments/confirm`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+            body: JSON.stringify({
+              paymentIntentId: paymentIntent.id,
+              bookingData,
+            }),
+          }
+        );
 
         const confirmData = await confirmResponse.json();
 
@@ -120,7 +118,6 @@ const StripeCheckoutForm = ({
 
         onSuccess(confirmData.booking);
       }
-
     } catch (error) {
       console.error('Payment error:', error);
       toast({
@@ -134,7 +131,10 @@ const StripeCheckoutForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg border border-gray-200">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6 bg-white p-6 rounded-lg border border-gray-200"
+    >
       <div className="flex items-center justify-between pb-4 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
           <CreditCard className="w-5 h-5" />
@@ -149,13 +149,9 @@ const StripeCheckoutForm = ({
       <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-lg p-4">
         <div className="flex justify-between items-center">
           <span className="text-gray-700 font-medium">Amount to pay now:</span>
-          <span className="text-2xl font-bold text-[#D4AF37]">
-            Rs {amount.toLocaleString()}
-          </span>
+          <span className="text-2xl font-bold text-[#D4AF37]">Rs {amount.toLocaleString()}</span>
         </div>
-        <p className="text-sm text-gray-600 mt-2">
-          40% upfront payment to confirm your booking
-        </p>
+        <p className="text-sm text-gray-600 mt-2">40% upfront payment to confirm your booking</p>
       </div>
 
       <div className="space-y-4">
@@ -190,9 +186,7 @@ const StripeCheckoutForm = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Card Information
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Card Information</label>
           <div className="p-4 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#D4AF37] focus-within:border-transparent">
             <CardElement options={CARD_ELEMENT_OPTIONS} />
           </div>
@@ -202,7 +196,8 @@ const StripeCheckoutForm = ({
       <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
         <Lock className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
         <p className="text-xs text-blue-900">
-          Your payment information is encrypted and secure. We use Stripe for payment processing and never store your card details.
+          Your payment information is encrypted and secure. We use Stripe for payment processing and
+          never store your card details.
         </p>
       </div>
 

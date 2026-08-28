@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
@@ -16,7 +15,7 @@
     --popover: 42 26% 98%;
     --popover-foreground: 33 15% 25%;
 
-    --primary: 38 20% 56%;  /* #A0937D */
+    --primary: 38 20% 56%; /* #A0937D */
     --primary-foreground: 42 26% 98%;
 
     --secondary: 36 52% 84%; /* #E7D4B5 */
@@ -57,7 +56,7 @@
     --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 38 20% 56%;  /* Keep earth-brown */
+    --primary: 38 20% 56%; /* Keep earth-brown */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 217 33% 17%;
@@ -92,7 +91,8 @@
     @apply border-border;
   }
 
-  html, body {
+  html,
+  body {
     @apply antialiased scroll-smooth transition-colors duration-300;
   }
 
@@ -100,7 +100,12 @@
     @apply bg-background text-foreground font-sans;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-display font-semibold tracking-tight text-gray-900 dark:text-gray-100;
   }
 }
@@ -109,7 +114,7 @@
   .animate-in {
     animation: fade-in 0.5s ease-out forwards;
   }
-  
+
   .page-container {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full;
   }
@@ -162,31 +167,31 @@
   .custom-scrollbar {
     @apply scrollbar-thin scrollbar-thumb-cream-beige scrollbar-track-transparent hover:scrollbar-thumb-earth-brown;
   }
-  
+
   .shadow-soft {
     @apply shadow-[0_5px_30px_-15px_rgba(160,147,125,0.15)];
   }
-  
+
   .shadow-card {
     @apply shadow-[0_10px_30px_-15px_rgba(160,147,125,0.2)];
   }
-  
+
   .shadow-elevated {
     @apply shadow-[0_15px_35px_-15px_rgba(160,147,125,0.25)];
   }
-  
+
   .blur-backdrop {
     @apply backdrop-blur-md bg-cream-beige/70;
   }
-  
+
   .hover-lift {
     @apply transition-transform duration-300 hover:-translate-y-1;
   }
-  
+
   .hover-scale {
     @apply transition-transform duration-300 hover:scale-105;
   }
-  
+
   .hover-glow {
     @apply transition-all duration-300 hover:shadow-[0_0_15px_rgba(160,147,125,0.5)];
   }
@@ -195,23 +200,23 @@
   .hero-gradient {
     @apply bg-gradient-to-b from-light-beige via-light-beige to-soft-peach/30;
   }
-  
+
   .card-hover {
     @apply transition-all duration-300 hover:translate-y-[-5px] hover:shadow-xl;
   }
-  
+
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-earth-brown to-soft-peach;
   }
-  
+
   .feature-icon {
     @apply w-12 h-12 rounded-xl flex items-center justify-center bg-earth-brown/10 text-earth-brown mb-4;
   }
-  
+
   .feature-card {
     @apply p-6 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-300;
   }
-  
+
   .cta-gradient {
     @apply bg-gradient-to-r from-cream-beige to-soft-peach;
   }
@@ -274,7 +279,7 @@
 }
 
 .shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
@@ -317,8 +322,8 @@
 
 /* ─── react-day-picker v9 — Rentifi booking calendar overrides ──────────── */
 .rdp-rentifi {
-  --rdp-accent-color: #A0937D;
-  --rdp-accent-background-color: rgba(160,147,125,0.12);
+  --rdp-accent-color: #a0937d;
+  --rdp-accent-background-color: rgba(160, 147, 125, 0.12);
 }
 
 /* day button base */
@@ -331,26 +336,28 @@
   justify-content: center;
   font-size: 0.8125rem;
   font-weight: 500;
-  transition: background-color 0.15s, color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
   cursor: pointer;
   border: none;
   background: transparent;
   color: inherit;
 }
 .rdp-rentifi .rdp-day_button:hover:not(:disabled) {
-  background-color: rgba(160,147,125,0.12);
+  background-color: rgba(160, 147, 125, 0.12);
 }
 
 /* selected / range */
 .rdp-rentifi .rdp-selected .rdp-day_button,
 .rdp-rentifi .rdp-range_start .rdp-day_button,
 .rdp-rentifi .rdp-range_end .rdp-day_button {
-  background-color: #A0937D !important;
+  background-color: #a0937d !important;
   color: #fff !important;
   font-weight: 600;
 }
 .rdp-rentifi .rdp-range_middle .rdp-day_button {
-  background-color: rgba(160,147,125,0.18) !important;
+  background-color: rgba(160, 147, 125, 0.18) !important;
   border-radius: 0 !important;
   color: #3b3028;
 }
@@ -363,7 +370,7 @@
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
-  color: #A0937D;
+  color: #a0937d;
 }
 
 /* disabled = past days → grey out */
@@ -379,8 +386,8 @@
    react-day-picker adds [aria-disabled] on the button for disabled days
    that come from an explicit { from, to } range in the disabled array.
    We target them via data attribute set in classNames.disabled */
-.rdp-rentifi [data-booked="true"] .rdp-day_button {
-  background-color: rgba(239,68,68,0.10) !important;
+.rdp-rentifi [data-booked='true'] .rdp-day_button {
+  background-color: rgba(239, 68, 68, 0.1) !important;
   color: #ef4444 !important;
   text-decoration: line-through;
   opacity: 1 !important;

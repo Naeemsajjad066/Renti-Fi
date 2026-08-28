@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CreditCard, CheckCircle, AlertCircle, ExternalLink, Loader2, DollarSign } from 'lucide-react';
+import {
+  CreditCard,
+  CheckCircle,
+  AlertCircle,
+  ExternalLink,
+  Loader2,
+  DollarSign,
+} from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 
 const StripeConnectSetup = () => {
@@ -9,7 +16,7 @@ const StripeConnectSetup = () => {
   const [stripeStatus, setStripeStatus] = useState({
     connected: false,
     onboardingComplete: false,
-    accountStatus: null
+    accountStatus: null,
   });
   const { toast } = useToast();
 
@@ -21,11 +28,14 @@ const StripeConnectSetup = () => {
   const checkStripeStatus = async () => {
     try {
       setCheckingStatus(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/stripe-connect/status`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/stripe-connect/status`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         }
-      });
+      );
 
       const data = await response.json();
       if (data.success) {
@@ -39,56 +49,53 @@ const StripeConnectSetup = () => {
   };
 
   const handleConnectStripe = async () => {
-    console.log('Connect Stripe clicked');
     setLoading(true);
     try {
       // First, create Stripe account if not exists
       if (!stripeStatus.connected) {
-        console.log('Creating Stripe account...');
-        const createResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/stripe-connect/create-account`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        const createResponse = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/stripe-connect/create-account`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
           }
-        });
+        );
 
-        console.log('Create response status:', createResponse.status);
         const createData = await createResponse.json();
-        console.log('Create data:', createData);
-        
+
         if (!createData.success) {
           throw new Error(createData.message);
         }
       }
 
       // Get onboarding link
-      console.log('Getting onboarding link...');
-      const linkResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/stripe-connect/create-link`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const linkResponse = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/stripe-connect/create-link`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         }
-      });
+      );
 
-      console.log('Link response status:', linkResponse.status);
       const linkData = await linkResponse.json();
-      console.log('Link data:', linkData);
-      
+
       if (linkData.success && linkData.url) {
-        console.log('Redirecting to:', linkData.url);
         // Redirect to Stripe onboarding
         window.location.href = linkData.url;
       } else {
         throw new Error(linkData.message || 'No onboarding URL received');
       }
     } catch (error) {
-      console.error('Error connecting Stripe:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to connect Stripe account',
-        variant: 'destructive'
+        variant: 'destructive',
       });
       setLoading(false);
     }
@@ -96,21 +103,24 @@ const StripeConnectSetup = () => {
 
   const handleViewDashboard = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/stripe-connect/dashboard-link`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/stripe-connect/dashboard-link`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         }
-      });
+      );
 
       const data = await response.json();
       if (data.success) {
         window.open(data.url, '_blank');
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to open Stripe dashboard',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
   };
@@ -132,9 +142,11 @@ const StripeConnectSetup = () => {
     >
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-4">
-          <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-            stripeStatus.onboardingComplete ? 'bg-green-100' : 'bg-blue-100'
-          }`}>
+          <div
+            className={`w-16 h-16 rounded-full flex items-center justify-center ${
+              stripeStatus.onboardingComplete ? 'bg-green-100' : 'bg-blue-100'
+            }`}
+          >
             {stripeStatus.onboardingComplete ? (
               <CheckCircle className="w-8 h-8 text-green-600" />
             ) : (
@@ -144,8 +156,8 @@ const StripeConnectSetup = () => {
           <div>
             <h3 className="text-2xl font-bold text-gray-900">Bank Account Setup</h3>
             <p className="text-gray-600 mt-1">
-              {stripeStatus.onboardingComplete 
-                ? 'Your bank account is connected and ready to receive payouts' 
+              {stripeStatus.onboardingComplete
+                ? 'Your bank account is connected and ready to receive payouts'
                 : 'Link your bank account to receive automatic payouts'}
             </p>
           </div>

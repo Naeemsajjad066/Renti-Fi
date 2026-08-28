@@ -5,7 +5,7 @@ import { Eye, EyeOff, Home } from 'lucide-react';
 import PageTransition from '@/components/PageTransition';
 import { AuthContext } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import {toast} from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 const Login = () => {
   const { login } = useContext(AuthContext);
@@ -26,18 +26,18 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.email || !formData.password) {
-      toast.error("Please fill in all fields");
+      toast.error('Please fill in all fields');
       return;
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      toast.error("Please enter a valid email address");
+      toast.error('Please enter a valid email address');
       return;
     }
 
@@ -46,25 +46,24 @@ const Login = () => {
         email: formData.email,
         password: formData.password,
       });
-      
+
       if (response?.success) {
         // Check if user is admin and redirect accordingly
         if (response.userData?.role === 'admin' || isAdminMode) {
-          navigate("/admin");
+          navigate('/admin');
         } else {
-          navigate("/");
+          navigate('/');
         }
       } else if (response?.requiresVerification) {
         // User needs to verify email
-        navigate("/verify-email", {
+        navigate('/verify-email', {
           state: {
             email: response.email,
-            userData: null // User already exists, no need to pass userData
-          }
+            userData: null, // User already exists, no need to pass userData
+          },
         });
       }
-    } catch (err) {
-      console.log("Login error:", err.response?.data || err.message);
+    } catch {
       // Error handling is done in AuthContext
     }
   };
@@ -77,7 +76,7 @@ const Login = () => {
     <PageTransition>
       <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gray-50 dark:bg-gray-900">
         {/* Logo & Heading */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -97,14 +96,16 @@ const Login = () => {
               </span>
             </div>
           </Link>
-          <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-gray-100">{isAdminMode ? 'Admin Login' : 'Welcome back'}</h1>
+          <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {isAdminMode ? 'Admin Login' : 'Welcome back'}
+          </h1>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             {isAdminMode ? 'Sign in to admin dashboard' : 'Sign in to your account'}
           </p>
         </motion.div>
 
         {/* Login Form */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
@@ -112,7 +113,10 @@ const Login = () => {
         >
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Email
               </label>
               <input
@@ -131,10 +135,16 @@ const Login = () => {
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   Password
                 </label>
-                <Link to="/forgot-password" className="text-sm text-primary dark:text-primary-400 hover:underline">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-primary dark:text-primary-400 hover:underline"
+                >
                   Forgot password?
                 </Link>
               </div>
@@ -177,12 +187,15 @@ const Login = () => {
             >
               {isAdminMode ? '← Back to User Login' : '🔐 Admin Login'}
             </button>
-            
+
             {!isAdminMode && (
               <div className="text-center">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Don't have an account?{" "}
-                  <Link to="/signup" className="text-primary dark:text-primary-400 hover:underline font-medium">
+                  Don't have an account?{' '}
+                  <Link
+                    to="/signup"
+                    className="text-primary dark:text-primary-400 hover:underline font-medium"
+                  >
                     Sign up
                   </Link>
                 </p>
