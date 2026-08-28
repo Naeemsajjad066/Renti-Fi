@@ -20,7 +20,7 @@ export const handleApiError = (error, customMessage) => {
   toast.error(message);
 };
 
-export const handleNetworkError = (error) => {
+export const handleNetworkError = (_error) => {
   if (!navigator.onLine) {
     toast.error('No internet connection');
     return;
@@ -36,7 +36,7 @@ export const createErrorBoundary = (component) => {
       this.state = { hasError: false };
     }
 
-    static getDerivedStateFromError(error) {
+    static getDerivedStateFromError(_error) {
       return { hasError: true };
     }
 

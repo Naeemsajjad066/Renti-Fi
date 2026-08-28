@@ -5,11 +5,11 @@ export const measurePerformance = (name, fn) => {
     try {
       const result = await fn(...args);
       const end = performance.now();
-      console.log(`⚡ ${name} took ${(end - start).toFixed(2)}ms`);
+      console.warn(`⚡ ${name} took ${(end - start).toFixed(2)}ms`);
       return result;
     } catch (error) {
       const end = performance.now();
-      console.log(`❌ ${name} failed after ${(end - start).toFixed(2)}ms`);
+      console.warn(`❌ ${name} failed after ${(end - start).toFixed(2)}ms`);
       throw error;
     }
   };
