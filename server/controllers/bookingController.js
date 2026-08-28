@@ -2,7 +2,6 @@
 import Booking from '../models/Booking.js';
 import Property from '../models/Property.js';
 import User from '../models/User.js';
-import { emailTemplates } from '../config/email.js';
 import { sendBookingConfirmationEmail } from '../lib/emailService.js';
 
 // Create a new booking

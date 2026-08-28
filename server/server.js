@@ -30,9 +30,19 @@ app.use(helmet());
 app.use(mongoSanitize());
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // Allow requests with no origin (mobile apps, curl, server-to-server)
     if (!origin) return callback(null, true);
-    
+
+    // Build allowed list from env vars — support comma-separated values
+    // e.g. CLIENT_URL=https://rentifi.vercel.app,https://www.rentifi.com
+    const fromEnv = [
+      process.env.CLIENT_URL,
+      process.env.FRONTEND_URL,
+    ]
+      .filter(Boolean)
+      .flatMap(v => v.split(',').map(s => s.trim()))
+      .filter(Boolean);
+
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:8080',
@@ -40,19 +50,38 @@ app.use(cors({
       'http://127.0.0.1:5173',
       'http://127.0.0.1:8080',
       'http://127.0.0.1:3000',
-      process.env.CLIENT_URL,
-      process.env.FRONTEND_URL
-    ].filter(Boolean);
-    
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
-      callback(null, true);
-    } else {
-      callback(new Error('Origin not allowed by CORS'));
+      ...fromEnv,
+    ];
+
+    // Exact match
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
+
+    // Allow all Vercel preview deployments for this project
+    // e.g. https://rentifi-abc123-username.vercel.app
+    if (/\.vercel\.app$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    // Allow Render preview URLs
+    if (/\.onrender\.com$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    // In development always allow — never block localhost variants
+    if (process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+
+    // Blocked — log the origin so it's visible in Render/server logs
+    console.error(`CORS blocked origin: ${origin}`);
+    console.error(`Add it to CLIENT_URL or FRONTEND_URL env var on Render.`);
+    callback(new Error(`Origin not allowed by CORS: ${origin}`));
   },
   credentials: true,
   optionsSuccessStatus: 200,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
     'Content-Type',
     'Authorization',
@@ -61,8 +90,8 @@ app.use(cors({
     'Origin',
     'Referer',
     'token',
-    'Accept-Language'
-  ]
+    'Accept-Language',
+  ],
 }));
 
 // Add performance and security headers

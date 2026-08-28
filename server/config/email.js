@@ -1,391 +1,293 @@
 // config/email.js
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Create transporter for Gmail
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_APP_PASSWORD
-  },
-  // Add connection timeout settings for production
-  connectionTimeout: 5000, // 5 seconds
-  greetingTimeout: 5000,
-  socketTimeout: 10000
-});
+// Initialize Resend — it gracefully handles missing API keys
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Only verify if credentials are available - don't block server startup
-if (process.env.EMAIL_USER && process.env.EMAIL_APP_PASSWORD) {
-  // Use a timeout to prevent blocking server startup
-  const verifyTimeout = setTimeout(() => {
-    console.warn('⚠️ Email service verification timeout - continuing without verification');
-  }, 10000);
+// Check if Resend is configured
+const emailEnabled = !!(process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'your_resend_api_key_here');
 
-  transporter.verify((error) => {
-    clearTimeout(verifyTimeout);
-    if (error) {
-      console.error('❌ Email service unavailable:', error.message);
-      if (error.code === 'EAUTH') {
-        console.error('🔐 Check email credentials and app password');
-      }
-      // Don't throw error, just log and continue
-    } else {
-      console.log('✅ Email service ready');
+// Default from address — Resend requires a verified domain
+const FROM_ADDRESS = process.env.FROM_EMAIL || 'noreply@yourdomain.com';
+
+// Validate configuration on startup (non-blocking)
+if (emailEnabled) {
+  console.log('✅ Resend email service configured');
+  console.log(`📧 From address: ${FROM_ADDRESS}`);
+  
+  // Optional: Test API key validity (doesn't delay startup)
+  setImmediate(async () => {
+    try {
+      // Resend domains endpoint to verify API key without sending email
+      await resend.domains.list();
+      console.log('✅ Resend API key validated');
+    } catch (error) {
+      console.warn('⚠️  Resend API key validation failed:', error.message);
+      console.warn('   Check RESEND_API_KEY in your environment variables.');
     }
   });
 } else {
-  console.warn('⚠️ Email credentials missing - email features will be disabled');
+  console.warn('⚠️  RESEND_API_KEY not configured — email features disabled.');
+  console.warn('   Get your API key at: https://resend.com/api-keys');
 }
 
-// Email templates
+// Email templates (keeping existing structure)
 export const emailTemplates = {
   verification: (code, fullName) => ({
     subject: 'Verify Your Email - Rentifi',
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #A0937D; font-size: 32px; margin: 0;">Rentifi</h1>
-            <p style="color: #666; margin: 5px 0;">Your trusted rental platform</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #A0937D 0%, #E3CDC1 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">Rentifi</h1>
+          <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Your Premium Rental Platform</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+          <h2 style="color: #333; margin: 0 0 20px 0;">Hello ${fullName || 'there'}!</h2>
+          <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">Welcome to Rentifi! Please verify your email address to complete your account setup.</p>
+          
+          <div style="background: white; border: 2px dashed #A0937D; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;">
+            <p style="color: #333; margin: 0 0 10px 0; font-size: 14px;">Your verification code:</p>
+            <div style="font-family: 'Courier New', monospace; font-size: 32px; font-weight: bold; color: #A0937D; letter-spacing: 3px;">${code}</div>
           </div>
           
-          <h2 style="color: #333; margin-bottom: 20px;">Hello ${fullName}!</h2>
-          <p style="color: #666; font-size: 16px; line-height: 1.5;">
-            Thank you for registering with Rentifi. To complete your account setup, please verify your email address using the code below:
-          </p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <div style="background-color: #f8f9fa; border: 2px dashed #A0937D; padding: 20px; border-radius: 8px; display: inline-block;">
-              <h1 style="color: #A0937D; font-size: 36px; font-weight: bold; margin: 0; letter-spacing: 8px;">${code}</h1>
-            </div>
-          </div>
-          
-          <p style="color: #666; font-size: 14px; text-align: center; margin: 20px 0;">
-            This code will expire in <strong>10 minutes</strong>
-          </p>
-          
-          <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
-            <p style="color: #856404; margin: 0; font-size: 14px;">
-              <strong>Security Note:</strong> If you didn't request this verification, please ignore this email.
-            </p>
-          </div>
-          
-          <p style="color: #666; font-size: 14px; margin-top: 30px;">
-            Best regards,<br>
-            <strong>The Rentifi Team</strong>
-          </p>
+          <p style="color: #666; font-size: 14px; line-height: 1.6;">This code will expire in 10 minutes. If you didn't create this account, you can safely ignore this email.</p>
+        </div>
+        
+        <div style="text-align: center; color: #999; font-size: 12px;">
+          <p>© 2024 Rentifi. All rights reserved.</p>
         </div>
       </div>
     `
   }),
-  welcome: (user) => ({
-    subject: 'Welcome to Rentifi!',
+
+  passwordReset: (resetCode, fullName) => ({
+    subject: 'Reset Your Password - Rentifi',
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Welcome to Rentifi, ${user.fullName}!</h2>
-        <p>Thank you for joining our community of hosts and guests.</p>
-        <p>Your account has been successfully created with ID: ${user.idCardNumber}</p>
-        <p>Start exploring properties or list your own space to begin earning!</p>
-        <br>
-        <p>Best regards,<br>The Rentifi Team</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #A0937D 0%, #E3CDC1 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">Rentifi</h1>
+          <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Password Reset Request</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+          <h2 style="color: #333; margin: 0 0 20px 0;">Hi ${fullName || 'there'}!</h2>
+          <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">We received a request to reset your password. Use the code below to set a new password for your account.</p>
+          
+          <div style="background: white; border: 2px dashed #A0937D; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;">
+            <p style="color: #333; margin: 0 0 10px 0; font-size: 14px;">Your reset code:</p>
+            <div style="font-family: 'Courier New', monospace; font-size: 32px; font-weight: bold; color: #A0937D; letter-spacing: 3px;">${resetCode}</div>
+          </div>
+          
+          <p style="color: #666; font-size: 14px; line-height: 1.6;">This code will expire in 15 minutes. If you didn't request this reset, please ignore this email and your password will remain unchanged.</p>
+        </div>
+        
+        <div style="text-align: center; color: #999; font-size: 12px;">
+          <p>© 2024 Rentifi. All rights reserved.</p>
+        </div>
       </div>
     `
   }),
+
+  welcome: (user) => ({
+    subject: 'Welcome to Rentifi! 🏡',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #A0937D 0%, #E3CDC1 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Rentifi! 🎉</h1>
+          <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Your Journey Starts Here</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+          <h2 style="color: #333; margin: 0 0 20px 0;">Hello ${user.fullName || user.name}!</h2>
+          <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">Thank you for joining Rentifi, Pakistan's premier rental platform. We're excited to help you find your perfect stay or share your space with travelers.</p>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #A0937D; margin: 20px 0;">
+            <h3 style="color: #A0937D; margin: 0 0 15px 0;">What's Next?</h3>
+            <ul style="color: #666; line-height: 1.8; padding-left: 20px;">
+              <li>Browse thousands of verified properties</li>
+              <li>Book instantly with secure payments</li>
+              <li>List your own property to earn extra income</li>
+              <li>Connect with hosts and travelers nationwide</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div style="text-align: center; color: #999; font-size: 12px;">
+          <p>© 2024 Rentifi. All rights reserved.</p>
+          <p>Need help? Contact us at support@rentifi.com</p>
+        </div>
+      </div>
+    `
+  }),
+
   bookingConfirmation: (booking, property, user) => ({
     subject: `Booking Confirmed - ${property.title}`,
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #A0937D; font-size: 32px; margin: 0;">Rentifi</h1>
-            <p style="color: #666; margin: 5px 0;">Your trusted rental platform</p>
-          </div>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #A0937D 0%, #E3CDC1 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">Booking Confirmed! ✅</h1>
+          <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Your Stay is All Set</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+          <h2 style="color: #333; margin: 0 0 20px 0;">Hi ${user.fullName}!</h2>
+          <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">Great news! Your booking has been confirmed. Here are your reservation details:</p>
           
-          <div style="text-align: center; margin: 20px 0;">
-            <div style="background-color: #d4edda; border-radius: 50%; width: 80px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
-              <span style="font-size: 48px;">✓</span>
+          <div style="background: white; padding: 25px; border-radius: 10px; border: 1px solid #e0e0e0; margin: 20px 0;">
+            <h3 style="color: #A0937D; margin: 0 0 15px 0; font-size: 18px;">${property.title}</h3>
+            <p style="color: #666; margin: 0 0 15px 0;">📍 ${property.city}, ${property.state || 'Pakistan'}</p>
+            
+            <div style="display: table; width: 100%; margin-top: 20px;">
+              <div style="display: table-row;">
+                <div style="display: table-cell; padding: 8px 0; color: #666;">Check-in:</div>
+                <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #333;">${new Date(booking.checkIn).toLocaleDateString()}</div>
+              </div>
+              <div style="display: table-row;">
+                <div style="display: table-cell; padding: 8px 0; color: #666;">Check-out:</div>
+                <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #333;">${new Date(booking.checkOut).toLocaleDateString()}</div>
+              </div>
+              <div style="display: table-row;">
+                <div style="display: table-cell; padding: 8px 0; color: #666;">Guests:</div>
+                <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #333;">${booking.guests?.adults || 1}</div>
+              </div>
+              <div style="display: table-row; border-top: 1px solid #e0e0e0;">
+                <div style="display: table-cell; padding: 15px 0 8px 0; color: #333; font-weight: bold;">Total Amount:</div>
+                <div style="display: table-cell; padding: 15px 0 8px 0; font-weight: bold; color: #A0937D; font-size: 18px;">Rs ${booking.totalPrice?.toLocaleString()}</div>
+              </div>
             </div>
           </div>
           
-          <h2 style="color: #28a745; text-align: center; margin-bottom: 20px;">Booking Confirmed!</h2>
-          <p style="color: #666; font-size: 16px; line-height: 1.5; text-align: center;">
-            Hello ${user.fullName}, your booking has been confirmed.
-          </p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <div style="background-color: #e3f2fd; border: 3px solid #2196f3; padding: 25px; border-radius: 12px; display: inline-block;">
-              <p style="color: #1976d2; margin: 0 0 10px 0; font-size: 14px; font-weight: 600;">YOUR VERIFICATION CODE</p>
-              <h1 style="color: #2196f3; font-size: 42px; font-weight: bold; margin: 0; letter-spacing: 12px;">${booking.verificationCode}</h1>
-              <p style="color: #666; margin: 10px 0 0 0; font-size: 13px;">Show this code to your host at check-in</p>
-            </div>
-          </div>
-          
-          <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0;">
-            <h3 style="color: #A0937D; margin-top: 0;">Booking Details</h3>
-            <table style="width: 100%; border-collapse: collapse;">
-              <tr><td style="padding: 8px 0; color: #666;"><strong>Property:</strong></td><td style="padding: 8px 0; color: #333;">${property.title}</td></tr>
-              <tr><td style="padding: 8px 0; color: #666;"><strong>Location:</strong></td><td style="padding: 8px 0; color: #333;">${property.city || property.address}</td></tr>
-              <tr><td style="padding: 8px 0; color: #666;"><strong>Check-in:</strong></td><td style="padding: 8px 0; color: #333;">${new Date(booking.checkIn).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} at 9:00 AM</td></tr>
-              <tr><td style="padding: 8px 0; color: #666;"><strong>Check-out:</strong></td><td style="padding: 8px 0; color: #333;">${new Date(booking.checkOut).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} before 9:00 AM</td></tr>
-              <tr><td style="padding: 8px 0; color: #666;"><strong>Guests:</strong></td><td style="padding: 8px 0; color: #333;">${booking.guests?.adults || booking.guests} Adults</td></tr>
-              <tr><td style="padding: 8px 0; color: #666;"><strong>Nights:</strong></td><td style="padding: 8px 0; color: #333;">${booking.nights}</td></tr>
-              <tr><td style="padding: 16px 0 8px 0; color: #A0937D; font-size: 18px;"><strong>Total Amount:</strong></td><td style="padding: 16px 0 8px 0; color: #A0937D; font-size: 18px;"><strong>Rs ${booking.totalPrice?.toLocaleString()}</strong></td></tr>
-            </table>
-          </div>
-          
-          <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
-            <p style="color: #856404; margin: 0; font-size: 14px;">
-              <strong>Important:</strong> Save this email and your verification code. You'll need to show it to your host during check-in.
-            </p>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/bookings" style="display: inline-block; background-color: #A0937D; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">View Booking Details</a>
-          </div>
-          
-          <p style="color: #666; font-size: 14px; margin-top: 30px; text-align: center;">
-            Thank you for choosing Rentifi!<br>
-            <strong>The Rentifi Team</strong>
-          </p>
+          <p style="color: #666; font-size: 14px; line-height: 1.6;">Your host will contact you with check-in instructions. Have a wonderful stay!</p>
+        </div>
+        
+        <div style="text-align: center; color: #999; font-size: 12px;">
+          <p>© 2024 Rentifi. All rights reserved.</p>
+          <p>Questions? Contact support@rentifi.com</p>
         </div>
       </div>
     `
   }),
-  
+
   hostBookingNotification: (booking, property, guest, host) => ({
-    subject: `New Booking Received - ${property.title}`,
+    subject: `New Booking - ${property.title}`,
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #A0937D; font-size: 32px; margin: 0;">Rentifi</h1>
-            <p style="color: #666; margin: 5px 0;">Your trusted rental platform</p>
-          </div>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #A0937D 0%, #E3CDC1 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">New Booking! 🎉</h1>
+          <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">You Have a Guest</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+          <h2 style="color: #333; margin: 0 0 20px 0;">Hello ${host.fullName}!</h2>
+          <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">You have a new booking for your property. Here are the details:</p>
           
-          <div style="text-align: center; margin: 20px 0;">
-            <div style="background-color: #d4edda; border-radius: 50%; width: 80px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
-              <span style="font-size: 48px;">🏠</span>
+          <div style="background: white; padding: 25px; border-radius: 10px; border: 1px solid #e0e0e0; margin: 20px 0;">
+            <h3 style="color: #A0937D; margin: 0 0 15px 0; font-size: 18px;">${property.title}</h3>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+              <h4 style="color: #333; margin: 0 0 10px 0;">Guest: ${guest.fullName}</h4>
+              <p style="color: #666; margin: 0; font-size: 14px;">📧 ${guest.email}</p>
+              ${guest.phone ? `<p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">📞 ${guest.phone}</p>` : ''}
+            </div>
+            
+            <div style="display: table; width: 100%; margin-top: 20px;">
+              <div style="display: table-row;">
+                <div style="display: table-cell; padding: 8px 0; color: #666;">Check-in:</div>
+                <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #333;">${new Date(booking.checkIn).toLocaleDateString()}</div>
+              </div>
+              <div style="display: table-row;">
+                <div style="display: table-cell; padding: 8px 0; color: #666;">Check-out:</div>
+                <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #333;">${new Date(booking.checkOut).toLocaleDateString()}</div>
+              </div>
+              <div style="display: table-row;">
+                <div style="display: table-cell; padding: 8px 0; color: #666;">Guests:</div>
+                <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #333;">${booking.guests?.adults || 1}</div>
+              </div>
+              <div style="display: table-row; border-top: 1px solid #e0e0e0;">
+                <div style="display: table-cell; padding: 15px 0 8px 0; color: #333; font-weight: bold;">Total Earnings:</div>
+                <div style="display: table-cell; padding: 15px 0 8px 0; font-weight: bold; color: #A0937D; font-size: 18px;">Rs ${booking.totalPrice?.toLocaleString()}</div>
+              </div>
             </div>
           </div>
           
-          <h2 style="color: #28a745; text-align: center; margin-bottom: 20px;">New Booking Received!</h2>
-          <p style="color: #666; font-size: 16px; line-height: 1.5; text-align: center;">
-            Hello ${host.fullName}, you have a new booking for your property.
-          </p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <div style="background-color: #e8f5e9; border: 3px solid #4caf50; padding: 25px; border-radius: 12px; display: inline-block;">
-              <p style="color: #2e7d32; margin: 0 0 10px 0; font-size: 14px; font-weight: 600;">GUEST VERIFICATION CODE</p>
-              <h1 style="color: #4caf50; font-size: 42px; font-weight: bold; margin: 0; letter-spacing: 12px;">${booking.verificationCode}</h1>
-              <p style="color: #666; margin: 10px 0 0 0; font-size: 13px;">Ask guest to show this code at check-in</p>
-            </div>
-          </div>
-          
-          <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0;">
-            <h3 style="color: #A0937D; margin-top: 0;">Guest Information</h3>
-            <table style="width: 100%; border-collapse: collapse;">
-              <tr><td style="padding: 8px 0; color: #666;"><strong>Name:</strong></td><td style="padding: 8px 0; color: #333;">${guest.fullName}</td></tr>
-              <tr><td style="padding: 8px 0; color: #666;"><strong>Email:</strong></td><td style="padding: 8px 0; color: #333;">${guest.email}</td></tr>
-              ${guest.phoneNumber ? `<tr><td style="padding: 8px 0; color: #666;"><strong>Phone:</strong></td><td style="padding: 8px 0; color: #333;">${guest.phoneNumber}</td></tr>` : ''}
-            </table>
-          </div>
-          
-          <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0;">
-            <h3 style="color: #A0937D; margin-top: 0;">Booking Details</h3>
-            <table style="width: 100%; border-collapse: collapse;">
-              <tr><td style="padding: 8px 0; color: #666;"><strong>Property:</strong></td><td style="padding: 8px 0; color: #333;">${property.title}</td></tr>
-              <tr><td style="padding: 8px 0; color: #666;"><strong>Check-in:</strong></td><td style="padding: 8px 0; color: #333;">${new Date(booking.checkIn).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} at 9:00 AM</td></tr>
-              <tr><td style="padding: 8px 0; color: #666;"><strong>Check-out:</strong></td><td style="padding: 8px 0; color: #333;">${new Date(booking.checkOut).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} before 9:00 AM</td></tr>
-              <tr><td style="padding: 8px 0; color: #666;"><strong>Guests:</strong></td><td style="padding: 8px 0; color: #333;">${booking.guests?.adults || booking.guests} Adults${booking.guests?.children ? `, ${booking.guests.children} Children` : ''}</td></tr>
-              <tr><td style="padding: 8px 0; color: #666;"><strong>Nights:</strong></td><td style="padding: 8px 0; color: #333;">${booking.nights}</td></tr>
-              <tr><td style="padding: 16px 0 8px 0; color: #A0937D; font-size: 18px;"><strong>Total Amount:</strong></td><td style="padding: 16px 0 8px 0; color: #A0937D; font-size: 18px;"><strong>Rs ${booking.totalPrice?.toLocaleString()}</strong></td></tr>
-              ${booking.hostPayout ? `<tr><td style="padding: 8px 0; color: #4caf50; font-size: 16px;"><strong>Your Payout:</strong></td><td style="padding: 8px 0; color: #4caf50; font-size: 16px;"><strong>Rs ${booking.hostPayout?.toLocaleString()}</strong></td></tr>` : ''}
-            </table>
-          </div>
-          
-          ${booking.specialRequests ? `
-          <div style="background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 20px 0;">
-            <p style="color: #1976d2; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Special Requests:</p>
-            <p style="color: #666; margin: 0; font-size: 14px;">${booking.specialRequests}</p>
-          </div>
-          ` : ''}
-          
-          <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
-            <p style="color: #856404; margin: 0; font-size: 14px;">
-              <strong>Reminder:</strong> Please prepare your property for the guest's arrival and verify their code at check-in.
-            </p>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/host/bookings" style="display: inline-block; background-color: #A0937D; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">View Booking Details</a>
-          </div>
-          
-          <p style="color: #666; font-size: 14px; margin-top: 30px; text-align: center;">
-            Best regards,<br>
-            <strong>The Rentifi Team</strong>
-          </p>
+          <p style="color: #666; font-size: 14px; line-height: 1.6;">Please reach out to your guest with check-in instructions. We hope they have a great stay!</p>
+        </div>
+        
+        <div style="text-align: center; color: #999; font-size: 12px;">
+          <p>© 2024 Rentifi. All rights reserved.</p>
+          <p>Host support: support@rentifi.com</p>
         </div>
       </div>
     `
   }),
-  passwordReset: (resetCode, fullName) => ({
-    subject: 'Password Reset Request - Rentifi',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #A0937D; font-size: 32px; margin: 0;">Rentifi</h1>
-            <p style="color: #666; margin: 5px 0;">Your trusted rental platform</p>
-          </div>
-          
-          <h2 style="color: #333; margin-bottom: 20px;">Password Reset Request</h2>
-          <p style="color: #666; font-size: 16px; line-height: 1.5;">
-            Hello ${fullName}, you requested to reset your password. Use the code below to reset your password:
-          </p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <div style="background-color: #f8f9fa; border: 2px dashed #A0937D; padding: 20px; border-radius: 8px; display: inline-block;">
-              <h1 style="color: #A0937D; font-size: 36px; font-weight: bold; margin: 0; letter-spacing: 8px;">${resetCode}</h1>
-            </div>
-          </div>
-          
-          <p style="color: #666; font-size: 14px; text-align: center; margin: 20px 0;">
-            This code will expire in <strong>15 minutes</strong>
-          </p>
-          
-          <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
-            <p style="color: #856404; margin: 0; font-size: 14px;">
-              <strong>Security Note:</strong> If you didn't request this password reset, please ignore this email and your password will remain unchanged.
-            </p>
-          </div>
-          
-          <p style="color: #666; font-size: 14px; margin-top: 30px;">
-            Best regards,<br>
-            <strong>The Rentifi Team</strong>
-          </p>
-        </div>
-      </div>
-    `
-  }),
+
   propertyApproval: (data) => ({
-    subject: '✅ Your Property Has Been Approved - Rentifi',
+    subject: 'Property Approved - Welcome to Rentifi!',
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #A0937D; font-size: 32px; margin: 0;">Rentifi</h1>
-            <p style="color: #666; margin: 5px 0;">Your trusted rental platform</p>
-          </div>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #A0937D 0%, #E3CDC1 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">Property Approved! ✅</h1>
+          <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Your Listing is Now Live</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+          <h2 style="color: #333; margin: 0 0 20px 0;">Congratulations!</h2>
+          <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">Your property <strong>${data.title || 'listing'}</strong> has been approved and is now visible to guests on Rentifi.</p>
           
-          <div style="text-align: center; margin: 30px 0;">
-            <div style="background-color: #d4edda; border-radius: 50%; width: 80px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
-              <span style="font-size: 48px;">✅</span>
-            </div>
-          </div>
-          
-          <h2 style="color: #28a745; text-align: center; margin-bottom: 20px;">Property Approved!</h2>
-          <p style="color: #666; font-size: 16px; line-height: 1.5;">
-            Hello ${data.hostName},
-          </p>
-          <p style="color: #666; font-size: 16px; line-height: 1.5;">
-            Great news! Your property listing "<strong>${data.propertyTitle}</strong>" has been verified and approved by our admin team.
-          </p>
-          
-          <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #28a745;">
-            <h3 style="color: #28a745; margin-top: 0;">What's Next?</h3>
+          <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #A0937D; margin: 20px 0;">
+            <h3 style="color: #A0937D; margin: 0 0 15px 0;">What's Next?</h3>
             <ul style="color: #666; line-height: 1.8; padding-left: 20px;">
-              <li>Your property is now <strong>live</strong> and visible to guests</li>
-              <li>Start receiving booking requests</li>
-              <li>Keep your calendar updated</li>
-              <li>Respond promptly to inquiries</li>
+              <li>Your property is now searchable by potential guests</li>
+              <li>You'll receive email notifications for new bookings</li>
+              <li>Keep your calendar updated for accurate availability</li>
+              <li>Respond to guest inquiries promptly</li>
             </ul>
           </div>
           
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/host/dashboard" 
-               style="background-color: #A0937D; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-              View Your Dashboard
-            </a>
-          </div>
-          
-          <div style="background-color: #e7f3ff; border-left: 4px solid #0066cc; padding: 15px; margin: 20px 0;">
-            <p style="color: #004085; margin: 0; font-size: 14px;">
-              <strong>💡 Pro Tip:</strong> High-quality photos and detailed descriptions help attract more bookings. Consider adding more amenity details to stand out!
-            </p>
-          </div>
-          
-          <p style="color: #666; font-size: 14px; margin-top: 30px;">
-            Congratulations on your approval!<br>
-            <strong>The Rentifi Team</strong>
-          </p>
+          <p style="color: #666; font-size: 14px; line-height: 1.6;">Thank you for choosing Rentifi. We're excited to help you connect with travelers!</p>
+        </div>
+        
+        <div style="text-align: center; color: #999; font-size: 12px;">
+          <p>© 2024 Rentifi. All rights reserved.</p>
+          <p>Host support: support@rentifi.com</p>
         </div>
       </div>
     `
   }),
+
   propertyRejection: (data) => ({
-    subject: '⚠️ Property Verification Update - Rentifi',
+    subject: 'Property Review - Action Required',
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #A0937D; font-size: 32px; margin: 0;">Rentifi</h1>
-            <p style="color: #666; margin: 5px 0;">Your trusted rental platform</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #A0937D 0%, #E3CDC1 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">Property Review</h1>
+          <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Updates Needed</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+          <h2 style="color: #333; margin: 0 0 20px 0;">Hi there!</h2>
+          <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">Thank you for submitting your property <strong>${data.title || 'listing'}</strong> to Rentifi. We've completed our review and need a few updates before we can approve your listing.</p>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #e74c3c; margin: 20px 0;">
+            <h3 style="color: #e74c3c; margin: 0 0 15px 0;">Required Updates:</h3>
+            <p style="color: #666; line-height: 1.6;">${data.rejectionReason || 'Please ensure all property details are accurate and complete, including high-quality photos and detailed descriptions.'}</p>
           </div>
           
-          <div style="text-align: center; margin: 30px 0;">
-            <div style="background-color: #fff3cd; border-radius: 50%; width: 80px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
-              <span style="font-size: 48px;">⚠️</span>
-            </div>
-          </div>
-          
-          <h2 style="color: #856404; text-align: center; margin-bottom: 20px;">Property Verification Needed</h2>
-          <p style="color: #666; font-size: 16px; line-height: 1.5;">
-            Hello ${data.hostName},
-          </p>
-          <p style="color: #666; font-size: 16px; line-height: 1.5;">
-            Thank you for submitting your property listing "<strong>${data.propertyTitle}</strong>". After careful review, we need some additional information or corrections before we can approve your listing.
-          </p>
-          
-          <div style="background-color: #fff3cd; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #ffc107;">
-            <h3 style="color: #856404; margin-top: 0;">Reason for Review:</h3>
-            <p style="color: #856404; font-size: 15px; line-height: 1.6; margin: 0;">
-              ${data.rejectionReason}
-            </p>
-          </div>
-          
-          <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0;">
-            <h3 style="color: #333; margin-top: 0;">Next Steps:</h3>
-            <ol style="color: #666; line-height: 1.8; padding-left: 20px;">
-              <li>Review the feedback above</li>
-              <li>Update your property listing with the necessary corrections</li>
-              <li>Resubmit your property for verification</li>
-            </ol>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/host/dashboard" 
-               style="background-color: #A0937D; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-              Update Your Listing
-            </a>
-          </div>
-          
-          <div style="background-color: #e7f3ff; border-left: 4px solid #0066cc; padding: 15px; margin: 20px 0;">
-            <p style="color: #004085; margin: 0; font-size: 14px;">
-              <strong>Need Help?</strong> If you have questions about the verification process or need assistance, please contact our support team.
-            </p>
-          </div>
-          
-          <p style="color: #666; font-size: 14px; margin-top: 30px;">
-            We're here to help!<br>
-            <strong>The Rentifi Team</strong>
-          </p>
+          <p style="color: #666; font-size: 14px; line-height: 1.6;">Once you've made these updates, please resubmit your listing and we'll review it again promptly.</p>
+        </div>
+        
+        <div style="text-align: center; color: #999; font-size: 12px;">
+          <p>© 2024 Rentifi. All rights reserved.</p>
+          <p>Questions? Contact support@rentifi.com</p>
         </div>
       </div>
     `
   })
 };
 
-export default transporter;
+export { resend, emailEnabled, FROM_ADDRESS };
+export default { resend, emailEnabled, FROM_ADDRESS, emailTemplates };

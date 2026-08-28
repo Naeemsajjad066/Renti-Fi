@@ -1,167 +1,111 @@
-import transporter, { emailTemplates } from '../config/email.js';
+import { resend, emailEnabled, FROM_ADDRESS, emailTemplates } from '../config/email.js';
+
+// Safe send wrapper — logs and returns null on failure, never throws
+const safeSend = async (emailData, label = 'email') => {
+  if (!emailEnabled) {
+    console.warn(`⚠️  Email disabled — skipping "${label}" to ${emailData.to}`);
+    return null;
+  }
+
+  try {
+    const result = await resend.emails.send({
+      from: emailData.from || FROM_ADDRESS,
+      to: emailData.to,
+      subject: emailData.subject,
+      html: emailData.html,
+    });
+    
+    console.log(`✅ ${label} sent to ${emailData.to} (ID: ${result.data?.id || 'unknown'})`);
+    return result;
+  } catch (error) {
+    // Log but never propagate — email failure must not break the caller
+    console.error(`❌ Failed to send ${label} to ${emailData.to}:`, error.message);
+    
+    // Provide helpful debugging for common Resend errors
+    if (error.message.includes('Invalid domain')) {
+      console.error('   → Check FROM_EMAIL domain is verified in Resend dashboard');
+    } else if (error.message.includes('API key')) {
+      console.error('   → Verify RESEND_API_KEY is correct');
+    }
+    
+    return null;
+  }
+};
 
 // Generate 6-digit verification code
 export const generateVerificationCode = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+  return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// Send verification email
 export const sendVerificationEmail = async (email, code, fullName) => {
-    try {
-        const template = emailTemplates.verification(code, fullName);
-        
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-            to: email,
-            subject: template.subject,
-            html: template.html
-        };
-
-        const result = await transporter.sendMail(mailOptions);
-        console.log('Verification email sent to:', email);
-        return result;
-    } catch (error) {
-        console.error('Email send failed:', error.message);
-        throw new Error(`Failed to send verification email: ${error.message}`);
-    }
+  const template = emailTemplates.verification(code, fullName);
+  return safeSend({
+    to: email,
+    subject: template.subject,
+    html: template.html
+  }, 'verification email');
 };
 
-// Send password reset email
 export const sendPasswordResetEmail = async (email, resetCode, fullName) => {
-    try {
-        const template = emailTemplates.passwordReset(resetCode, fullName);
-        
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-            to: email,
-            subject: template.subject,
-            html: template.html
-        };
-
-        const result = await transporter.sendMail(mailOptions);
-        console.log('Password reset email sent to:', email);
-        return result;
-    } catch (error) {
-        console.error('Reset email failed:', error.message);
-        throw new Error(`Failed to send password reset email: ${error.message}`);
-    }
+  const template = emailTemplates.passwordReset(resetCode, fullName);
+  return safeSend({
+    to: email,
+    subject: template.subject,
+    html: template.html
+  }, 'password reset email');
 };
 
-// Send welcome email
 export const sendWelcomeEmail = async (email, user) => {
-    try {
-        const template = emailTemplates.welcome(user);
-        
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-            to: email,
-            subject: template.subject,
-            html: template.html
-        };
-
-        await transporter.sendMail(mailOptions);
-        console.log('Welcome email sent to:', email);
-    } catch (error) {
-        console.error('Welcome email failed:', error.message);
-        // Don't throw error for welcome email failure
-    }
+  const template = emailTemplates.welcome(user);
+  return safeSend({
+    to: email,
+    subject: template.subject,
+    html: template.html
+  }, 'welcome email');
 };
 
-// Send booking confirmation email to guest
 export const sendBookingConfirmationEmail = async (booking, property, user) => {
-    try {
-        const template = emailTemplates.bookingConfirmation(booking, property, user);
-        
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-            to: user.email,
-            subject: template.subject,
-            html: template.html
-        };
-
-        await transporter.sendMail(mailOptions);
-        console.log('Booking confirmation email sent to guest:', user.email);
-    } catch (error) {
-        console.error('Booking confirmation email failed:', error.message);
-        throw new Error(`Failed to send booking confirmation email: ${error.message}`);
-    }
+  const template = emailTemplates.bookingConfirmation(booking, property, user);
+  return safeSend({
+    to: user.email,
+    subject: template.subject,
+    html: template.html
+  }, 'booking confirmation');
 };
 
-// Send booking notification email to host
 export const sendHostBookingNotification = async (booking, property, guest, host) => {
-    try {
-        const template = emailTemplates.hostBookingNotification(booking, property, guest, host);
-        
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-            to: host.email,
-            subject: template.subject,
-            html: template.html
-        };
-
-        await transporter.sendMail(mailOptions);
-        console.log('Booking notification email sent to host:', host.email);
-    } catch (error) {
-        console.error('Host booking notification email failed:', error.message);
-        throw new Error(`Failed to send host booking notification email: ${error.message}`);
-    }
+  const template = emailTemplates.hostBookingNotification(booking, property, guest, host);
+  return safeSend({
+    to: host.email,
+    subject: template.subject,
+    html: template.html
+  }, 'host booking notification');
 };
 
-// Send property approval email
 export const sendPropertyApprovalEmail = async (email, data) => {
-    try {
-        const template = emailTemplates.propertyApproval(data);
-        
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-            to: email,
-            subject: template.subject,
-            html: template.html
-        };
-
-        await transporter.sendMail(mailOptions);
-        console.log('Property approval email sent to:', email);
-    } catch (error) {
-        console.error('Property approval email failed:', error.message);
-        throw new Error(`Failed to send property approval email: ${error.message}`);
-    }
+  const template = emailTemplates.propertyApproval(data);
+  return safeSend({
+    to: email,
+    subject: template.subject,
+    html: template.html
+  }, 'property approval');
 };
 
-// Send property rejection email
 export const sendPropertyRejectionEmail = async (email, data) => {
-    try {
-        const template = emailTemplates.propertyRejection(data);
-        
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-            to: email,
-            subject: template.subject,
-            html: template.html
-        };
-
-        await transporter.sendMail(mailOptions);
-        console.log('Property rejection email sent to:', email);
-    } catch (error) {
-        console.error('Property rejection email failed:', error.message);
-        throw new Error(`Failed to send property rejection email: ${error.message}`);
-    }
+  const template = emailTemplates.propertyRejection(data);
+  return safeSend({
+    to: email,
+    subject: template.subject,
+    html: template.html
+  }, 'property rejection');
 };
 
 // Generic email sender for custom emails (used by payment system)
-export const sendEmail = async ({ to, subject, html }) => {
-    try {
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-            to: to,
-            subject: subject,
-            html: html
-        };
-
-        const result = await transporter.sendMail(mailOptions);
-        console.log('Email sent to:', to);
-        return result;
-    } catch (error) {
-        console.error('Email send failed:', error.message);
-        throw new Error(`Failed to send email: ${error.message}`);
-    }
+export const sendEmail = async ({ to, subject, html, from = null }) => {
+  return safeSend({
+    to,
+    subject,
+    html,
+    from: from || FROM_ADDRESS
+  }, 'generic email');
 };
