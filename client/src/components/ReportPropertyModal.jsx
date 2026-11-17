@@ -217,7 +217,7 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A0937D] focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent"
                 required
               >
                 {categories.map((cat) => (
@@ -238,7 +238,7 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
                 onChange={handleInputChange}
                 placeholder="Brief summary of the issue"
                 maxLength={200}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A0937D] focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent"
                 required
               />
               <p className="text-xs text-gray-500 mt-1">{formData.title.length}/200 characters</p>
@@ -254,7 +254,7 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
                 placeholder="Provide detailed information about the issue..."
                 rows={5}
                 maxLength={2000}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A0937D] focus:border-transparent resize-none"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent resize-none"
                 required
               />
               <p className="text-xs text-gray-500 mt-1">
@@ -271,7 +271,7 @@ const ReportPropertyModal = ({ property, isOpen, onClose, onSuccess }) => {
                 Upload up to 5 images or documents (max 5MB each)
               </p>
 
-              <label className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-[#A0937D] transition">
+              <label className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-teal transition">
                 <Upload size={32} className="text-gray-400 mb-2" />
                 <span className="text-sm text-gray-600">Click to upload or drag and drop</span>
                 <span className="text-xs text-gray-400 mt-1">PNG, JPG, PDF (max 5MB)</span>

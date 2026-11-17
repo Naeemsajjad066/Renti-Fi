@@ -75,7 +75,7 @@ const ReviewList = ({ propertyId }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A0937D]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal"></div>
       </div>
     );
   }
@@ -84,12 +84,12 @@ const ReviewList = ({ propertyId }) => {
     <div className="space-y-6">
       {/* Stats Section */}
       {stats && (
-        <Card className="p-6 bg-gradient-to-r from-[#F6E6CB] to-[#E7D4B5]">
+        <Card className="p-6 bg-gradient-to-r from-teal/10 to-charcoal-gray/10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Overall Rating */}
             <div className="text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                <Star className="w-8 h-8 fill-[#A0937D] text-[#A0937D]" />
+                <Star className="w-8 h-8 fill-teal text-teal" />
                 <span className="text-4xl font-bold text-gray-900">
                   {stats.averageRating?.toFixed(1) || '0.0'}
                 </span>
@@ -116,7 +116,7 @@ const ReviewList = ({ propertyId }) => {
                           initial={{ width: 0 }}
                           animate={{ width: `${percentage}%` }}
                           transition={{ duration: 0.5, delay: rating * 0.1 }}
-                          className="bg-[#A0937D] h-full"
+                          className="bg-teal h-full"
                         />
                       </div>
                       <span className="text-sm text-gray-600 w-8">{count}</span>
@@ -129,7 +129,7 @@ const ReviewList = ({ propertyId }) => {
 
           {/* Detailed Stats */}
           {stats.averageCleanliness && (
-            <div className="mt-6 pt-6 border-t border-[#A0937D]/20">
+            <div className="mt-6 pt-6 border-t border-teal/20">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {[
                   { label: 'Cleanliness', value: stats.averageCleanliness },

@@ -19,10 +19,15 @@ export default {
     },
     extend: {
       colors: {
-        'earth-brown': '#A0937D',
-        'cream-beige': '#E7D4B5',
-        'light-beige': '#F6E6CB',
-        'soft-peach': '#E3CDC1',
+        /* ── new brand palette ── */
+        'charcoal-gray': '#36454F',
+        teal: '#008C8C',
+        tangerine: '#F28500',
+        /* ── kept for any residual references during migration ── */
+        'earth-brown': '#008C8C' /* remapped → teal */,
+        'cream-beige': '#d0e8e8' /* remapped → light teal tint */,
+        'light-beige': '#e8f4f4' /* remapped → lighter teal tint */,
+        'soft-peach': '#F28500' /* remapped → tangerine */,
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
@@ -77,15 +82,17 @@ export default {
         sm: 'calc(var(--radius) - 4px)',
       },
       boxShadow: {
-        soft: '0 2px 10px rgba(160, 147, 125, 0.1)',
-        card: '0 4px 20px rgba(160, 147, 125, 0.15)',
-        elevated: '0 10px 30px rgba(160, 147, 125, 0.2)',
+        soft: '0 2px 10px rgba(0, 140, 140, 0.1)',
+        card: '0 4px 20px rgba(0, 140, 140, 0.15)',
+        elevated: '0 10px 30px rgba(0, 140, 140, 0.2)',
       },
       backgroundImage: {
-        'gradient-earth': 'linear-gradient(to right, #A0937D, #E7D4B5)',
-        'gradient-cream': 'linear-gradient(to right, #E7D4B5, #F6E6CB)',
-        'gradient-peach': 'linear-gradient(to right, #F6E6CB, #E3CDC1)',
-        'gradient-brand': 'linear-gradient(to right, #A0937D, #E3CDC1)',
+        'gradient-brand': 'linear-gradient(to right, #36454F, #008C8C)',
+        'gradient-teal': 'linear-gradient(to right, #008C8C, #00aaaa)',
+        'gradient-cta': 'linear-gradient(to right, #008C8C, #F28500)',
+        'gradient-earth': 'linear-gradient(to right, #008C8C, #d0e8e8)',
+        'gradient-cream': 'linear-gradient(to right, #d0e8e8, #e8f4f4)',
+        'gradient-peach': 'linear-gradient(to right, #F28500, #ffaa44)',
       },
       keyframes: {
         'accordion-down': {
