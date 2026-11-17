@@ -30,6 +30,38 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
+      - name: Validate deployment configuration
+        id: validate
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+        run: |
+          missing=()
+          for name in \
+            DEPLOY_HOST \
+            DEPLOY_USER \
+            DEPLOY_SSH_KEY \
+            DEPLOY_PATH \
+            VITE_BACKEND_URL \
+            VITE_API_URL \
+            VITE_STRIPE_PUBLISHABLE_KEY; do
+            if [[ -z "${!name}" ]]; then
+              missing+=("$name")
+            fi
+          done
+
+          if (( ${#missing[@]} > 0 )); then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Production deployment skipped; missing Actions secrets: ${missing[*]}"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -55,16 +87,19 @@ jobs:
 
       # ── Add SSH key ────────────────────────────────────────────────────────
       - name: Add SSH key
+        if: steps.validate.outputs.configured == 'true'
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
       - name: Add server to known hosts
+        if: steps.validate.outputs.configured == 'true'
         run: |
           ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
 
       # ── Upload built frontend to server ───────────────────────────────────
       - name: Upload client/dist to server
+        if: steps.validate.outputs.configured == 'true'
         run: |
           rsync -az --delete \
             client/dist/ \
@@ -72,6 +107,7 @@ jobs:
 
       # ── SSH deploy script ──────────────────────────────────────────────────
       - name: Deploy on server
+        if: steps.validate.outputs.configured == 'true'
         run: |
           ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
             set -e
