@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import axios from '../lib/api';
 import toast from 'react-hot-toast';
 import { AuthContext } from './AuthContext';
@@ -34,7 +34,7 @@ export const BookingProvider = ({ children }) => {
   const [cache, setCache] = useState(new Map());
 
   // ✅ Fetch all bookings for current user (both as guest and host)
-  const fetchAllBookings = async () => {
+  const fetchAllBookings = useCallback(async () => {
     if (!authUser?._id) return;
 
     try {
@@ -65,10 +65,10 @@ export const BookingProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authUser?._id]);
 
   // ✅ Fetch guest bookings only
-  const fetchGuestBookings = async () => {
+  const fetchGuestBookings = useCallback(async () => {
     if (!authUser) return;
 
     try {
@@ -95,10 +95,10 @@ export const BookingProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authUser]);
 
   // ✅ Fetch host bookings only
-  const fetchHostBookings = async () => {
+  const fetchHostBookings = useCallback(async () => {
     if (!authUser?._id) return;
 
     try {
@@ -117,10 +117,10 @@ export const BookingProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authUser?._id]);
 
   // ✅ Refresh bookings
-  const refreshBookings = async (type = 'all') => {
+  const refreshBookings = useCallback(async (type = 'all') => {
     setRefreshing(true);
     try {
       switch (type) {
@@ -136,7 +136,7 @@ export const BookingProvider = ({ children }) => {
     } finally {
       setRefreshing(false);
     }
-  };
+  }, [fetchAllBookings, fetchGuestBookings, fetchHostBookings]);
 
   // ✅ Get single booking by ID
   const fetchBookingById = async (id, { skipCache = false } = {}) => {
@@ -455,7 +455,6 @@ export const BookingProvider = ({ children }) => {
   };
 
   // ✅ Initialize bookings when user changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (authUser) {
       fetchAllBookings();
@@ -468,8 +467,7 @@ export const BookingProvider = ({ children }) => {
       setError(null);
       setCache(new Map());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authUser]);
+  }, [authUser, fetchAllBookings]);
 
   const value = {
     // State
