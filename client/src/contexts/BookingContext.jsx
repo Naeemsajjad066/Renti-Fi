@@ -120,23 +120,26 @@ export const BookingProvider = ({ children }) => {
   }, [authUser?._id]);
 
   // ✅ Refresh bookings
-  const refreshBookings = useCallback(async (type = 'all') => {
-    setRefreshing(true);
-    try {
-      switch (type) {
-        case 'guest':
-          await fetchGuestBookings();
-          break;
-        case 'host':
-          await fetchHostBookings();
-          break;
-        default:
-          await fetchAllBookings();
+  const refreshBookings = useCallback(
+    async (type = 'all') => {
+      setRefreshing(true);
+      try {
+        switch (type) {
+          case 'guest':
+            await fetchGuestBookings();
+            break;
+          case 'host':
+            await fetchHostBookings();
+            break;
+          default:
+            await fetchAllBookings();
+        }
+      } finally {
+        setRefreshing(false);
       }
-    } finally {
-      setRefreshing(false);
-    }
-  }, [fetchAllBookings, fetchGuestBookings, fetchHostBookings]);
+    },
+    [fetchAllBookings, fetchGuestBookings, fetchHostBookings]
+  );
 
   // ✅ Get single booking by ID
   const fetchBookingById = async (id, { skipCache = false } = {}) => {

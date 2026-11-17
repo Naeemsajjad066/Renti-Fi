@@ -6,8 +6,8 @@
 
 @layer base {
   :root {
-    --background: 195 15% 97%;       /* very light teal-tinted white */
-    --foreground: 200 25% 18%;       /* deep charcoal */
+    --background: 195 15% 97%; /* very light teal-tinted white */
+    --foreground: 200 25% 18%; /* deep charcoal */
 
     --card: 195 15% 97%;
     --card-foreground: 200 25% 18%;
@@ -15,16 +15,16 @@
     --popover: 195 15% 97%;
     --popover-foreground: 200 25% 18%;
 
-    --primary: 200 100% 27%;         /* #008C8C teal */
+    --primary: 200 100% 27%; /* #008C8C teal */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 200 16% 26%;        /* #36454F charcoal-gray */
+    --secondary: 200 16% 26%; /* #36454F charcoal-gray */
     --secondary-foreground: 0 0% 100%;
 
     --muted: 195 20% 92%;
     --muted-foreground: 200 15% 40%;
 
-    --accent: 33 99% 48%;            /* #F28500 tangerine */
+    --accent: 33 99% 48%; /* #F28500 tangerine */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -37,15 +37,15 @@
     --radius: 0.75rem;
 
     /* Brand palette — direct hex values for use in arbitrary CSS */
-    --charcoal-gray: #36454F;
-    --teal: #008C8C;
-    --tangerine: #F28500;
+    --charcoal-gray: #36454f;
+    --teal: #008c8c;
+    --tangerine: #f28500;
 
-    --sidebar-background: 200 16% 26%;   /* charcoal */
+    --sidebar-background: 200 16% 26%; /* charcoal */
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 200 100% 27%;     /* teal */
+    --sidebar-primary: 200 100% 27%; /* teal */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 33 99% 48%;        /* tangerine */
+    --sidebar-accent: 33 99% 48%; /* tangerine */
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 200 15% 32%;
     --sidebar-ring: 200 100% 27%;
@@ -61,7 +61,7 @@
     --popover: 200 25% 10%;
     --popover-foreground: 195 20% 92%;
 
-    --primary: 200 100% 35%;         /* slightly lighter teal for dark mode */
+    --primary: 200 100% 35%; /* slightly lighter teal for dark mode */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 200 16% 20%;
@@ -328,7 +328,7 @@
 
 /* ─── react-day-picker v9 — Rentifi booking calendar overrides ──────────── */
 .rdp-rentifi {
-  --rdp-accent-color: #008C8C;
+  --rdp-accent-color: #008c8c;
   --rdp-accent-background-color: rgba(0, 140, 140, 0.12);
 }
 
@@ -358,7 +358,7 @@
 .rdp-rentifi .rdp-selected .rdp-day_button,
 .rdp-rentifi .rdp-range_start .rdp-day_button,
 .rdp-rentifi .rdp-range_end .rdp-day_button {
-  background-color: #008C8C !important;
+  background-color: #008c8c !important;
   color: #fff !important;
   font-weight: 600;
 }
@@ -376,7 +376,7 @@
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
-  color: #008C8C;
+  color: #008c8c;
 }
 
 /* disabled = past days → grey out */

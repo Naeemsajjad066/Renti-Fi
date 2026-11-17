@@ -36,7 +36,8 @@ const fadeUp = {
 const InfoBadge = ({ color, children }) => {
   const styles = {
     teal: 'bg-[#e6f4f4] border-earth-brown text-[#005f5f] dark:bg-earth-brown/10 dark:border-earth-brown/60 dark:text-cream-beige',
-    orange: 'bg-orange-50 border-soft-peach text-orange-800 dark:bg-soft-peach/10 dark:border-soft-peach/60 dark:text-orange-200',
+    orange:
+      'bg-orange-50 border-soft-peach text-orange-800 dark:bg-soft-peach/10 dark:border-soft-peach/60 dark:text-orange-200',
     blue: 'bg-blue-50 border-blue-400 text-blue-800 dark:bg-blue-900/20 dark:border-blue-500 dark:text-blue-200',
   };
   return (
@@ -143,7 +144,6 @@ const PrivacyPolicy = () => {
       {/* ── Body ── */}
       <div className="page-container max-w-5xl py-12">
         <div className="flex gap-8 items-start">
-
           {/* Sticky TOC */}
           <motion.aside
             initial={{ opacity: 0, x: -20 }}
@@ -176,8 +176,12 @@ const PrivacyPolicy = () => {
 
           {/* Sections */}
           <div className="flex-1 space-y-5">
-
-            <SectionCard id="information-we-collect" icon={Eye} number="01" title="Information We Collect">
+            <SectionCard
+              id="information-we-collect"
+              icon={Eye}
+              number="01"
+              title="Information We Collect"
+            >
               <p>When you use RentiFi, we may collect the following types of information:</p>
               <SubSection
                 title="a. Personal Information"
@@ -209,7 +213,12 @@ const PrivacyPolicy = () => {
               />
             </SectionCard>
 
-            <SectionCard id="how-we-use" icon={UserCheck} number="02" title="How We Use Your Information">
+            <SectionCard
+              id="how-we-use"
+              icon={UserCheck}
+              number="02"
+              title="How We Use Your Information"
+            >
               <p>RentiFi uses your information for purposes including:</p>
               <BulletList
                 items={[
@@ -276,7 +285,12 @@ const PrivacyPolicy = () => {
               </p>
             </SectionCard>
 
-            <SectionCard id="user-responsibilities" icon={UserCheck} number="06" title="User Responsibilities">
+            <SectionCard
+              id="user-responsibilities"
+              icon={UserCheck}
+              number="06"
+              title="User Responsibilities"
+            >
               <BulletList
                 items={[
                   'Provide accurate information during registration, verification, and bookings',
@@ -289,7 +303,12 @@ const PrivacyPolicy = () => {
               />
             </SectionCard>
 
-            <SectionCard id="changes" icon={RefreshCw} number="07" title="Changes to this Privacy Policy">
+            <SectionCard
+              id="changes"
+              icon={RefreshCw}
+              number="07"
+              title="Changes to this Privacy Policy"
+            >
               <p>
                 RentiFi may update this Privacy Policy from time to time. Changes will be effective
                 upon posting on the Platform. Continued use of the Platform constitutes acceptance
@@ -307,7 +326,6 @@ const PrivacyPolicy = () => {
                 support@rentifi.com
               </a>
             </SectionCard>
-
           </div>
         </div>
       </div>

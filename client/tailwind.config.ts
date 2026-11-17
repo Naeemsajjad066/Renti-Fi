@@ -21,13 +21,13 @@ export default {
       colors: {
         /* ── new brand palette ── */
         'charcoal-gray': '#36454F',
-        'teal': '#008C8C',
-        'tangerine': '#F28500',
+        teal: '#008C8C',
+        tangerine: '#F28500',
         /* ── kept for any residual references during migration ── */
-        'earth-brown': '#008C8C',   /* remapped → teal */
-        'cream-beige': '#d0e8e8',   /* remapped → light teal tint */
-        'light-beige': '#e8f4f4',   /* remapped → lighter teal tint */
-        'soft-peach': '#F28500',    /* remapped → tangerine */
+        'earth-brown': '#008C8C' /* remapped → teal */,
+        'cream-beige': '#d0e8e8' /* remapped → light teal tint */,
+        'light-beige': '#e8f4f4' /* remapped → lighter teal tint */,
+        'soft-peach': '#F28500' /* remapped → tangerine */,
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
