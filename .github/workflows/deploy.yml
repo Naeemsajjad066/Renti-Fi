@@ -25,6 +25,7 @@ jobs:
         run: npm ci && npm run build
 
       - name: Add SSH key
+        if: steps.validate.outputs.configured == 'true'
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
