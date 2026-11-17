@@ -100,10 +100,10 @@ const Navbar = () => {
             <Link to="/" className="flex items-center">
               <div className="flex items-center">
                 <div className="relative">
-                  <div className="w-10 h-10 bg-gradient-to-br from-earth-brown to-soft-peach rounded-lg flex items-center justify-center shadow-md">
+                  <div className="w-10 h-10 bg-earth-brown rounded-lg flex items-center justify-center shadow-md">
                     <Home size={20} className="text-white" />
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-white rounded-full border-2 border-soft-peach"></div>
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-soft-peach rounded-full"></div>
                 </div>
                 <span className="ml-2 text-xl sm:text-2xl font-display font-bold">
                   <span className="text-earth-brown">Rent</span>

@@ -80,7 +80,7 @@ const ReviewCard = ({ review, onDelete, onEdit, showHostResponse = true }) => {
                 src={review.user?.profilePic}
                 alt={review.user?.fullName || review.user?.name}
               />
-              <AvatarFallback className="bg-[#A0937D] text-white">
+              <AvatarFallback className="bg-teal text-white">
                 {getInitials(review.user?.fullName || review.user?.name)}
               </AvatarFallback>
             </Avatar>
@@ -134,7 +134,7 @@ const ReviewCard = ({ review, onDelete, onEdit, showHostResponse = true }) => {
 
         {/* Detailed Ratings */}
         {(review.cleanliness || review.accuracy || review.communication) && (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4 p-4 bg-[#F6E6CB] rounded-lg">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4 p-4 bg-teal/10 rounded-lg">
             {review.cleanliness && (
               <div>
                 <p className="text-xs text-gray-600 mb-1">Cleanliness</p>
@@ -176,9 +176,9 @@ const ReviewCard = ({ review, onDelete, onEdit, showHostResponse = true }) => {
 
         {/* Host Response */}
         {showHostResponse && review.hostResponse?.comment && (
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg border-l-4 border-[#A0937D]">
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg border-l-4 border-teal">
             <div className="flex items-center gap-2 mb-2">
-              <MessageCircle className="w-4 h-4 text-[#A0937D]" />
+              <MessageCircle className="w-4 h-4 text-teal" />
               <span className="font-semibold text-sm text-gray-900">Response from host</span>
               <span className="text-xs text-gray-500">
                 {formatDate(review.hostResponse.respondedAt)}
@@ -195,14 +195,14 @@ const ReviewCard = ({ review, onDelete, onEdit, showHostResponse = true }) => {
               value={responseText}
               onChange={(e) => setResponseText(e.target.value)}
               placeholder="Write your response..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A0937D] focus:border-transparent resize-none"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent resize-none"
               rows="3"
             />
             <div className="flex gap-2 mt-2">
               <Button
                 type="submit"
                 disabled={isSubmitting || !responseText.trim()}
-                className="bg-[#A0937D] hover:bg-[#8a7d6b]"
+                className="bg-teal hover:bg-teal/90"
               >
                 {isSubmitting ? 'Posting...' : 'Post Response'}
               </Button>
@@ -224,7 +224,7 @@ const ReviewCard = ({ review, onDelete, onEdit, showHostResponse = true }) => {
         <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-200">
           <button
             onClick={handleMarkHelpful}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#A0937D] transition-colors"
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-teal transition-colors"
           >
             <ThumbsUp className="w-4 h-4" />
             <span>Helpful ({review.helpfulCount || 0})</span>
@@ -233,7 +233,7 @@ const ReviewCard = ({ review, onDelete, onEdit, showHostResponse = true }) => {
           {isHost && !review.hostResponse && !showResponseForm && (
             <button
               onClick={() => setShowResponseForm(true)}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#A0937D] transition-colors"
+              className="flex items-center gap-2 text-sm text-gray-600 hover:text-teal transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
               <span>Respond</span>

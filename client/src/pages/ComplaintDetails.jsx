@@ -123,7 +123,7 @@ const ComplaintDetails = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A0937D]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal"></div>
       </div>
     );
   }
@@ -135,7 +135,7 @@ const ComplaintDetails = () => {
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Complaint Not Found</h2>
         <button
           onClick={() => navigate('/admin/complaints')}
-          className="mt-4 px-6 py-2 bg-[#A0937D] text-white rounded-lg hover:bg-[#8a7d6b]"
+          className="mt-4 px-6 py-2 bg-teal text-white rounded-lg hover:bg-teal/90"
         >
           Back to Complaints
         </button>
@@ -213,10 +213,10 @@ const ComplaintDetails = () => {
                         <img
                           src={attachment.url}
                           alt={`Attachment ${index + 1}`}
-                          className="w-full h-48 object-cover rounded-lg border border-gray-200 hover:border-[#A0937D] transition"
+                          className="w-full h-48 object-cover rounded-lg border border-gray-200 hover:border-teal transition"
                         />
                       ) : (
-                        <div className="w-full h-48 bg-gray-100 rounded-lg border border-gray-200 hover:border-[#A0937D] flex items-center justify-center">
+                        <div className="w-full h-48 bg-gray-100 rounded-lg border border-gray-200 hover:border-teal flex items-center justify-center">
                           <ImageIcon size={48} className="text-gray-400" />
                         </div>
                       )}
@@ -295,7 +295,7 @@ const ComplaintDetails = () => {
                     </div>
                     <button
                       onClick={() => window.open(`/property/${complaint.property._id}`, '_blank')}
-                      className="mt-2 text-[#A0937D] hover:text-[#8a7d6b] font-semibold text-sm flex items-center gap-1"
+                      className="mt-2 text-teal hover:text-teal/80 font-semibold text-sm flex items-center gap-1"
                     >
                       View Property <ExternalLink size={14} />
                     </button>
@@ -366,7 +366,7 @@ const ComplaintDetails = () => {
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A0937D] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent"
                 >
                   <option value="pending">Pending</option>
                   <option value="under_review">Under Review</option>
@@ -381,7 +381,7 @@ const ComplaintDetails = () => {
                 <select
                   value={formData.priority}
                   onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A0937D] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -398,7 +398,7 @@ const ComplaintDetails = () => {
                   onChange={(e) => setFormData({ ...formData, adminNotes: e.target.value })}
                   rows={4}
                   placeholder="Internal notes about this complaint..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A0937D] focus:border-transparent resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent resize-none"
                 />
               </div>
 
@@ -410,7 +410,7 @@ const ComplaintDetails = () => {
                   onChange={(e) => setFormData({ ...formData, resolution: e.target.value })}
                   rows={4}
                   placeholder="How was this complaint resolved?"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A0937D] focus:border-transparent resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent resize-none"
                 />
               </div>
 
@@ -418,7 +418,7 @@ const ComplaintDetails = () => {
               <button
                 onClick={handleUpdate}
                 disabled={updating}
-                className="w-full px-4 py-3 bg-[#A0937D] text-white rounded-lg hover:bg-[#8a7d6b] transition disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                className="w-full px-4 py-3 bg-teal text-white rounded-lg hover:bg-teal/90 transition disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
               >
                 {updating ? 'Updating...' : 'Update Complaint'}
               </button>

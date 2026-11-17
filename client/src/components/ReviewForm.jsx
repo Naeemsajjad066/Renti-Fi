@@ -111,7 +111,7 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
           className="w-full max-w-3xl max-h-[85vh] overflow-hidden rounded-2xl shadow-2xl"
         >
           <div className="bg-white overflow-y-auto max-h-[85vh]">
-            <div className="sticky top-0 z-10 bg-gradient-to-r from-[#A0937D] to-[#8a7d6b] px-6 py-4 border-b border-gray-200">
+            <div className="sticky top-0 z-10 bg-gradient-to-r from-teal to-charcoal-gray px-6 py-4 border-b border-gray-200">
               {/* Header */}
               <div className="flex items-start justify-between">
                 <div>
@@ -130,7 +130,7 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
             <div className="px-6 py-5">
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Overall Rating */}
-                <div className="bg-gradient-to-br from-[#F6E6CB] to-white p-4 rounded-xl border border-[#E7D4B5]">
+                <div className="bg-teal/10 border border-teal/20 p-4 rounded-xl">
                   <label className="block text-sm font-semibold text-gray-900 mb-3">
                     Overall Rating *
                   </label>
@@ -162,7 +162,7 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
                       }
                     }}
                     placeholder="Tell us about your stay..."
-                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#A0937D] focus:border-transparent resize-none bg-gray-50/50 hover:bg-white transition-colors"
+                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal focus:border-transparent resize-none bg-gray-50/50 hover:bg-white transition-colors"
                     rows="4"
                   />
                   <div className="flex items-center justify-between mt-1.5">
@@ -184,7 +184,7 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
                     {ratingCategories.map((category) => (
                       <div
                         key={category.key}
-                        className="p-3 bg-gradient-to-br from-[#F6E6CB] to-white rounded-xl border border-[#E7D4B5] hover:shadow-md transition-all"
+                        className="p-3 bg-teal/5 border border-teal/15 rounded-xl hover:shadow-md transition-all"
                       >
                         <p className="font-medium text-gray-900 text-sm mb-0.5">{category.label}</p>
                         <p className="text-xs text-gray-600 mb-2">{category.description}</p>
@@ -212,7 +212,7 @@ const ReviewForm = ({ booking, onClose, onSuccess }) => {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex-1 bg-gradient-to-r from-[#A0937D] to-[#8a7d6b] hover:from-[#8a7d6b] hover:to-[#75685a] text-white font-semibold py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all"
+                    className="flex-1 bg-teal hover:bg-teal/90 text-white font-semibold py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all"
                   >
                     {isSubmitting ? (
                       <span className="flex items-center justify-center gap-2">

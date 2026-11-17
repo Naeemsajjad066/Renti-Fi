@@ -6,83 +6,88 @@
 
 @layer base {
   :root {
-    --background: 42 26% 98%;
-    --foreground: 33 15% 25%;
+    --background: 195 15% 97%;       /* very light teal-tinted white */
+    --foreground: 200 25% 18%;       /* deep charcoal */
 
-    --card: 42 26% 98%;
-    --card-foreground: 33 15% 25%;
+    --card: 195 15% 97%;
+    --card-foreground: 200 25% 18%;
 
-    --popover: 42 26% 98%;
-    --popover-foreground: 33 15% 25%;
+    --popover: 195 15% 97%;
+    --popover-foreground: 200 25% 18%;
 
-    --primary: 38 20% 56%; /* #A0937D */
-    --primary-foreground: 42 26% 98%;
+    --primary: 200 100% 27%;         /* #008C8C teal */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 36 52% 84%; /* #E7D4B5 */
-    --secondary-foreground: 33 15% 25%;
+    --secondary: 200 16% 26%;        /* #36454F charcoal-gray */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 39 40% 87%; /* #F6E6CB */
-    --muted-foreground: 33 15% 35%;
+    --muted: 195 20% 92%;
+    --muted-foreground: 200 15% 40%;
 
-    --accent: 14 32% 82%; /* #E3CDC1 */
-    --accent-foreground: 33 15% 25%;
+    --accent: 33 99% 48%;            /* #F28500 tangerine */
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 42 26% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 36 25% 75%;
-    --input: 36 25% 75%;
-    --ring: 38 20% 56%;
+    --border: 195 15% 85%;
+    --input: 195 15% 85%;
+    --ring: 200 100% 27%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 36 52% 84%; /* #E7D4B5 */
-    --sidebar-foreground: 33 15% 25%;
-    --sidebar-primary: 38 20% 56%; /* #A0937D */
-    --sidebar-primary-foreground: 42 26% 98%;
-    --sidebar-accent: 39 40% 87%; /* #F6E6CB */
-    --sidebar-accent-foreground: 33 15% 25%;
-    --sidebar-border: 36 25% 75%;
-    --sidebar-ring: 38 20% 56%;
+    /* Brand palette — direct hex values for use in arbitrary CSS */
+    --charcoal-gray: #36454F;
+    --teal: #008C8C;
+    --tangerine: #F28500;
+
+    --sidebar-background: 200 16% 26%;   /* charcoal */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 200 100% 27%;     /* teal */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 33 99% 48%;        /* tangerine */
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 200 15% 32%;
+    --sidebar-ring: 200 100% 27%;
   }
 
   .dark {
-    --background: 222 47% 11%; /* Dark gray-blue */
-    --foreground: 210 40% 98%;
+    --background: 200 25% 10%;
+    --foreground: 195 20% 92%;
 
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
+    --card: 200 25% 10%;
+    --card-foreground: 195 20% 92%;
 
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 200 25% 10%;
+    --popover-foreground: 195 20% 92%;
 
-    --primary: 38 20% 56%; /* Keep earth-brown */
-    --primary-foreground: 210 40% 98%;
+    --primary: 200 100% 35%;         /* slightly lighter teal for dark mode */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 200 16% 20%;
+    --secondary-foreground: 195 20% 92%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 200 20% 16%;
+    --muted-foreground: 195 15% 55%;
 
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 33 99% 55%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 38 20% 56%;
+    --border: 200 20% 18%;
+    --input: 200 20% 18%;
+    --ring: 200 100% 35%;
 
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 38 20% 56%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 38 20% 56%;
+    --sidebar-background: 200 25% 10%;
+    --sidebar-foreground: 195 20% 92%;
+    --sidebar-primary: 200 100% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 33 99% 55%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 200 20% 18%;
+    --sidebar-ring: 200 100% 35%;
   }
 }
 
@@ -120,16 +125,16 @@
   }
 
   .glass-effect {
-    @apply bg-white/90 backdrop-blur-sm border border-cream-beige/20 shadow-soft;
+    @apply bg-white/90 backdrop-blur-sm border border-teal/10 shadow-soft;
   }
 
   .nav-item {
-    @apply relative px-3 py-2 text-sm font-medium text-foreground transition-all duration-200 hover:text-earth-brown;
+    @apply relative px-3 py-2 text-sm font-medium text-foreground transition-all duration-200 hover:text-teal;
   }
 
   .nav-item::after {
     content: '';
-    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-earth-brown transition-all duration-300;
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-teal transition-all duration-300;
   }
 
   .nav-item:hover::after {
@@ -137,7 +142,7 @@
   }
 
   .nav-item.active {
-    @apply text-earth-brown;
+    @apply text-teal;
   }
 
   .nav-item.active::after {
@@ -149,15 +154,15 @@
   }
 
   .primary-button {
-    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg bg-earth-brown text-white font-medium transition-all duration-200 hover:bg-earth-brown/90 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-earth-brown/20;
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg bg-teal text-white font-medium transition-all duration-200 hover:bg-teal/90 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-teal/20;
   }
 
   .secondary-button {
-    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg bg-white text-gray-700 font-medium border border-cream-beige transition-all duration-200 hover:bg-light-beige shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-cream-beige/50;
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg bg-white text-charcoal-gray font-medium border border-teal/20 transition-all duration-200 hover:bg-teal/5 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-teal/20;
   }
 
   .form-input {
-    @apply w-full px-4 py-2 rounded-lg border border-cream-beige focus:border-earth-brown focus:ring-2 focus:ring-earth-brown/20 focus:outline-none transition-colors bg-white text-gray-800;
+    @apply w-full px-4 py-2 rounded-lg border border-teal/20 focus:border-teal focus:ring-2 focus:ring-teal/20 focus:outline-none transition-colors bg-white text-gray-800;
   }
 
   .form-label {
@@ -165,23 +170,23 @@
   }
 
   .custom-scrollbar {
-    @apply scrollbar-thin scrollbar-thumb-cream-beige scrollbar-track-transparent hover:scrollbar-thumb-earth-brown;
+    @apply scrollbar-thin scrollbar-thumb-teal/30 scrollbar-track-transparent hover:scrollbar-thumb-teal;
   }
 
   .shadow-soft {
-    @apply shadow-[0_5px_30px_-15px_rgba(160,147,125,0.15)];
+    @apply shadow-[0_5px_30px_-15px_rgba(0,140,140,0.15)];
   }
 
   .shadow-card {
-    @apply shadow-[0_10px_30px_-15px_rgba(160,147,125,0.2)];
+    @apply shadow-[0_10px_30px_-15px_rgba(0,140,140,0.2)];
   }
 
   .shadow-elevated {
-    @apply shadow-[0_15px_35px_-15px_rgba(160,147,125,0.25)];
+    @apply shadow-[0_15px_35px_-15px_rgba(0,140,140,0.25)];
   }
 
   .blur-backdrop {
-    @apply backdrop-blur-md bg-cream-beige/70;
+    @apply backdrop-blur-md bg-teal/10;
   }
 
   .hover-lift {
@@ -193,12 +198,12 @@
   }
 
   .hover-glow {
-    @apply transition-all duration-300 hover:shadow-[0_0_15px_rgba(160,147,125,0.5)];
+    @apply transition-all duration-300 hover:shadow-[0_0_15px_rgba(0,140,140,0.5)];
   }
 
-  /* New enhanced design components */
+  /* Enhanced design components */
   .hero-gradient {
-    @apply bg-gradient-to-b from-light-beige via-light-beige to-soft-peach/30;
+    @apply bg-gradient-to-b from-teal/5 via-teal/5 to-transparent;
   }
 
   .card-hover {
@@ -206,11 +211,11 @@
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-earth-brown to-soft-peach;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-teal to-charcoal-gray;
   }
 
   .feature-icon {
-    @apply w-12 h-12 rounded-xl flex items-center justify-center bg-earth-brown/10 text-earth-brown mb-4;
+    @apply w-12 h-12 rounded-xl flex items-center justify-center bg-teal/10 text-teal mb-4;
   }
 
   .feature-card {
@@ -218,7 +223,7 @@
   }
 
   .cta-gradient {
-    @apply bg-gradient-to-r from-cream-beige to-soft-peach;
+    @apply bg-gradient-to-r from-charcoal-gray to-teal;
   }
 }
 
@@ -314,6 +319,7 @@
 .animate-zoom-in {
   animation: zoomIn 0.5s ease-out forwards;
 }
+
 .glassmorphism {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
@@ -322,8 +328,8 @@
 
 /* ─── react-day-picker v9 — Rentifi booking calendar overrides ──────────── */
 .rdp-rentifi {
-  --rdp-accent-color: #a0937d;
-  --rdp-accent-background-color: rgba(160, 147, 125, 0.12);
+  --rdp-accent-color: #008C8C;
+  --rdp-accent-background-color: rgba(0, 140, 140, 0.12);
 }
 
 /* day button base */
@@ -345,24 +351,24 @@
   color: inherit;
 }
 .rdp-rentifi .rdp-day_button:hover:not(:disabled) {
-  background-color: rgba(160, 147, 125, 0.12);
+  background-color: rgba(0, 140, 140, 0.12);
 }
 
 /* selected / range */
 .rdp-rentifi .rdp-selected .rdp-day_button,
 .rdp-rentifi .rdp-range_start .rdp-day_button,
 .rdp-rentifi .rdp-range_end .rdp-day_button {
-  background-color: #a0937d !important;
+  background-color: #008C8C !important;
   color: #fff !important;
   font-weight: 600;
 }
 .rdp-rentifi .rdp-range_middle .rdp-day_button {
-  background-color: rgba(160, 147, 125, 0.18) !important;
+  background-color: rgba(0, 140, 140, 0.18) !important;
   border-radius: 0 !important;
-  color: #3b3028;
+  color: #1a3540;
 }
 .dark .rdp-rentifi .rdp-range_middle .rdp-day_button {
-  color: #e7d4b5;
+  color: #a0d4d4;
 }
 
 /* today */
@@ -370,22 +376,19 @@
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
-  color: #a0937d;
+  color: #008C8C;
 }
 
 /* disabled = past days → grey out */
 .rdp-rentifi .rdp-disabled .rdp-day_button {
-  color: #c4b8a8 !important;
+  color: #a0b8c0 !important;
   cursor: not-allowed !important;
   text-decoration: none;
   opacity: 0.45;
   background: transparent !important;
 }
 
-/* booked days (also disabled, but we want a red tint) —
-   react-day-picker adds [aria-disabled] on the button for disabled days
-   that come from an explicit { from, to } range in the disabled array.
-   We target them via data attribute set in classNames.disabled */
+/* booked days */
 .rdp-rentifi [data-booked='true'] .rdp-day_button {
   background-color: rgba(239, 68, 68, 0.1) !important;
   color: #ef4444 !important;

@@ -103,7 +103,7 @@ const PropertyVerificationPanel = () => {
   if (loading && pendingProperties.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-[#A0937D]" />
+        <Loader2 className="w-8 h-8 animate-spin text-teal" />
       </div>
     );
   }
@@ -115,7 +115,7 @@ const PropertyVerificationPanel = () => {
           <h2 className="text-2xl font-bold text-gray-900">Property Verification</h2>
           <p className="text-gray-600 mt-1">Review and verify property listings</p>
         </div>
-        <Badge className="bg-[#A0937D] text-white text-lg px-4 py-2">
+        <Badge className="bg-teal text-white text-lg px-4 py-2">
           {pendingProperties.length} Pending
         </Badge>
       </div>
@@ -182,7 +182,7 @@ const PropertyVerificationPanel = () => {
                   </div>
 
                   <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-                    <span className="text-lg font-bold text-[#A0937D]">
+                    <span className="text-lg font-bold text-teal">
                       Rs {property.price?.toLocaleString()}/night
                     </span>
                     <span className="text-xs text-gray-500 flex items-center">
@@ -239,7 +239,7 @@ const PropertyVerificationPanel = () => {
               className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
             >
               {/* Header */}
-              <div className="sticky top-0 bg-gradient-to-r from-[#A0937D] to-[#8a7d6b] px-6 py-4 border-b border-gray-200">
+              <div className="sticky top-0 bg-gradient-to-r from-teal to-charcoal-gray px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-2xl font-bold text-white">{selectedProperty.title}</h2>

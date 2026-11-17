@@ -30,10 +30,10 @@ const Loader = ({ message = 'Loading...' }) => {
               }}
               className="relative"
             >
-              <div className="w-16 h-16 bg-gradient-to-br from-earth-brown to-soft-peach rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 bg-earth-brown rounded-xl flex items-center justify-center shadow-lg">
                 <Home size={32} className="text-white" />
               </div>
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full border-2 border-soft-peach"></div>
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-soft-peach rounded-full"></div>
             </motion.div>
           </div>
 
@@ -70,7 +70,7 @@ const Loader = ({ message = 'Loading...' }) => {
                   delay: index * 0.2,
                   ease: 'easeInOut',
                 }}
-                className="w-3 h-3 bg-gradient-to-r from-earth-brown to-soft-peach rounded-full"
+                className="w-3 h-3 bg-earth-brown rounded-full"
               />
             ))}
           </div>
