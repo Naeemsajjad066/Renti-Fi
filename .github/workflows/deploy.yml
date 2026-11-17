@@ -12,6 +12,17 @@
 #   VITE_BACKEND_URL     — production API base URL
 #   VITE_API_URL         — same as above (used by Stripe redirect)
 #   VITE_STRIPE_PUBLISHABLE_KEY — live Stripe publishable key
+#
+# Branch protection (must be configured manually in GitHub):
+#   Settings → Branches → Add rule for "main":
+#     ✅ Require a pull request before merging
+#     ✅ Require status checks to pass:
+#          - Client — Lint & Type-check
+#          - Client — Production Build
+#          - Server — Syntax Check
+#          - Server — Jest Tests
+#     ✅ Require branches to be up to date before merging
+#     ✅ Do not allow bypassing the above settings
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: Deploy to Production
@@ -36,7 +47,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18.x"
+          node-version: "24.x"
           cache: "npm"
           cache-dependency-path: client/package-lock.json
 
@@ -71,11 +82,17 @@ jobs:
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/client/dist/
 
       # ── SSH deploy script ──────────────────────────────────────────────────
+      # Note: heredoc is unquoted so env vars expand inside it.
+      # Secrets are passed as env vars to avoid shell injection.
       - name: Deploy on server
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
-          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'ENDSSH'
+          ssh $DEPLOY_USER@$DEPLOY_HOST << ENDSSH
             set -e
-            cd ${{ secrets.DEPLOY_PATH }}
+            cd $DEPLOY_PATH
 
             echo "==> Pulling latest code"
             git fetch origin main
@@ -86,7 +103,6 @@ jobs:
             npm ci --omit=dev
 
             echo "==> Restarting backend with PM2"
-            # Start app if not running, otherwise reload (zero-downtime)
             pm2 describe rentifi-server > /dev/null 2>&1 \
               && pm2 reload rentifi-server --update-env \
               || pm2 start server.js \

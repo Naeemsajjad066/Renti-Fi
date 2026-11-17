@@ -1,8 +1,8 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # PR Check — fast feedback on pull requests
 #
-# Runs a quick lint + build in parallel so reviewers know the PR is safe
-# before the full CI matrix finishes. Posts a summary to the PR.
+# Runs lint + build in parallel so reviewers know the PR is safe.
+# Posts/updates a summary comment on the PR.
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: PR Check
@@ -25,7 +25,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "18.x"
+          node-version: "24.x"
           cache: "npm"
           cache-dependency-path: client/package-lock.json
 
@@ -57,7 +57,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "18.x"
+          node-version: "24.x"
           cache: "npm"
           cache-dependency-path: server/package-lock.json
 
@@ -108,7 +108,6 @@ jobs:
                 : `> One or more checks failed. [View details](${runUrl}).`,
             ].join('\n');
 
-            // Find existing bot comment and update, or create new one
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo:  context.repo.repo,
@@ -116,8 +115,10 @@ jobs:
             });
 
             const existing = comments.find(c =>
-              c.user.type === 'Bot' && c.body.includes('All checks passed') ||
-              c.user.type === 'Bot' && c.body.includes('Some checks failed')
+              c.user.type === 'Bot' && (
+                c.body.includes('All checks passed') ||
+                c.body.includes('Some checks failed')
+              )
             );
 
             if (existing) {

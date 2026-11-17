@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# CI — runs on every push and pull-request
+# CI — runs on push to any branch (PRs are handled by pr-check.yml)
 #
 # Jobs:
 #   lint-client   TypeScript type-check + ESLint on the React frontend
@@ -12,8 +12,6 @@ name: CI
 
 on:
   push:
-    branches: ["**"]          # all branches
-  pull_request:
     branches: ["**"]
 
 concurrency:
@@ -21,7 +19,7 @@ concurrency:
   cancel-in-progress: true   # cancel stale runs when new commits arrive
 
 env:
-  NODE_VERSION: "18.x"
+  NODE_VERSION: "24.x"
 
 jobs:
   # ── 1. Frontend lint & type-check ─────────────────────────────────────────
@@ -75,7 +73,6 @@ jobs:
 
       - name: Build
         working-directory: client
-        # Provide dummy env values so Vite doesn't fail on missing vars
         env:
           VITE_BACKEND_URL: "https://api.rentifi.com"
           VITE_API_URL: "https://api.rentifi.com"
@@ -111,7 +108,6 @@ jobs:
 
       - name: Node.js syntax check (all JS files)
         working-directory: server
-        # node --check validates syntax without executing the file
         run: |
           find . \
             -name "*.js" \
@@ -158,10 +154,8 @@ jobs:
           MONGODB_URI: mongodb://localhost:27017/rentifi_test
           JWT_SECRET: ci-test-secret-key-do-not-use-in-production
           PORT: 5001
-          # Stripe — use test keys (set in repo secrets, dummy fallback for CI)
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY_TEST || 'sk_test_placeholder' }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET_TEST || 'whsec_placeholder' }}
-          # Cloudinary — optional for tests
           CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME || 'test' }}
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY || 'test' }}
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET || 'test' }}
