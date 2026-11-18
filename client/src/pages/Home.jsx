@@ -166,7 +166,7 @@ const Hero = () => {
         <div className="absolute top-1/2 left-1/3 w-[300px] h-[300px] rounded-full bg-soft-peach/10 blur-[100px]" />
       </div>
 
-      <div className="relative z-10 page-container flex flex-col lg:flex-row items-center gap-12 lg:gap-20 pt-28 lg:pt-36 pb-20">
+      <div className="relative z-10 page-container flex flex-col lg:flex-row items-center gap-12 lg:gap-20 pt-20 lg:pt-26 pb-20">
         {/* ── Left: copy + search ── */}
         <motion.div
           variants={stagger}

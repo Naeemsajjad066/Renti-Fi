@@ -136,36 +136,34 @@ const AllProperties = () => {
       <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900">
         <Navbar />
 
-        <main className="flex-grow pt-24">
-          <section className="bg-gradient-to-b from-light-beige to-white dark:from-gray-800 dark:to-gray-900 py-16">
+        <main className="flex-grow pt-20">
+          {/* ── Compact hero / search bar ── */}
+          <section className="bg-gradient-to-r from-earth-brown to-earth-brown/80 py-10">
             <div className="page-container">
-              <div className="text-center max-w-3xl mx-auto mb-12">
-                <Badge className="mb-3 bg-earth-brown/20 dark:bg-earth-brown/30 text-earth-brown hover:bg-earth-brown/30 dark:hover:bg-earth-brown/40 border-none">
-                  Explore Properties
-                </Badge>
-                <h1 className="text-4xl md:text-5xl font-display font-bold text-gray-900 dark:text-gray-100 mb-4">
+              <div className="max-w-3xl mx-auto text-center mb-6">
+                <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
                   Find Your Perfect Stay
                 </h1>
-                <p className="text-lg text-gray-700 dark:text-gray-300">
-                  Browse our curated collection of exceptional properties around the world
+                <p className="text-cream-beige/80 text-sm md:text-base">
+                  Browse verified properties across Pakistan
                 </p>
                 {checkInParam && (
-                  <div className="mt-4 inline-flex items-center gap-2 bg-earth-brown/10 dark:bg-earth-brown/20 text-earth-brown dark:text-cream-beige px-4 py-2 rounded-full text-sm">
-                    <Calendar size={16} />
+                  <div className="mt-3 inline-flex items-center gap-2 bg-white/20 text-white px-4 py-1.5 rounded-full text-sm">
+                    <Calendar size={14} />
                     <span>Check-in: {formatDate(checkInParam)}</span>
                   </div>
                 )}
               </div>
 
-              <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-16">
+              <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                    <Search size={20} className="text-earth-brown" />
+                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                    <Search size={18} className="text-earth-brown" />
                   </div>
                   <Input
                     type="text"
-                    placeholder="Search by location or property name..."
-                    className="pl-10 py-6 border-cream-beige dark:border-gray-600 focus:border-earth-brown bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 text-base"
+                    placeholder="Search by city, area, or property name..."
+                    className="pl-11 py-5 rounded-xl border-0 shadow-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 text-base focus-visible:ring-2 focus-visible:ring-cream-beige"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -174,7 +172,7 @@ const AllProperties = () => {
             </div>
           </section>
 
-          <section className="py-12 bg-white dark:bg-gray-900">
+          <section className="py-8 bg-white dark:bg-gray-900">
             <div className="page-container">
               <div className="flex flex-col lg:flex-row gap-8">
                 {/* Filters sidebar */}
