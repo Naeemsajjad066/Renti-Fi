@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Filter, Search, Calendar } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Filter, Search, Calendar, ChevronDown, X } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
@@ -20,9 +20,20 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { PropertyContext } from '../contexts/PropertyContext';
 
-const AllProperties = () => {
-  // Mock properties data
+const AMENITY_OPTIONS = [
+  'WiFi',
+  'Air Conditioning',
+  'Parking',
+  'Swimming Pool',
+  'Kitchen',
+  'Washer',
+  'TV',
+  'Gym',
+  'Balcony',
+  'Pet Friendly',
+];
 
+const AllProperties = () => {
   const [searchParams] = useSearchParams();
   const cityParam = searchParams.get('city');
   const checkInParam = searchParams.get('checkIn');
@@ -33,6 +44,13 @@ const AllProperties = () => {
   const [searchQuery, setSearchQuery] = useState(cityParam || '');
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [sortBy, setSortBy] = useState('');
+
+  // Advanced filter state
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [minBedrooms, setMinBedrooms] = useState(0);
+  const [minBathrooms, setMinBathrooms] = useState(0);
+  const [maxGuests, setMaxGuests] = useState(0);
+  const [selectedAmenities, setSelectedAmenities] = useState([]);
 
   const propertyTypeOptions = [
     'All',
@@ -47,85 +65,103 @@ const AllProperties = () => {
   ];
   const sortOptions = ['Price: Low to High', 'Price: High to Low', 'Rating: High to Low', 'Latest'];
 
+  const advancedActive =
+    minBedrooms > 0 || minBathrooms > 0 || maxGuests > 0 || selectedAmenities.length > 0;
+
+  const resetAdvanced = () => {
+    setMinBedrooms(0);
+    setMinBathrooms(0);
+    setMaxGuests(0);
+    setSelectedAmenities([]);
+  };
+
+  const toggleAmenity = (amenity) => {
+    setSelectedAmenities((prev) =>
+      prev.includes(amenity) ? prev.filter((a) => a !== amenity) : [...prev, amenity]
+    );
+  };
+
   useEffect(() => {
     fetchProperties();
   }, [fetchProperties]);
 
-  // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
   };
 
   useEffect(() => {
-    // Set initial filtered properties when properties load
     setFilteredProperties(properties);
   }, [properties]);
 
   useEffect(() => {
-    // Filter properties based on type, search query, and price range
     let filtered = properties;
 
-    // Filter by type
     if (activeType !== 'All') {
       filtered = filtered.filter(
-        (property) =>
-          property.propertyType?.toLowerCase() === activeType.toLowerCase() ||
-          property.type?.toLowerCase() === activeType.toLowerCase()
+        (p) =>
+          p.propertyType?.toLowerCase() === activeType.toLowerCase() ||
+          p.type?.toLowerCase() === activeType.toLowerCase()
       );
     }
 
-    // Filter by search query
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+      const q = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        (property) =>
-          (property.title || property.name)?.toLowerCase().includes(query) ||
-          (property.city && property.state
-            ? `${property.city}, ${property.state}`
-            : property.location
-          )
-            ?.toLowerCase()
-            .includes(query) ||
-          property.description?.toLowerCase().includes(query)
+        (p) =>
+          (p.title || p.name)?.toLowerCase().includes(q) ||
+          (p.city && p.state ? `${p.city}, ${p.state}` : p.location)?.toLowerCase().includes(q) ||
+          p.description?.toLowerCase().includes(q)
       );
     }
 
-    // Filter by price range
-    filtered = filtered.filter(
-      (property) => property.price >= priceRange[0] && property.price <= priceRange[1]
-    );
+    filtered = filtered.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
 
-    // Apply sorting
-    if (sortBy === 'Price: Low to High') {
-      filtered = [...filtered].sort((a, b) => a.price - b.price);
-    } else if (sortBy === 'Price: High to Low') {
+    // Advanced filters
+    if (minBedrooms > 0) filtered = filtered.filter((p) => (p.bedrooms || 0) >= minBedrooms);
+    if (minBathrooms > 0) filtered = filtered.filter((p) => (p.bathrooms || 0) >= minBathrooms);
+    if (maxGuests > 0) filtered = filtered.filter((p) => (p.maxGuests || 0) >= maxGuests);
+    if (selectedAmenities.length > 0) {
+      filtered = filtered.filter((p) =>
+        selectedAmenities.every((amenity) =>
+          (p.amenities || []).some((a) => a.toLowerCase() === amenity.toLowerCase())
+        )
+      );
+    }
+
+    if (sortBy === 'Price: Low to High') filtered = [...filtered].sort((a, b) => a.price - b.price);
+    else if (sortBy === 'Price: High to Low')
       filtered = [...filtered].sort((a, b) => b.price - a.price);
-    } else if (sortBy === 'Rating: High to Low') {
+    else if (sortBy === 'Rating: High to Low')
       filtered = [...filtered].sort((a, b) => (b.rating || 0) - (a.rating || 0));
-    } else if (sortBy === 'Latest') {
+    else if (sortBy === 'Latest')
       filtered = [...filtered].sort(
         (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
       );
-    }
 
     setFilteredProperties(filtered);
-  }, [activeType, searchQuery, priceRange, sortBy, properties]);
+  }, [
+    activeType,
+    searchQuery,
+    priceRange,
+    sortBy,
+    minBedrooms,
+    minBathrooms,
+    maxGuests,
+    selectedAmenities,
+    properties,
+  ]);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    // Search is already handled by the useEffect
-  };
+  const handleSearch = (e) => e.preventDefault();
 
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
   };
-
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
@@ -182,7 +218,7 @@ const AllProperties = () => {
                       Filters
                     </h3>
 
-                    {/* Property Type Filter */}
+                    {/* Property Type */}
                     <div className="mb-6">
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                         Property Type
@@ -206,7 +242,7 @@ const AllProperties = () => {
 
                     <Separator className="my-4" />
 
-                    {/* Price Range Filter */}
+                    {/* Price Range */}
                     <div className="mb-6">
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                         Price Range (per night)
@@ -238,7 +274,7 @@ const AllProperties = () => {
 
                     <Separator className="my-4" />
 
-                    {/* Sort Option */}
+                    {/* Sort By */}
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                         Sort By
@@ -261,15 +297,198 @@ const AllProperties = () => {
 
                 {/* Property listings */}
                 <div className="w-full lg:w-3/4">
-                  <div className="flex justify-between items-center mb-6">
+                  {/* Toolbar */}
+                  <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                       {filteredProperties.length} Properties
                     </h2>
-                    <Button variant="outline" className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      className={`flex items-center gap-2 transition-colors ${
+                        advancedActive ? 'border-earth-brown text-earth-brown bg-earth-brown/5' : ''
+                      }`}
+                      onClick={() => setShowAdvanced((v) => !v)}
+                    >
                       <Filter size={16} />
                       <span className="hidden md:inline">Advanced Filters</span>
+                      {advancedActive && (
+                        <span className="ml-1 w-5 h-5 rounded-full bg-earth-brown text-white text-xs flex items-center justify-center">
+                          {
+                            [
+                              minBedrooms > 0,
+                              minBathrooms > 0,
+                              maxGuests > 0,
+                              selectedAmenities.length > 0,
+                            ].filter(Boolean).length
+                          }
+                        </span>
+                      )}
+                      <ChevronDown
+                        size={14}
+                        className={`transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
+                      />
                     </Button>
                   </div>
+
+                  {/* Advanced filter panel */}
+                  <AnimatePresence>
+                    {showAdvanced && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                      >
+                        <div className="bg-light-beige/40 dark:bg-gray-800 border border-earth-brown/20 rounded-xl p-5 mb-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+                              Advanced Filters
+                            </h3>
+                            {advancedActive && (
+                              <button
+                                onClick={resetAdvanced}
+                                className="text-xs text-earth-brown hover:underline flex items-center gap-1"
+                              >
+                                <X size={12} /> Clear all
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                            {/* Bedrooms */}
+                            <div>
+                              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                                Min Bedrooms
+                              </label>
+                              <div className="flex gap-2 flex-wrap">
+                                {[0, 1, 2, 3, 4, 5].map((n) => (
+                                  <button
+                                    key={n}
+                                    onClick={() => setMinBedrooms(n)}
+                                    className={`w-9 h-9 rounded-lg text-sm font-medium border transition-colors ${
+                                      minBedrooms === n
+                                        ? 'bg-earth-brown text-white border-earth-brown'
+                                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-earth-brown'
+                                    }`}
+                                  >
+                                    {n === 0 ? 'Any' : n + '+'}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Bathrooms */}
+                            <div>
+                              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                                Min Bathrooms
+                              </label>
+                              <div className="flex gap-2 flex-wrap">
+                                {[0, 1, 2, 3, 4].map((n) => (
+                                  <button
+                                    key={n}
+                                    onClick={() => setMinBathrooms(n)}
+                                    className={`w-9 h-9 rounded-lg text-sm font-medium border transition-colors ${
+                                      minBathrooms === n
+                                        ? 'bg-earth-brown text-white border-earth-brown'
+                                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-earth-brown'
+                                    }`}
+                                  >
+                                    {n === 0 ? 'Any' : n + '+'}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Max Guests */}
+                            <div>
+                              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                                Min Guests Capacity
+                              </label>
+                              <div className="flex gap-2 flex-wrap">
+                                {[0, 2, 4, 6, 8, 10].map((n) => (
+                                  <button
+                                    key={n}
+                                    onClick={() => setMaxGuests(n)}
+                                    className={`w-9 h-9 rounded-lg text-sm font-medium border transition-colors ${
+                                      maxGuests === n
+                                        ? 'bg-earth-brown text-white border-earth-brown'
+                                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-earth-brown'
+                                    }`}
+                                  >
+                                    {n === 0 ? 'Any' : n + '+'}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Amenities */}
+                          <div className="mt-5">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                              Amenities
+                            </label>
+                            <div className="flex flex-wrap gap-2">
+                              {AMENITY_OPTIONS.map((amenity) => (
+                                <button
+                                  key={amenity}
+                                  onClick={() => toggleAmenity(amenity)}
+                                  className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                                    selectedAmenities.includes(amenity)
+                                      ? 'bg-earth-brown text-white border-earth-brown'
+                                      : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-earth-brown'
+                                  }`}
+                                >
+                                  {amenity}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Active advanced filter chips */}
+                  {advancedActive && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {minBedrooms > 0 && (
+                        <span className="inline-flex items-center gap-1 bg-earth-brown/10 text-earth-brown text-xs px-3 py-1 rounded-full">
+                          {minBedrooms}+ beds
+                          <button onClick={() => setMinBedrooms(0)}>
+                            <X size={10} />
+                          </button>
+                        </span>
+                      )}
+                      {minBathrooms > 0 && (
+                        <span className="inline-flex items-center gap-1 bg-earth-brown/10 text-earth-brown text-xs px-3 py-1 rounded-full">
+                          {minBathrooms}+ baths
+                          <button onClick={() => setMinBathrooms(0)}>
+                            <X size={10} />
+                          </button>
+                        </span>
+                      )}
+                      {maxGuests > 0 && (
+                        <span className="inline-flex items-center gap-1 bg-earth-brown/10 text-earth-brown text-xs px-3 py-1 rounded-full">
+                          {maxGuests}+ guests
+                          <button onClick={() => setMaxGuests(0)}>
+                            <X size={10} />
+                          </button>
+                        </span>
+                      )}
+                      {selectedAmenities.map((a) => (
+                        <span
+                          key={a}
+                          className="inline-flex items-center gap-1 bg-earth-brown/10 text-earth-brown text-xs px-3 py-1 rounded-full"
+                        >
+                          {a}
+                          <button onClick={() => toggleAmenity(a)}>
+                            <X size={10} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
                   {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -306,6 +525,7 @@ const AllProperties = () => {
                           setSearchQuery('');
                           setPriceRange([0, 100000]);
                           setSortBy('');
+                          resetAdvanced();
                         }}
                       >
                         Reset Filters
