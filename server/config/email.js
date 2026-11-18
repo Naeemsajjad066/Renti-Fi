@@ -224,6 +224,67 @@ export const emailTemplates = {
     `,
   }),
 
+  propertySubmission: (data) => ({
+    subject: 'Property Submitted for Review - Rentifi',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #A0937D 0%, #E3CDC1 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">Rentifi</h1>
+          <p style="color: white; margin: 10px 0 0 0; opacity: 0.9;">Property Submitted for Review</p>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+          <h2 style="color: #333; margin: 0 0 20px 0;">Hi ${data.hostName || 'there'}!</h2>
+          <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+            Thank you for submitting your property <strong>${data.propertyTitle || 'your listing'}</strong> on Rentifi.
+            Our team will review your submission and verify the provided documents.
+          </p>
+
+          <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #A0937D; margin: 20px 0;">
+            <h3 style="color: #A0937D; margin: 0 0 12px 0;">What happens next?</h3>
+            <ul style="color: #666; line-height: 1.9; padding-left: 20px; margin: 0;">
+              <li>Our admin team will review your property details and documents</li>
+              <li>Reviews typically complete within 1–2 business days</li>
+              <li>You will receive an email once a decision is made</li>
+              <li>If approved, your listing goes live immediately</li>
+            </ul>
+          </div>
+
+          <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; margin: 20px 0;">
+            <h3 style="color: #333; margin: 0 0 12px 0; font-size: 16px;">Submission Summary</h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+              <tr>
+                <td style="padding: 6px 0; color: #666; width: 40%;">Property:</td>
+                <td style="padding: 6px 0; font-weight: bold; color: #333;">${data.propertyTitle || '—'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #666;">Location:</td>
+                <td style="padding: 6px 0; font-weight: bold; color: #333;">${data.city || '—'}${data.state ? ', ' + data.state : ''}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #666;">Price per night:</td>
+                <td style="padding: 6px 0; font-weight: bold; color: #333;">Rs ${data.price ? Number(data.price).toLocaleString() : '—'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #666;">Status:</td>
+                <td style="padding: 6px 0; font-weight: bold; color: #e09b2d;">Pending Review</td>
+              </tr>
+            </table>
+          </div>
+
+          <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 0;">
+            If you have any questions in the meantime, feel free to contact us at
+            <a href="mailto:support@rentifi.com" style="color: #A0937D;">support@rentifi.com</a>.
+          </p>
+        </div>
+
+        <div style="text-align: center; color: #999; font-size: 12px;">
+          <p>© 2024 Rentifi. All rights reserved.</p>
+        </div>
+      </div>
+    `,
+  }),
+
   propertyApproval: (data) => ({
     subject: 'Property Approved - Welcome to Rentifi!',
     html: `

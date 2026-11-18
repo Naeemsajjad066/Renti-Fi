@@ -97,6 +97,18 @@ export const sendHostBookingNotification = async (booking, property, guest, host
   );
 };
 
+export const sendPropertySubmissionEmail = async (email, data) => {
+  const template = emailTemplates.propertySubmission(data);
+  return safeSend(
+    {
+      to: email,
+      subject: template.subject,
+      html: template.html,
+    },
+    'property submission confirmation'
+  );
+};
+
 export const sendPropertyApprovalEmail = async (email, data) => {
   const template = emailTemplates.propertyApproval(data);
   return safeSend(

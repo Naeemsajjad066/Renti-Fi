@@ -29,15 +29,16 @@ router.get('/users', getAllUsers);
 router.get('/properties', getAllProperties);
 router.get('/bookings', getAllBookings);
 router.get('/logs', getAdminLogs);
+
+// Property verification routes — must be registered before :propertyId to avoid shadowing
+router.get('/properties/pending', getPendingProperties);
+router.put('/properties/:propertyId/approve', approveProperty);
+router.put('/properties/:propertyId/reject', rejectProperty);
+
 router.put('/users/:userId', adminUpdateUser);
 router.delete('/users/:userId', adminDeleteUser);
 router.put('/properties/:propertyId', adminUpdateProperty);
 router.delete('/properties/:propertyId', adminDeleteProperty);
 router.put('/documents/:documentId/verify', verifyHostDocuments);
-
-// Property verification routes
-router.get('/properties/pending', getPendingProperties);
-router.put('/properties/:propertyId/approve', approveProperty);
-router.put('/properties/:propertyId/reject', rejectProperty);
 
 export default router;

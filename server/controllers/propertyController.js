@@ -3,6 +3,7 @@ import Property from '../models/Property.js';
 import User from '../models/User.js';
 import Booking from '../models/Booking.js';
 import cloudinary from '../lib/cloudinary.js';
+import { sendPropertySubmissionEmail } from '../lib/emailService.js';
 
 // CREATE Property
 export const createProperty = async (req, res) => {
@@ -137,6 +138,15 @@ export const createProperty = async (req, res) => {
       isVerified: false,
       isActive: false, // Property won't be shown until approved
     });
+
+    // Send submission confirmation email to the host (non-blocking)
+    sendPropertySubmissionEmail(host.email, {
+      hostName: host.fullName,
+      propertyTitle: title,
+      city,
+      state,
+      price,
+    }).catch((err) => console.error('Property submission email failed:', err.message));
 
     return res.json({
       success: true,
