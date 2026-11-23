@@ -14,25 +14,21 @@ const PropertyInfoCard = ({ booking, dark: _dark = true }) => {
       transition={{ delay: 0.05 }}
       className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm"
     >
-      {/* Image */}
       <div className="relative h-56 sm:h-72">
         <img
           src={property.images?.[0] || '/placeholder.svg'}
           alt={property.title || 'Property'}
           className="w-full h-full object-cover"
         />
-        {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
-        {/* Rating pill */}
         {rating && (
           <div className="absolute top-4 left-4 inline-flex items-center gap-1 bg-white/90 dark:bg-gray-900/80 backdrop-blur-sm text-gray-800 dark:text-gray-100 text-xs font-semibold px-2.5 py-1 rounded-full shadow">
-            <Star size={11} className="fill-tangerine text-tangerine" />
+            <Star size={11} className="fill-amber-400 text-amber-400" />
             {Number(rating).toFixed(1)}
           </div>
         )}
 
-        {/* View property button */}
         <Link
           to={`/properties/${property._id}`}
           className="absolute top-4 right-4 inline-flex items-center gap-1.5 bg-white/90 dark:bg-gray-900/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-900 text-gray-800 dark:text-gray-100 text-xs font-medium px-3 py-1.5 rounded-full shadow transition-colors"
@@ -41,7 +37,6 @@ const PropertyInfoCard = ({ booking, dark: _dark = true }) => {
           View Property
         </Link>
 
-        {/* Title overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-5">
           <p className="text-xs text-white/70 uppercase tracking-widest mb-1">
             {property.propertyType}
@@ -52,21 +47,20 @@ const PropertyInfoCard = ({ booking, dark: _dark = true }) => {
         </div>
       </div>
 
-      {/* Meta row */}
       <div className="px-5 py-4 flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
         <span className="flex items-center gap-1.5">
-          <MapPin size={14} className="text-teal shrink-0" />
+          <MapPin size={14} className="text-earth-brown shrink-0" />
           {[property.address, property.city, property.state].filter(Boolean).join(', ')}
         </span>
         {property.bedrooms && (
           <span className="flex items-center gap-1.5">
-            <BedDouble size={14} className="text-teal shrink-0" />
+            <BedDouble size={14} className="text-earth-brown shrink-0" />
             {property.bedrooms} {property.bedrooms === 1 ? 'Bedroom' : 'Bedrooms'}
           </span>
         )}
         {property.bathrooms && (
           <span className="flex items-center gap-1.5">
-            <Bath size={14} className="text-teal shrink-0" />
+            <Bath size={14} className="text-earth-brown shrink-0" />
             {property.bathrooms} {property.bathrooms === 1 ? 'Bathroom' : 'Bathrooms'}
           </span>
         )}

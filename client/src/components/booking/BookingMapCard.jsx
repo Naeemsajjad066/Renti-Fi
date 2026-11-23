@@ -2,6 +2,14 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Navigation } from 'lucide-react';
 
+/**
+ * Shared map location card for booking detail pages.
+ *
+ * @param {object}  property        — booking.property
+ * @param {boolean} dark            — enables dark-mode classes (unused, kept for API compat)
+ * @param {boolean} showDirections  — shows the "Get Directions" button
+ * @param {string}  mapHeight       — tailwind height class for the iframe (default 'h-64')
+ */
 const BookingMapCard = ({
   property,
   dark: _dark = true,
@@ -20,10 +28,9 @@ const BookingMapCard = ({
       transition={{ delay: 0.2 }}
       className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden"
     >
-      {/* Header */}
       <div className="px-5 pt-5 pb-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <MapPin size={17} className="text-teal" />
+          <MapPin size={17} className="text-earth-brown" />
           <h3 className="font-display font-semibold text-gray-900 dark:text-white">Location</h3>
         </div>
         {showDirections && hasCoords && (
@@ -32,7 +39,7 @@ const BookingMapCard = ({
               const url = `https://www.google.com/maps/dir/?api=1&destination=${property.latitude},${property.longitude}`;
               window.open(url, '_blank');
             }}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-teal hover:text-teal/80 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-earth-brown hover:text-earth-brown/80 transition-colors"
           >
             <Navigation size={13} />
             Get Directions

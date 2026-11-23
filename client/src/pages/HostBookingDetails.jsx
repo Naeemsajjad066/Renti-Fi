@@ -60,7 +60,6 @@ const HostBookingDetails = () => {
 
         <div className="flex-1 overflow-auto">
           <div className="px-4 md:px-8 py-6 max-w-7xl mx-auto">
-            {/* Back link */}
             <button
               onClick={() => navigate('/host/bookings')}
               className="mb-6 inline-flex items-center gap-2 text-sm text-gray-500 hover:text-earth-brown transition-colors"
@@ -72,14 +71,12 @@ const HostBookingDetails = () => {
             <BookingDetailHeader booking={booking} variant="host" dark={false} />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Main content */}
               <div className="lg:col-span-2 space-y-6">
                 <PropertyInfoCard booking={booking} dark={false} />
                 <BookingMapCard property={booking.property} dark={false} />
                 <StayDetailsCard booking={booking} dark={false} />
               </div>
 
-              {/* Sidebar */}
               <div className="lg:col-span-1">
                 <div className="sticky top-6 space-y-6">
                   <ContactCard booking={booking} variant="guest" dark={false} />

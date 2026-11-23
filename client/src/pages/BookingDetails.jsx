@@ -15,7 +15,6 @@ import {
 } from '@/components/booking';
 import useBookingDetails from '@/hooks/useBookingDetails';
 
-/* ── Loading skeleton ─────────────────────────────────────────────────────── */
 const LoadingState = () => (
   <PageTransition>
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
@@ -31,7 +30,6 @@ const LoadingState = () => (
   </PageTransition>
 );
 
-/* ── Not-found state ──────────────────────────────────────────────────────── */
 const NotFoundState = ({ onBack }) => (
   <PageTransition>
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
@@ -45,7 +43,7 @@ const NotFoundState = ({ onBack }) => (
             Booking not found
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            This booking doesn't exist or you don't have access to it.
+            This booking doesn&apos;t exist or you don&apos;t have access to it.
           </p>
           <Button onClick={onBack}>Go to My Bookings</Button>
         </div>
@@ -55,12 +53,10 @@ const NotFoundState = ({ onBack }) => (
   </PageTransition>
 );
 
-/* ── Main page ────────────────────────────────────────────────────────────── */
 const BookingDetails = () => {
   const { booking, loading, cancelling, isHost, navigate, handleCancelBooking } =
     useBookingDetails();
 
-  // Guest booking details always navigates back to /bookings
   const goBack = () => navigate('/bookings');
 
   if (loading) return <LoadingState />;
@@ -81,7 +77,6 @@ const BookingDetails = () => {
 
         <main className="flex-grow pt-20 pb-16">
           <div className="page-container max-w-6xl py-8">
-            {/* Back link */}
             <button
               onClick={goBack}
               className="mb-6 inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-earth-brown dark:hover:text-cream-beige transition-colors"
@@ -92,7 +87,6 @@ const BookingDetails = () => {
 
             <BookingDetailHeader booking={booking} variant="guest" dark />
 
-            {/* Cancellation warning */}
             <AnimatePresence>
               {canCancel &&
                 booking.paymentOption === 'early' &&
@@ -123,22 +117,18 @@ const BookingDetails = () => {
                 )}
             </AnimatePresence>
 
-            {/* Content grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* ── Main column ── */}
               <div className="lg:col-span-2 space-y-5">
                 <PropertyInfoCard booking={booking} />
                 <StayDetailsCard booking={booking} />
                 <BookingMapCard property={booking.property} dark showDirections mapHeight="h-72" />
               </div>
 
-              {/* ── Sidebar ── */}
               <div className="lg:col-span-1">
                 <div className="sticky top-24 space-y-5">
                   <PaymentSummaryCard booking={booking} />
                   <ContactCard booking={booking} variant={isHost ? 'guest' : 'host'} />
 
-                  {/* Cancel button — guest only, cancellable bookings only */}
                   {!isHost && canCancel && (
                     <motion.div
                       initial={{ opacity: 0, y: 12 }}

@@ -18,18 +18,16 @@ const BookingDetailHeader = ({ booking, variant = 'guest', dark: _dark = true, o
 
   return (
     <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-      {/* Back link */}
       {onBack && (
         <button
           onClick={onBack}
-          className="mb-5 inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-teal dark:hover:text-teal transition-colors"
+          className="mb-5 inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-earth-brown dark:hover:text-earth-brown transition-colors"
         >
           <ArrowLeft size={15} />
           Back to bookings
         </button>
       )}
 
-      {/* Title row */}
       <div className="flex flex-wrap items-start justify-between gap-4 mb-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-display font-bold text-gray-900 dark:text-white">
@@ -41,7 +39,6 @@ const BookingDetailHeader = ({ booking, variant = 'guest', dark: _dark = true, o
           </p>
         </div>
 
-        {/* Status pills */}
         <div className="flex flex-wrap gap-2">
           <span
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wide ${statusBadge.className}`}
@@ -57,22 +54,21 @@ const BookingDetailHeader = ({ booking, variant = 'guest', dark: _dark = true, o
         </div>
       </div>
 
-      {/* Verification code */}
       {booking.verificationCode && (
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.15 }}
-          className="mt-4 inline-flex items-center gap-4 bg-teal/8 dark:bg-teal/15 border border-teal/25 dark:border-teal/30 rounded-2xl px-5 py-4"
+          className="mt-4 inline-flex items-center gap-4 bg-earth-brown/8 dark:bg-earth-brown/15 border border-earth-brown/25 dark:border-earth-brown/30 rounded-2xl px-5 py-4"
         >
-          <div className="w-10 h-10 rounded-full bg-teal/15 flex items-center justify-center shrink-0">
-            <CheckCircle size={20} className="text-teal" />
+          <div className="w-10 h-10 rounded-full bg-earth-brown/15 flex items-center justify-center shrink-0">
+            <CheckCircle size={20} className="text-earth-brown" />
           </div>
           <div>
             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">
               {codeLabel}
             </p>
-            <p className="text-2xl font-bold text-teal tracking-[0.2em] font-mono leading-none">
+            <p className="text-2xl font-bold text-earth-brown tracking-[0.2em] font-mono leading-none">
               {booking.verificationCode}
             </p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{codeHint}</p>

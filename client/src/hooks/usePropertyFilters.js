@@ -7,7 +7,7 @@ import { PRICE_RANGE_DEFAULT } from '@/constants';
 /**
  * Encapsulates all filter/sort/search state for the AllProperties page.
  * Reads initial city + checkIn values from URL search params.
- * Returns derived filteredProperties alongside state setters.
+ * Excludes properties owned by the logged-in user.
  */
 const usePropertyFilters = () => {
   const [searchParams] = useSearchParams();
@@ -83,11 +83,9 @@ const usePropertyFilters = () => {
   };
 
   return {
-    // data
     filteredProperties,
     loading,
     checkInParam,
-    // filter state
     activeType,
     setActiveType,
     searchQuery,

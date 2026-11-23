@@ -14,18 +14,14 @@ const formatDate = (dateString) => {
 
 const PropertiesHero = ({ searchQuery, onSearchChange, checkInParam }) => (
   <section className="relative overflow-hidden">
-    {/* Background image */}
     <img
       src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80"
       alt=""
       aria-hidden="true"
       className="absolute inset-0 w-full h-full object-cover dark:brightness-50"
     />
-
-    {/* Overlay — lighter in light mode, almost opaque in dark mode so it matches the dark theme */}
     <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60 dark:from-gray-950/80 dark:via-gray-950/70 dark:to-gray-950/90" />
 
-    {/* Content */}
     <div className="relative z-10 page-container py-20 pb-10">
       <div className="text-center max-w-3xl mx-auto mb-8">
         <Badge className="mb-4 bg-white/20 dark:bg-white/10 text-white border-white/30 hover:bg-white/30 dark:hover:bg-white/20 backdrop-blur-sm">
@@ -45,7 +41,6 @@ const PropertiesHero = ({ searchQuery, onSearchChange, checkInParam }) => (
         )}
       </div>
 
-      {/* Search bar — overlaps into the content section below */}
       <form onSubmit={(e) => e.preventDefault()} className="max-w-2xl mx-auto translate-y-6">
         <div className="relative shadow-2xl rounded-2xl">
           <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none z-10">
