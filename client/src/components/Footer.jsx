@@ -171,10 +171,10 @@ const Footer = () => {
                   <div>
                     <p className="text-xs text-gray-400 mb-0.5">Email</p>
                     <a
-                      href="mailto:support@rentifi.com"
+                      href="mailto:rentifi.project@gmail.com"
                       className="text-sm text-gray-700 hover:text-earth-brown transition-colors"
                     >
-                      support@rentifi.com
+                      rentifi.project@gmail.com
                     </a>
                   </div>
                 </li>
@@ -185,10 +185,10 @@ const Footer = () => {
                   <div>
                     <p className="text-xs text-gray-400 mb-0.5">Phone</p>
                     <a
-                      href="tel:+923059924066"
+                      href="tel:+923713324066"
                       className="text-sm text-gray-700 hover:text-earth-brown transition-colors"
                     >
-                      +92 305 9924066
+                      0371-3324066
                     </a>
                   </div>
                 </li>

@@ -13,6 +13,7 @@ import adminRouter from './routes/admin.js';
 import paymentRouter from './routes/payments.js';
 import stripeConnectRouter from './routes/stripeConnect.js';
 import complaintRouter from './routes/complaints.js';
+import chatRouter from './routes/chat.js';
 // import messageRouter from "./routes/messageRoutes.js";
 
 const app = express();
@@ -152,6 +153,7 @@ app.use('/api/admin', adminRouter);
 app.use('/api/payments', paymentRouter);
 app.use('/api/stripe-connect', stripeConnectRouter);
 app.use('/api/complaints', complaintRouter);
+app.use('/api/chat', chatRouter);
 // app.use("/api/messages",messageRouter)
 
 const PORT = process.env.PORT || 5000;

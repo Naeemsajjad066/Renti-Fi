@@ -72,3 +72,17 @@ export const verificationCodeLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+// Chat / AI assistant limiter - 30 messages per 15 minutes per IP
+// Free OpenRouter tier is rate-limited upstream; this keeps costs predictable
+// and prevents prompt-injection flooding.
+export const chatLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30,
+  message: {
+    success: false,
+    message: 'Too many chat messages. Please wait a moment before sending more.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});

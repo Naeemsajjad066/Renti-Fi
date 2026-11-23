@@ -6,6 +6,8 @@ import { AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { lazy, Suspense, useMemo } from 'react';
 import { StripeProvider } from './contexts/StripeContext';
+import { ChatProvider } from './contexts/ChatContext';
+import ChatWidget from './components/ChatWidget';
 
 const Home = lazy(() => import('./pages/Home'));
 const HostDetails = lazy(() => import('./pages/HostDetails'));
@@ -168,12 +170,15 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <StripeProvider>
-        <Toaster />
-        <Sonner position="top-right" closeButton theme="light" richColors />
-        <BrowserRouter>
-          <AnimatedRoutes />
-          <GlobalLoader />
-        </BrowserRouter>
+        <ChatProvider>
+          <Toaster />
+          <Sonner position="top-right" closeButton theme="light" richColors />
+          <BrowserRouter>
+            <AnimatedRoutes />
+            <GlobalLoader />
+            <ChatWidget />
+          </BrowserRouter>
+        </ChatProvider>
       </StripeProvider>
     </TooltipProvider>
   </QueryClientProvider>

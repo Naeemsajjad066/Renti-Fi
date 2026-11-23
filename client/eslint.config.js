@@ -51,8 +51,8 @@ export default tseslint.config(
       // React refresh (HMR safety)
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
 
-      // Prettier as an ESLint rule — violations show as lint errors
-      'prettier/prettier': 'error',
+      // Prettier formatting — disabled as a lint rule (use npm run format instead)
+      'prettier/prettier': 'off',
 
       // TypeScript
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
