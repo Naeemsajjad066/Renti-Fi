@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Home,
   PlusCircle,
@@ -10,16 +10,26 @@ import {
   Calendar,
   BarChart2,
   HelpCircle,
+  Building2,
+  Settings,
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const HostSidebar = ({ isMobile, isOpen, onToggle }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const menuItems = [
     {
       title: 'Dashboard',
       icon: BarChart2,
       path: '/host/dashboard',
+    },
+    {
+      title: 'Properties',
+      icon: Building2,
+      path: '/host/properties',
     },
     {
       title: 'Add Property',
@@ -30,6 +40,11 @@ const HostSidebar = ({ isMobile, isOpen, onToggle }) => {
       title: 'Bookings',
       icon: Calendar,
       path: '/host/bookings',
+    },
+    {
+      title: 'Settings',
+      icon: Settings,
+      path: '/host/settings',
     },
     {
       title: 'Help & Support',
@@ -112,7 +127,13 @@ const HostSidebar = ({ isMobile, isOpen, onToggle }) => {
               <User className="mr-3 h-5 w-5" />
               <span>Switch to Guest</span>
             </Link>
-            <button className="flex items-center w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-md transition-colors mt-1">
+            <button
+              onClick={async () => {
+                await logout();
+                navigate('/login');
+              }}
+              className="flex items-center w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-md transition-colors mt-1"
+            >
               <LogOut className="mr-3 h-5 w-5" />
               <span>Logout</span>
             </button>

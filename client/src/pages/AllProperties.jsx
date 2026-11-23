@@ -23,7 +23,7 @@ const AllProperties = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900">
+      <div className="min-h-screen flex flex-col bg-white dark:bg-gray-950">
         <Navbar />
 
         <main className="flex-grow pt-24">
@@ -33,7 +33,7 @@ const AllProperties = () => {
             checkInParam={checkInParam}
           />
 
-          <section className="py-12 bg-white dark:bg-gray-900">
+          <section className="pt-14 pb-12 bg-white dark:bg-gray-950">
             <div className="page-container">
               <div className="flex flex-col lg:flex-row gap-8">
                 <PropertyFilters

@@ -1,10 +1,9 @@
 import React, { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Home } from 'lucide-react';
 import PageTransition from '@/components/PageTransition';
 import { AuthContext } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
 const Login = () => {
@@ -12,18 +11,11 @@ const Login = () => {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
-  const [isAdminMode, setIsAdminMode] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -34,7 +26,6 @@ const Login = () => {
       return;
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       toast.error('Please enter a valid email address');
@@ -42,40 +33,22 @@ const Login = () => {
     }
 
     try {
-      const response = await login({
-        email: formData.email,
-        password: formData.password,
-      });
+      const response = await login({ email: formData.email, password: formData.password });
 
       if (response?.success) {
-        // Check if user is admin and redirect accordingly
-        if (response.userData?.role === 'admin' || isAdminMode) {
-          navigate('/admin');
-        } else {
-          navigate('/');
-        }
+        navigate(response.userData?.role === 'admin' ? '/admin' : '/');
       } else if (response?.requiresVerification) {
-        // User needs to verify email
-        navigate('/verify-email', {
-          state: {
-            email: response.email,
-            userData: null, // User already exists, no need to pass userData
-          },
-        });
+        navigate('/verify-email', { state: { email: response.email, userData: null } });
       }
     } catch {
       // Error handling is done in AuthContext
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
     <PageTransition>
       <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gray-50 dark:bg-gray-900">
-        {/* Logo & Heading */}
+        {/* Logo */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -88,7 +61,7 @@ const Login = () => {
                 <div className="w-12 h-12 bg-earth-brown rounded-lg flex items-center justify-center shadow-md">
                   <Home size={24} className="text-white" />
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-soft-peach rounded-full"></div>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-soft-peach rounded-full" />
               </div>
               <span className="ml-2 text-3xl font-display font-bold">
                 <span className="text-earth-brown">Rent</span>
@@ -96,15 +69,11 @@ const Login = () => {
               </span>
             </div>
           </Link>
-          <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {isAdminMode ? 'Admin Login' : 'Welcome back'}
-          </h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            {isAdminMode ? 'Sign in to admin dashboard' : 'Sign in to your account'}
-          </p>
+          <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-gray-100">Welcome back</h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Sign in to your account</p>
         </motion.div>
 
-        {/* Login Form */}
+        {/* Form */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -126,10 +95,8 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
-                placeholder="Naeem123@gmail.com"
-                title="Please enter a valid email address"
+                placeholder="you@example.com"
               />
             </div>
 
@@ -161,7 +128,7 @@ const Login = () => {
                 />
                 <button
                   type="button"
-                  onClick={togglePasswordVisibility}
+                  onClick={() => setShowPassword((prev) => !prev)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -169,38 +136,24 @@ const Login = () => {
               </div>
             </div>
 
-            <div>
-              <button
-                type="submit"
-                className="w-full bg-primary hover:bg-primary/90 text-white py-2.5 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2"
-              >
-                {isAdminMode ? 'Sign In as Admin' : 'Sign In'}
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="w-full bg-primary hover:bg-primary/90 text-white py-2.5 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2"
+            >
+              Sign In
+            </button>
           </form>
 
-          <div className="mt-6 space-y-3">
-            <button
-              type="button"
-              onClick={() => setIsAdminMode(!isAdminMode)}
-              className="w-full py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-            >
-              {isAdminMode ? '← Back to User Login' : '🔐 Admin Login'}
-            </button>
-
-            {!isAdminMode && (
-              <div className="text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Don't have an account?{' '}
-                  <Link
-                    to="/signup"
-                    className="text-primary dark:text-primary-400 hover:underline font-medium"
-                  >
-                    Sign up
-                  </Link>
-                </p>
-              </div>
-            )}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Don&apos;t have an account?{' '}
+              <Link
+                to="/signup"
+                className="text-primary dark:text-primary-400 hover:underline font-medium"
+              >
+                Sign up
+              </Link>
+            </p>
           </div>
         </motion.div>
       </div>

@@ -373,12 +373,14 @@ const AddListing = () => {
                         <div
                           className={cn(
                             'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium mb-2 transition-colors',
-                            activeStep >= step
+                            activeStep > step
                               ? 'bg-primary text-white'
-                              : 'bg-gray-200 text-gray-600'
+                              : activeStep === step
+                                ? 'bg-primary text-white ring-4 ring-primary/20'
+                                : 'bg-gray-200 text-gray-600'
                           )}
                         >
-                          {step}
+                          {activeStep > step ? <Check size={14} /> : step}
                         </div>
                         <div className="text-xs text-gray-600 text-center">
                           {step === 1 && 'Basic Info'}
@@ -391,25 +393,13 @@ const AddListing = () => {
                       </div>
                     ))}
                 </div>
-                <div className="mt-2 flex gap-1">
+                <div className="mt-4 relative h-1 bg-gray-200 rounded-full">
                   <div
-                    className={`flex-1 h-1 rounded-l ${activeStep >= 2 ? 'bg-primary' : 'bg-gray-200'}`}
-                  ></div>
-                  <div
-                    className={`flex-1 h-1 ${activeStep >= 3 ? 'bg-primary' : 'bg-gray-200'}`}
-                  ></div>
-                  <div
-                    className={`flex-1 h-1 ${activeStep >= 4 ? 'bg-primary' : 'bg-gray-200'}`}
-                  ></div>
-                  <div
-                    className={`flex-1 h-1 ${activeStep >= 5 ? 'bg-primary' : 'bg-gray-200'}`}
-                  ></div>
-                  <div
-                    className={`flex-1 h-1 ${activeStep >= 6 ? 'bg-primary' : 'bg-gray-200'}`}
-                  ></div>
-                  <div
-                    className={`flex-1 h-1 rounded-r ${activeStep >= 7 ? 'bg-primary' : 'bg-gray-200'}`}
-                  ></div>
+                    className="absolute left-0 top-0 h-1 bg-primary rounded-full transition-all duration-300"
+                    style={{
+                      width: `${((activeStep - 1) / (isEditMode ? 4 : 5)) * 100}%`,
+                    }}
+                  />
                 </div>
               </div>
 

@@ -14,6 +14,7 @@ import {
   MapPin,
   Clock,
   DollarSign,
+  LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +29,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const AdminPanel = () => {
-  const { authUser } = useAuth();
+  const { authUser, logout } = useAuth();
   const navigate = useNavigate();
 
   // Secondary protection: Check if user is admin
@@ -201,6 +202,20 @@ const AdminPanel = () => {
                       </span>
                     </div>
                   </div>
+                </div>
+
+                {/* Logout */}
+                <div className="mt-4 pt-4 border-t border-earth-brown/10">
+                  <button
+                    onClick={async () => {
+                      await logout();
+                      navigate('/login');
+                    }}
+                    className="flex items-center w-full px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                  >
+                    <LogOut className="mr-3 w-5 h-5" />
+                    Logout
+                  </button>
                 </div>
               </div>
             </div>

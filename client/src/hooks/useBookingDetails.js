@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
@@ -31,12 +31,15 @@ const useBookingDetails = () => {
     } catch (error) {
       console.error('Error fetching booking details:', error);
       toast.error(error.response?.data?.message || 'Failed to load booking details');
-      const fromHost = window.location.pathname.includes('host');
-      navigate(fromHost ? '/host/bookings' : '/bookings');
+      navigate('/bookings');
     } finally {
       setLoading(false);
     }
   }, [id, navigate, authUser]);
+
+  useEffect(() => {
+    if (id && authUser) fetchBookingDetails();
+  }, [id, authUser, fetchBookingDetails]);
 
   const handleCancelBooking = useCallback(async () => {
     if (
