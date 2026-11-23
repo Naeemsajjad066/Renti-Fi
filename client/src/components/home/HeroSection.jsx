@@ -188,7 +188,12 @@ const HeroSection = () => {
             {/* Main card */}
             <motion.div
               animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 6, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                repeatType: 'reverse',
+                ease: 'easeInOut',
+              }}
               className="absolute left-8 right-8 mx-auto h-[400px] rounded-3xl overflow-hidden shadow-2xl z-20"
             >
               <img

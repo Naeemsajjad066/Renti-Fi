@@ -33,10 +33,7 @@ const PropertiesHero = ({ searchQuery, onSearchChange, checkInParam }) => (
         )}
       </div>
 
-      <form
-        onSubmit={(e) => e.preventDefault()}
-        className="max-w-2xl mx-auto mb-16"
-      >
+      <form onSubmit={(e) => e.preventDefault()} className="max-w-2xl mx-auto mb-16">
         <div className="relative">
           <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
             <Search size={20} className="text-earth-brown" />

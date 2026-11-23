@@ -26,7 +26,6 @@ const BookingCard = ({
   booking,
   index,
   formatDate,
-  getStatusBadge,
   reviewedBookingIds,
   onCancel,
   onWriteReview,

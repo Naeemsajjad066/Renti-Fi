@@ -85,9 +85,7 @@ const PaymentSummaryCard = ({ booking, showHostPayout = false, dark = true }) =>
               className={`flex justify-between items-center ${booking.paymentBreakdown.upfrontPaid ? 'text-green-600 dark:text-green-400' : textMuted}`}
             >
               <span className="flex items-center text-sm">
-                {booking.paymentBreakdown.upfrontPaid && (
-                  <CheckCircle size={16} className="mr-2" />
-                )}
+                {booking.paymentBreakdown.upfrontPaid && <CheckCircle size={16} className="mr-2" />}
                 Upfront (40%)
               </span>
               <span className="font-semibold">
@@ -96,8 +94,7 @@ const PaymentSummaryCard = ({ booking, showHostPayout = false, dark = true }) =>
             </div>
             {booking.paymentBreakdown.upfrontPaid && booking.paymentBreakdown.upfrontPaidAt && (
               <div className={`text-xs ${textSubtle} ml-6`}>
-                Paid on{' '}
-                {new Date(booking.paymentBreakdown.upfrontPaidAt).toLocaleDateString()}
+                Paid on {new Date(booking.paymentBreakdown.upfrontPaidAt).toLocaleDateString()}
               </div>
             )}
             <div

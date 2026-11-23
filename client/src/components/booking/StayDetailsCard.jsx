@@ -46,7 +46,9 @@ const StayDetailsCard = ({ booking, dark = true }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <div className={`text-sm ${textSubtle} mb-1`}>Check-in</div>
-          <div className={`text-lg font-semibold ${textPrimary}`}>{formatLongDate(checkInDate)}</div>
+          <div className={`text-lg font-semibold ${textPrimary}`}>
+            {formatLongDate(checkInDate)}
+          </div>
           <div className={`flex items-center ${textMuted} mt-1`}>
             <Clock size={14} className="mr-1" />
             <span className="text-sm">{CHECKIN_TIME}</span>
@@ -54,7 +56,9 @@ const StayDetailsCard = ({ booking, dark = true }) => {
         </div>
         <div>
           <div className={`text-sm ${textSubtle} mb-1`}>Check-out</div>
-          <div className={`text-lg font-semibold ${textPrimary}`}>{formatLongDate(checkOutDate)}</div>
+          <div className={`text-lg font-semibold ${textPrimary}`}>
+            {formatLongDate(checkOutDate)}
+          </div>
           <div className={`flex items-center ${textMuted} mt-1`}>
             <Clock size={14} className="mr-1" />
             <span className="text-sm">{CHECKOUT_TIME}</span>

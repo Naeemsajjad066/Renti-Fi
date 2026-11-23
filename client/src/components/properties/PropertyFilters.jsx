@@ -17,16 +17,21 @@ import {
   PRICE_RANGE_STEP,
 } from '@/constants';
 
-const PropertyFilters = ({ activeType, onTypeChange, priceRange, onPriceChange, sortBy, onSortChange }) => (
+const PropertyFilters = ({
+  activeType,
+  onTypeChange,
+  priceRange,
+  onPriceChange,
+  sortBy,
+  onSortChange,
+}) => (
   <aside className="w-full lg:w-1/4">
     <div className="bg-light-beige/30 dark:bg-gray-800 rounded-xl p-6 space-y-6">
       <h3 className="text-xl font-semibold text-earth-brown dark:text-cream-beige">Filters</h3>
 
       {/* Property type */}
       <div>
-        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-          Property Type
-        </h4>
+        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Property Type</h4>
         <div className="flex flex-wrap gap-2">
           {PROPERTY_TYPE_OPTIONS.map((type) => (
             <Badge
