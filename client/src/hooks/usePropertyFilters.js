@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PropertyContext } from '../contexts/PropertyContext';
+import { AuthContext } from '../contexts/AuthContext';
 import { PRICE_RANGE_DEFAULT } from '@/constants';
 
 /**
@@ -14,6 +15,7 @@ const usePropertyFilters = () => {
   const checkInParam = searchParams.get('checkIn') || '';
 
   const { properties, loading, fetchProperties } = useContext(PropertyContext);
+  const { authUser } = useContext(AuthContext);
 
   const [activeType, setActiveType] = useState('All');
   const [searchQuery, setSearchQuery] = useState(cityParam);
@@ -31,6 +33,14 @@ const usePropertyFilters = () => {
 
   useEffect(() => {
     let result = [...properties];
+
+    // Exclude properties owned by the logged-in user
+    if (authUser?._id) {
+      result = result.filter((p) => {
+        const hostId = p.host?._id || p.host;
+        return hostId?.toString() !== authUser._id.toString();
+      });
+    }
 
     if (activeType !== 'All') {
       result = result.filter(
@@ -63,7 +73,7 @@ const usePropertyFilters = () => {
     }
 
     setFilteredProperties(result);
-  }, [activeType, searchQuery, priceRange, sortBy, properties]);
+  }, [activeType, searchQuery, priceRange, sortBy, properties, authUser]);
 
   const resetFilters = () => {
     setActiveType('All');

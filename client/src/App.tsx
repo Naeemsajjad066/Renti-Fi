@@ -30,6 +30,8 @@ const StripeReturn = lazy(() => import('./pages/StripeReturn'));
 const StripeRefresh = lazy(() => import('./pages/StripeRefresh'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const BookingDetails = lazy(() => import('./pages/BookingDetails'));
+const HostProperties = lazy(() => import('./pages/HostProperties'));
+const HostSettings = lazy(() => import('./pages/HostSettings'));
 const HostBookingDetails = lazy(() => import('./pages/HostBookingDetails'));
 const AdminComplaints = lazy(() => import('./pages/AdminComplaints'));
 const ComplaintDetails = lazy(() => import('./pages/ComplaintDetails'));
@@ -59,14 +61,64 @@ const AnimatedRoutes = () => {
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/property/:id" element={<PropertyDetails />} />
         <Route path="/properties/:id" element={<PropertyDetails />} />
-        <Route path="/host/dashboard" element={<HostDashboard />} />
-        <Route path="/host/add-listing" element={<AddListing />} />
-        <Route path="/host/add-listing/:id" element={<AddListing />} />
-        <Route path="/host/properties" element={<AllProperties />} />
-        <Route path="/host/properties/:id" element={<PropertyDetails />} />
-        <Route path="/host/bookings" element={<HostBookings />} />
-        <Route path="/host/bookings/:id" element={<HostBookingDetails />} />
+        <Route
+          path="/host/dashboard"
+          element={
+            <ProtectedRoute>
+              <HostDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/host/add-listing"
+          element={
+            <ProtectedRoute>
+              <AddListing />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/host/add-listing/:id"
+          element={
+            <ProtectedRoute>
+              <AddListing />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/host/properties"
+          element={
+            <ProtectedRoute>
+              <HostProperties />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/host/properties/:id"
+          element={
+            <ProtectedRoute>
+              <PropertyDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/host/bookings"
+          element={
+            <ProtectedRoute>
+              <HostBookings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/host/bookings/:id"
+          element={
+            <ProtectedRoute>
+              <HostBookingDetails />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/host/messages" element={<NotFound />} />
+        <Route path="/host/settings" element={<HostSettings />} />
         <Route path="/host/support" element={<NotFound />} />
         <Route path="/host/stripe/return" element={<StripeReturn />} />
         <Route path="/host/stripe/refresh" element={<StripeRefresh />} />

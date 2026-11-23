@@ -1,6 +1,6 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
@@ -15,45 +15,56 @@ import {
 } from '@/components/booking';
 import useBookingDetails from '@/hooks/useBookingDetails';
 
+/* ── Loading skeleton ─────────────────────────────────────────────────────── */
+const LoadingState = () => (
+  <PageTransition>
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
+      <Navbar />
+      <main className="flex-grow pt-20 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-full border-4 border-earth-brown/20 border-t-earth-brown animate-spin" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading your booking…</p>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  </PageTransition>
+);
+
+/* ── Not-found state ──────────────────────────────────────────────────────── */
+const NotFoundState = ({ onBack }) => (
+  <PageTransition>
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
+      <Navbar />
+      <main className="flex-grow pt-20 flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+            <AlertCircle size={28} className="text-gray-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
+            Booking not found
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+            This booking doesn't exist or you don't have access to it.
+          </p>
+          <Button onClick={onBack}>Go to My Bookings</Button>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  </PageTransition>
+);
+
+/* ── Main page ────────────────────────────────────────────────────────────── */
 const BookingDetails = () => {
   const { booking, loading, cancelling, isHost, navigate, handleCancelBooking } =
     useBookingDetails();
 
-  if (loading) {
-    return (
-      <PageTransition>
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          <main className="flex-grow pt-20 flex items-center justify-center">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
-              <p className="text-gray-600">Loading booking details...</p>
-            </div>
-          </main>
-          <Footer />
-        </div>
-      </PageTransition>
-    );
-  }
+  // Guest booking details always navigates back to /bookings
+  const goBack = () => navigate('/bookings');
 
-  if (!booking) {
-    return (
-      <PageTransition>
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          <main className="flex-grow pt-20 flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-gray-600">Booking not found</p>
-              <Button onClick={() => navigate('/bookings')} className="mt-4">
-                Back to Bookings
-              </Button>
-            </div>
-          </main>
-          <Footer />
-        </div>
-      </PageTransition>
-    );
-  }
+  if (loading) return <LoadingState />;
+  if (!booking) return <NotFoundState onBack={goBack} />;
 
   const checkInDate = new Date(booking.checkIn);
   const now = new Date();
@@ -65,93 +76,88 @@ const BookingDetails = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
         <Navbar />
 
-        <main className="flex-grow pt-20 pb-12">
-          <div className="page-container max-w-6xl">
+        <main className="flex-grow pt-20 pb-16">
+          <div className="page-container max-w-6xl py-8">
+            {/* Back link */}
+            <button
+              onClick={goBack}
+              className="mb-6 inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-earth-brown dark:hover:text-cream-beige transition-colors"
+            >
+              <ArrowLeft size={15} />
+              Back to My Bookings
+            </button>
+
             <BookingDetailHeader booking={booking} variant="guest" dark />
 
             {/* Cancellation warning */}
-            {canCancel &&
-              booking.paymentOption === 'early' &&
-              booking.paymentBreakdown?.upfrontPaid && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4"
-                >
-                  <div className="flex items-start">
+            <AnimatePresence>
+              {canCancel &&
+                booking.paymentOption === 'early' &&
+                booking.paymentBreakdown?.upfrontPaid && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="mb-6 flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-2xl px-5 py-4"
+                  >
                     <AlertCircle
-                      className="text-yellow-600 dark:text-yellow-500 mr-3 mt-0.5 flex-shrink-0"
-                      size={20}
+                      size={17}
+                      className="text-amber-500 dark:text-amber-400 mt-0.5 shrink-0"
                     />
                     <div>
-                      <h3 className="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-1">
+                      <p className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-0.5">
                         Cancellation Policy
-                      </h3>
-                      <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                        If you cancel this booking, the upfront amount of{' '}
+                      </p>
+                      <p className="text-sm text-amber-700 dark:text-amber-400">
+                        Cancelling will forfeit your upfront payment of{' '}
                         <strong>
                           Rs {booking.paymentBreakdown.upfrontAmount.toLocaleString()}
-                        </strong>{' '}
-                        will NOT be refunded. Only the remaining payment on arrival will be
-                        cancelled.
+                        </strong>
+                        . The remaining arrival payment will be cancelled.
                       </p>
                     </div>
-                  </div>
-                </motion.div>
-              )}
+                  </motion.div>
+                )}
+            </AnimatePresence>
 
+            {/* Content grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Main content */}
-              <div className="lg:col-span-2 space-y-6">
+              {/* ── Main column ── */}
+              <div className="lg:col-span-2 space-y-5">
                 <PropertyInfoCard booking={booking} />
-                <BookingMapCard property={booking.property} dark showDirections mapHeight="h-80" />
                 <StayDetailsCard booking={booking} />
+                <BookingMapCard property={booking.property} dark showDirections mapHeight="h-72" />
               </div>
 
-              {/* Sidebar */}
+              {/* ── Sidebar ── */}
               <div className="lg:col-span-1">
-                <div className="sticky top-24 space-y-6">
+                <div className="sticky top-24 space-y-5">
                   <PaymentSummaryCard booking={booking} />
                   <ContactCard booking={booking} variant={isHost ? 'guest' : 'host'} />
 
-                  {/* Cancel action (guest only) */}
+                  {/* Cancel button — guest only, cancellable bookings only */}
                   {!isHost && canCancel && (
                     <motion.div
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
+                      transition={{ delay: 0.2 }}
                     >
                       <Button
                         variant="destructive"
-                        className="w-full"
+                        className="w-full rounded-xl"
                         onClick={handleCancelBooking}
                         disabled={cancelling}
                       >
-                        {cancelling ? 'Cancelling...' : 'Cancel Booking'}
+                        {cancelling ? 'Cancelling…' : 'Cancel Booking'}
                       </Button>
                     </motion.div>
                   )}
                 </div>
               </div>
             </div>
-
-            {/* Back to bookings */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mt-8 text-center"
-            >
-              <Button
-                variant="outline"
-                onClick={() => navigate(isHost ? '/host/bookings' : '/bookings')}
-              >
-                Back to All Bookings
-              </Button>
-            </motion.div>
           </div>
         </main>
 

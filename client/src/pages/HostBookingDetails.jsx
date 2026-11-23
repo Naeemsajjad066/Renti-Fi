@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PageTransition from '@/components/PageTransition';
 import HostSidebar from '@/components/HostSidebar';
@@ -60,6 +60,15 @@ const HostBookingDetails = () => {
 
         <div className="flex-1 overflow-auto">
           <div className="px-4 md:px-8 py-6 max-w-7xl mx-auto">
+            {/* Back link */}
+            <button
+              onClick={() => navigate('/host/bookings')}
+              className="mb-6 inline-flex items-center gap-2 text-sm text-gray-500 hover:text-earth-brown transition-colors"
+            >
+              <ArrowLeft size={15} />
+              Back to Host Bookings
+            </button>
+
             <BookingDetailHeader booking={booking} variant="host" dark={false} />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -78,18 +87,6 @@ const HostBookingDetails = () => {
                 </div>
               </div>
             </div>
-
-            {/* Back to bookings */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mt-8 text-center"
-            >
-              <Button variant="outline" onClick={() => navigate('/host/bookings')}>
-                Back to All Bookings
-              </Button>
-            </motion.div>
           </div>
         </div>
       </div>
