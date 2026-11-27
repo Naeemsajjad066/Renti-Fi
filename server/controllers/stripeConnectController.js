@@ -1,6 +1,13 @@
 // controllers/stripeConnectController.js
 import { stripe } from '../config/stripe.js';
 import User from '../models/User.js';
+import {
+  STRIPE_ACCOUNT_STATUS,
+  STRIPE_CONNECT_COUNTRY,
+  STRIPE_ACCOUNT_TYPE,
+  STRIPE_BUSINESS_TYPE,
+  STRIPE_ONBOARDING_TYPE,
+} from '../constants/index.js';
 
 // Create Stripe Connect account for host
 export const createConnectAccount = async (req, res) => {
@@ -25,14 +32,14 @@ export const createConnectAccount = async (req, res) => {
 
     // Create Stripe Express account
     const account = await stripe.accounts.create({
-      type: 'express',
-      country: 'US', // Changed to US for testing (Stripe doesn't support PK in test mode)
+      type: STRIPE_ACCOUNT_TYPE,
+      country: STRIPE_CONNECT_COUNTRY,
       email: user.email,
       capabilities: {
         card_payments: { requested: true },
         transfers: { requested: true },
       },
-      business_type: 'individual',
+      business_type: STRIPE_BUSINESS_TYPE,
       metadata: {
         userId: userId.toString(),
         email: user.email,
@@ -42,7 +49,7 @@ export const createConnectAccount = async (req, res) => {
 
     // Save Stripe account ID to user
     user.stripeAccountId = account.id;
-    user.stripeAccountStatus = 'pending';
+    user.stripeAccountStatus = STRIPE_ACCOUNT_STATUS.PENDING;
     user.isHost = true;
     await user.save();
 
@@ -78,7 +85,7 @@ export const createAccountLink = async (req, res) => {
       account: user.stripeAccountId,
       refresh_url: `${process.env.FRONTEND_URL}/host/stripe/refresh`,
       return_url: `${process.env.FRONTEND_URL}/host/stripe/return`,
-      type: 'account_onboarding',
+      type: STRIPE_ONBOARDING_TYPE,
     });
 
     res.json({
@@ -117,7 +124,9 @@ export const getAccountStatus = async (req, res) => {
     // Update user status
     if (onboardingComplete !== user.stripeOnboardingComplete) {
       user.stripeOnboardingComplete = onboardingComplete;
-      user.stripeAccountStatus = onboardingComplete ? 'active' : 'pending';
+      user.stripeAccountStatus = onboardingComplete
+        ? STRIPE_ACCOUNT_STATUS.ACTIVE
+        : STRIPE_ACCOUNT_STATUS.PENDING;
       await user.save();
     }
 
@@ -125,7 +134,9 @@ export const getAccountStatus = async (req, res) => {
       success: true,
       connected: true,
       onboardingComplete,
-      accountStatus: account.charges_enabled ? 'active' : 'pending',
+      accountStatus: account.charges_enabled
+        ? STRIPE_ACCOUNT_STATUS.ACTIVE
+        : STRIPE_ACCOUNT_STATUS.PENDING,
       chargesEnabled: account.charges_enabled,
       payoutsEnabled: account.payouts_enabled,
       detailsSubmitted: account.details_submitted,

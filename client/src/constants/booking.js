@@ -36,3 +36,58 @@ export const HOST_BOOKING_STATUS_FILTER_OPTIONS = [
 
 export const CHECKIN_TIME = '9:00 AM onwards';
 export const CHECKOUT_TIME = 'Before 9:00 AM';
+
+// ─── Payment options (must match server/constants/enums.js) ─────────────────
+
+export const PAYMENT_OPTION = {
+  ARRIVAL: 'arrival', // 100% cash on arrival
+  EARLY: 'early', // 40% upfront (Stripe) + 60% on arrival
+  BOTH: 'both', // property allows either
+};
+
+// Display labels for payment options — matches the 40/60 server split
+export const PAYMENT_OPTION_LABELS = {
+  [PAYMENT_OPTION.EARLY]: '40% paid · 60% on arrival',
+  [PAYMENT_OPTION.ARRIVAL]: 'Pay on arrival',
+  [PAYMENT_OPTION.BOTH]: '40% upfront or pay on arrival',
+};
+
+// ─── Payment split percentages (must match server/constants/payment.js) ──────
+
+export const PAYMENT_SPLIT = {
+  UPFRONT_RATIO: 0.4,
+  ARRIVAL_RATIO: 0.6,
+  PLATFORM_FEE_RATIO: 0.05,
+};
+
+export const PLATFORM_FEE_LABEL = 'Platform Fee (5%)';
+
+// ─── Currency display ──────────────────────────────────────────────────────────
+
+export const CURRENCY = {
+  CODE: 'PKR',
+  PREFIX: 'Rs ',
+};
+
+// ─── Booking status (client view — must match server/constants/enums.js) ────
+
+export const BOOKING_STATUS = {
+  RESERVED: 'reserved',
+  CONFIRMED: 'confirmed',
+  CHECKED_IN: 'checked-in',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled',
+  EXPIRED: 'expired',
+  // UI-only derived status (computed client-side from dates)
+  UPCOMING: 'upcoming',
+  ACTIVE: 'active',
+  PENDING: 'pending',
+};
+
+export const PAYMENT_STATUS = {
+  PENDING: 'pending',
+  PARTIAL: 'partial',
+  PAID: 'paid',
+  REFUNDED: 'refunded',
+  FAILED: 'failed',
+};

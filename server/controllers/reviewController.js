@@ -1,6 +1,7 @@
 // controllers/reviewController.js
 import Review from '../models/Review.js';
 import Booking from '../models/Booking.js';
+import { BOOKING_STATUS, USER_ROLES } from '../constants/index.js';
 
 // @desc    Create a new review
 // @route   POST /api/reviews
@@ -56,7 +57,7 @@ export const createReview = async (req, res) => {
     const checkoutDate = new Date(bookingDoc.checkOut);
     const isCheckoutPassed = checkoutDate < now;
 
-    if (bookingDoc.status !== 'completed' && !isCheckoutPassed) {
+    if (bookingDoc.status !== BOOKING_STATUS.COMPLETED && !isCheckoutPassed) {
       return res.status(400).json({
         success: false,
         message: 'You can only review bookings after checkout date or when marked as completed',
@@ -64,8 +65,8 @@ export const createReview = async (req, res) => {
     }
 
     // Auto-update booking status to completed if checkout has passed
-    if (bookingDoc.status === 'confirmed' && isCheckoutPassed) {
-      bookingDoc.status = 'completed';
+    if (bookingDoc.status === BOOKING_STATUS.CONFIRMED && isCheckoutPassed) {
+      bookingDoc.status = BOOKING_STATUS.COMPLETED;
       await bookingDoc.save();
     }
 
@@ -266,7 +267,7 @@ export const deleteReview = async (req, res) => {
     }
 
     // Check ownership or admin
-    if (review.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    if (review.user.toString() !== req.user._id.toString() && req.user.role !== USER_ROLES.ADMIN) {
       return res
         .status(403)
         .json({ success: false, message: 'Not authorized to delete this review' });
@@ -392,12 +393,12 @@ export const canUserReview = async (req, res) => {
     const bookings = await Booking.find({
       guest: req.user._id,
       property: propertyId,
-      status: { $in: ['completed', 'confirmed'] },
+      status: { $in: [BOOKING_STATUS.COMPLETED, BOOKING_STATUS.CONFIRMED] },
     });
 
     // Filter bookings that are completed or past checkout date
     const completedBookings = bookings.filter((booking) => {
-      return booking.status === 'completed' || new Date(booking.checkOut) < now;
+      return booking.status === BOOKING_STATUS.COMPLETED || new Date(booking.checkOut) < now;
     });
 
     if (completedBookings.length === 0) {

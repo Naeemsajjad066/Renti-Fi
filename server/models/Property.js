@@ -1,5 +1,11 @@
 // models/Property.js
 import mongoose from 'mongoose';
+import {
+  PROPERTY_TYPES,
+  VERIFICATION_STATUS,
+  PAYMENT_OPTION,
+  CANCELLATION_POLICY,
+} from '../constants/index.js';
 
 const propertySchema = new mongoose.Schema(
   {
@@ -41,7 +47,7 @@ const propertySchema = new mongoose.Schema(
     propertyType: {
       type: String,
       required: true,
-      enum: ['apartment', 'house', 'villa', 'cabin', 'cottage', 'loft', 'condo', 'townhouse'],
+      enum: PROPERTY_TYPES,
     },
 
     bedrooms: { type: Number, required: true },
@@ -79,8 +85,8 @@ const propertySchema = new mongoose.Schema(
     // Verification status and workflow
     verificationStatus: {
       type: String,
-      enum: ['pending', 'approved', 'rejected', 'resubmitted'],
-      default: 'pending',
+      enum: Object.values(VERIFICATION_STATUS),
+      default: VERIFICATION_STATUS.PENDING,
     },
     verifiedBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -100,15 +106,15 @@ const propertySchema = new mongoose.Schema(
     // Payment Configuration (Required for listing)
     paymentOptions: {
       type: String,
-      enum: ['arrival', 'early', 'both'],
+      enum: Object.values(PAYMENT_OPTION),
       required: [true, 'Payment option is required to list property'],
-      default: 'both',
+      default: PAYMENT_OPTION.BOTH,
     },
     cancellationPolicy: {
       type: String,
-      enum: ['flexible', 'moderate', 'strict'],
+      enum: Object.values(CANCELLATION_POLICY),
       required: [true, 'Cancellation policy is required'],
-      default: 'moderate',
+      default: CANCELLATION_POLICY.MODERATE,
     },
     // Stripe Connect Account (for future direct payouts to hosts)
     stripeAccountId: {

@@ -2,6 +2,15 @@ import Complaint from '../models/Complaint.js';
 import Property from '../models/Property.js';
 import { sendEmail } from '../lib/emailService.js';
 import { uploadToCloudinary } from '../lib/cloudinary.js';
+import {
+  COMPLAINT_STATUS,
+  COMPLAINT_PRIORITY,
+  COMPLAINT_CATEGORY,
+  COMPLAINT_DEFAULT_PAGE,
+  COMPLAINT_DEFAULT_LIMIT,
+  ADMIN_EMAIL,
+  CLIENT_BASE_URL,
+} from '../constants/index.js';
 
 // Upload complaint file
 export const uploadComplaintFile = async (req, res) => {
@@ -62,11 +71,11 @@ export const submitComplaint = async (req, res) => {
       reporter: req.user._id,
       title,
       description,
-      category: category || 'other',
+      category: category || COMPLAINT_CATEGORY.OTHER,
       attachments: attachments || [],
       propertySnapshot,
-      status: 'pending',
-      priority: 'medium',
+      status: COMPLAINT_STATUS.PENDING,
+      priority: COMPLAINT_PRIORITY.MEDIUM,
     });
 
     // Populate complaint details
@@ -99,7 +108,12 @@ export const submitComplaint = async (req, res) => {
 // Get all complaints (Admin only)
 export const getAllComplaints = async (req, res) => {
   try {
-    const { status, priority, page = 1, limit = 20 } = req.query;
+    const {
+      status,
+      priority,
+      page = COMPLAINT_DEFAULT_PAGE,
+      limit = COMPLAINT_DEFAULT_LIMIT,
+    } = req.query;
 
     const filter = {};
     if (status) filter.status = status;
@@ -184,13 +198,13 @@ export const updateComplaintStatus = async (req, res) => {
     if (resolution) complaint.resolution = resolution;
 
     // Set reviewed info if status changed from pending
-    if (status && complaint.status !== 'pending' && !complaint.reviewedBy) {
+    if (status && complaint.status !== COMPLAINT_STATUS.PENDING && !complaint.reviewedBy) {
       complaint.reviewedBy = req.user._id;
       complaint.reviewedAt = new Date();
     }
 
     // Set resolved date if resolved
-    if (status === 'resolved' && !complaint.resolvedAt) {
+    if (status === COMPLAINT_STATUS.RESOLVED && !complaint.resolvedAt) {
       complaint.resolvedAt = new Date();
     }
 
@@ -221,12 +235,12 @@ export const getComplaintStats = async (req, res) => {
     const [total, pending, underReview, resolved, dismissed, highPriority, urgent] =
       await Promise.all([
         Complaint.countDocuments(),
-        Complaint.countDocuments({ status: 'pending' }),
-        Complaint.countDocuments({ status: 'under_review' }),
-        Complaint.countDocuments({ status: 'resolved' }),
-        Complaint.countDocuments({ status: 'dismissed' }),
-        Complaint.countDocuments({ priority: 'high' }),
-        Complaint.countDocuments({ priority: 'urgent' }),
+        Complaint.countDocuments({ status: COMPLAINT_STATUS.PENDING }),
+        Complaint.countDocuments({ status: COMPLAINT_STATUS.UNDER_REVIEW }),
+        Complaint.countDocuments({ status: COMPLAINT_STATUS.RESOLVED }),
+        Complaint.countDocuments({ status: COMPLAINT_STATUS.DISMISSED }),
+        Complaint.countDocuments({ priority: COMPLAINT_PRIORITY.HIGH }),
+        Complaint.countDocuments({ priority: COMPLAINT_PRIORITY.URGENT }),
       ]);
 
     // Get complaints by category
@@ -299,10 +313,11 @@ export const getUserComplaints = async (req, res) => {
 // Helper function to send email notification to admin
 async function sendComplaintNotificationToAdmin(complaint, property) {
   try {
-    const adminEmails = process.env.ADMIN_EMAIL || 'rentifi.project@gmail.com';
+    const adminEmail = ADMIN_EMAIL;
+    const clientUrl = CLIENT_BASE_URL;
 
     const emailContent = {
-      to: adminEmails,
+      to: adminEmail,
       subject: `New Complaint: ${complaint.title}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -347,7 +362,7 @@ async function sendComplaintNotificationToAdmin(complaint, property) {
           }
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:8080'}/admin/complaints/${complaint._id}" 
+            <a href="${clientUrl}/admin/complaints/${complaint._id}" 
                style="display: inline-block; background-color: #dc3545; color: white; padding: 12px 30px; 
                       text-decoration: none; border-radius: 6px; font-weight: 600;">
               Review Complaint

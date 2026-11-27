@@ -9,6 +9,24 @@ import {
   sendWelcomeEmail,
   sendPasswordResetEmail,
 } from '../lib/emailService.js';
+import {
+  VERIFICATION_CODE_TYPE,
+  VERIFICATION_CODE_EXPIRY_MS,
+  PASSWORD_RESET_EXPIRY_MS,
+  MAX_VERIFICATION_ATTEMPTS,
+  MIN_PASSWORD_LENGTH,
+  BCRYPT_SALT_ROUNDS,
+  MIN_FULLNAME_LENGTH,
+  NAME_REGEX,
+  EMAIL_REGEX,
+  PHONE_REGEX_SIGNUP,
+  PHONE_REGEX_UPDATE,
+  ID_CARD_REGEX,
+  MAX_PROFILE_PIC_SIZE,
+  ALLOWED_IMAGE_FORMATS,
+  PROFILE_PIC_WIDTH,
+  PROFILE_PIC_HEIGHT,
+} from '../constants/index.js';
 
 export const Signup = async (req, res) => {
   const { fullName, phoneNumber, idCard, email, password } = req.body;
@@ -20,25 +38,25 @@ export const Signup = async (req, res) => {
     }
 
     // Validate full name format (only letters and spaces)
-    const nameRegex = /^[a-zA-Z\s]+$/;
-    if (!nameRegex.test(fullName.trim())) {
+    if (!NAME_REGEX.test(fullName.trim())) {
       return res.json({ success: false, message: 'Full name can only contain letters and spaces' });
     }
 
     // Validate name length
-    if (fullName.trim().length < 3) {
-      return res.json({ success: false, message: 'Full name must be at least 3 characters long' });
+    if (fullName.trim().length < MIN_FULLNAME_LENGTH) {
+      return res.json({
+        success: false,
+        message: `Full name must be at least ${MIN_FULLNAME_LENGTH} characters long`,
+      });
     }
 
     // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!EMAIL_REGEX.test(email)) {
       return res.json({ success: false, message: 'Please enter a valid email address' });
     }
 
     // Validate phone number format (exactly 11 digits, numbers only)
-    const phoneRegex = /^[0-9]{11}$/;
-    if (!phoneRegex.test(phoneNumber.replace(/\s/g, ''))) {
+    if (!PHONE_REGEX_SIGNUP.test(phoneNumber.replace(/\s/g, ''))) {
       return res.json({
         success: false,
         message: 'Phone number must be exactly 11 digits and contain only numbers',
@@ -46,14 +64,16 @@ export const Signup = async (req, res) => {
     }
 
     // Validate ID card format (13 digits for Pakistani CNIC)
-    const idCardRegex = /^[0-9]{13}$/;
-    if (!idCardRegex.test(idCard.replace(/[-\s]/g, ''))) {
+    if (!ID_CARD_REGEX.test(idCard.replace(/[-\s]/g, ''))) {
       return res.json({ success: false, message: 'Please enter a valid 13-digit ID card number' });
     }
 
     // Validate password length
-    if (password.length < 6) {
-      return res.json({ success: false, message: 'Password must be at least 6 characters' });
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      return res.json({
+        success: false,
+        message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
+      });
     }
 
     // Check if user already exists
@@ -80,7 +100,7 @@ export const Signup = async (req, res) => {
     await VerificationCode.create({
       email,
       code: verificationCode,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+      expiresAt: new Date(Date.now() + VERIFICATION_CODE_EXPIRY_MS),
     });
 
     // Send verification email
@@ -123,14 +143,14 @@ export const forgotPassword = async (req, res) => {
     const resetCode = generateVerificationCode();
 
     // Delete any existing reset codes for this email
-    await VerificationCode.deleteMany({ email, type: 'password_reset' });
+    await VerificationCode.deleteMany({ email, type: VERIFICATION_CODE_TYPE.PASSWORD_RESET });
 
-    // Create new reset code record (expires in 15 minutes)
+    // Create new reset code record
     await VerificationCode.create({
       email,
       code: resetCode,
-      type: 'password_reset',
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+      type: VERIFICATION_CODE_TYPE.PASSWORD_RESET,
+      expiresAt: new Date(Date.now() + PASSWORD_RESET_EXPIRY_MS),
     });
 
     // Send reset email
@@ -173,15 +193,18 @@ export const resetPassword = async (req, res) => {
       return res.json({ success: false, message: 'All fields are required' });
     }
 
-    if (newPassword.length < 6) {
-      return res.json({ success: false, message: 'Password must be at least 6 characters' });
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      return res.json({
+        success: false,
+        message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
+      });
     }
 
     // Find valid reset code
     const resetRecord = await VerificationCode.findOne({
       email,
       code,
-      type: 'password_reset',
+      type: VERIFICATION_CODE_TYPE.PASSWORD_RESET,
       expiresAt: { $gt: new Date() },
     });
 
@@ -196,14 +219,14 @@ export const resetPassword = async (req, res) => {
     }
 
     // Hash new password
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(BCRYPT_SALT_ROUNDS);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     // Update user password
     await User.findOneAndUpdate({ email }, { password: hashedPassword }, { new: true });
 
     // Delete used reset code
-    await VerificationCode.deleteMany({ email, type: 'password_reset' });
+    await VerificationCode.deleteMany({ email, type: VERIFICATION_CODE_TYPE.PASSWORD_RESET });
 
     res.json({
       success: true,
@@ -215,8 +238,7 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-//Login User
-
+// Login User
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -226,8 +248,7 @@ export const login = async (req, res) => {
     }
 
     // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!EMAIL_REGEX.test(email)) {
       return res.json({ success: false, message: 'Please enter a valid email address' });
     }
 
@@ -269,8 +290,7 @@ export const login = async (req, res) => {
   }
 };
 
-// COntroller to check if user is authenticated
-
+// Controller to check if user is authenticated
 export const checkAuth = (req, res) => {
   try {
     res.json({ success: true, user: req.user });
@@ -304,7 +324,7 @@ export const verifyEmail = async (req, res) => {
     }
 
     // Check attempt limit
-    if (verificationRecord.attempts >= 5) {
+    if (verificationRecord.attempts >= MAX_VERIFICATION_ATTEMPTS) {
       return res.json({
         success: false,
         message: 'Too many failed attempts. Please request a new code.',
@@ -322,7 +342,7 @@ export const verifyEmail = async (req, res) => {
     // Create the user account
     const { fullName, phoneNumber, idCard, password } = userData;
 
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(BCRYPT_SALT_ROUNDS);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const newUser = await User.create({
@@ -392,7 +412,7 @@ export const resendVerificationCode = async (req, res) => {
     await VerificationCode.create({
       email,
       code: verificationCode,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      expiresAt: new Date(Date.now() + VERIFICATION_CODE_EXPIRY_MS),
     });
 
     // Send email
@@ -413,16 +433,15 @@ export const updateProfile = async (req, res) => {
     const { profilePic, bio, fullName, phoneNumber } = req.body;
     const userId = req.user._id;
 
-    // Validate image size if provided (4MB limit to match server limit)
+    // Validate image size if provided
     if (profilePic) {
       const base64Data = profilePic.replace(/^data:image\/[a-z]+;base64,/, '');
       const imageSize = (base64Data.length * 3) / 4; // Calculate size in bytes
-      const maxSize = 4 * 1024 * 1024; // 4MB in bytes (matching server limit)
 
-      if (imageSize > maxSize) {
+      if (imageSize > MAX_PROFILE_PIC_SIZE) {
         return res.json({
           success: false,
-          message: 'Image size too large. Please choose an image smaller than 4MB.',
+          message: `Image size too large. Please choose an image smaller than ${MAX_PROFILE_PIC_SIZE / (1024 * 1024)}MB.`,
         });
       }
 
@@ -435,11 +454,10 @@ export const updateProfile = async (req, res) => {
         });
       }
 
-      const allowedFormats = ['jpeg', 'jpg', 'png', 'webp'];
-      if (!allowedFormats.includes(imageFormat[1].toLowerCase())) {
+      if (!ALLOWED_IMAGE_FORMATS.includes(imageFormat[1].toLowerCase())) {
         return res.json({
           success: false,
-          message: 'Unsupported image format. Please use JPEG, PNG, or WEBP.',
+          message: `Unsupported image format. Please use ${ALLOWED_IMAGE_FORMATS.join(', ').toUpperCase()}.`,
         });
       }
     }
@@ -455,25 +473,23 @@ export const updateProfile = async (req, res) => {
 
     // Validate full name if provided
     if (fullName && fullName.trim()) {
-      const nameRegex = /^[a-zA-Z\s]+$/;
-      if (!nameRegex.test(fullName.trim())) {
+      if (!NAME_REGEX.test(fullName.trim())) {
         return res.json({
           success: false,
           message: 'Full name can only contain letters and spaces',
         });
       }
-      if (fullName.trim().length < 3) {
+      if (fullName.trim().length < MIN_FULLNAME_LENGTH) {
         return res.json({
           success: false,
-          message: 'Full name must be at least 3 characters long',
+          message: `Full name must be at least ${MIN_FULLNAME_LENGTH} characters long`,
         });
       }
     }
 
     // Validate phone number if provided
     if (phoneNumber && phoneNumber.trim()) {
-      const phoneRegex = /^(\+92|0)?[0-9]{10}$/;
-      if (!phoneRegex.test(phoneNumber.replace(/\s/g, ''))) {
+      if (!PHONE_REGEX_UPDATE.test(phoneNumber.replace(/\s/g, ''))) {
         return res.json({
           success: false,
           message: 'Please enter a valid phone number',
@@ -503,7 +519,7 @@ export const updateProfile = async (req, res) => {
         const uploadResult = await cloudinary.uploader.upload(profilePic, {
           folder: 'rentifi/profiles',
           transformation: [
-            { width: 400, height: 400, crop: 'fill', gravity: 'face' },
+            { width: PROFILE_PIC_WIDTH, height: PROFILE_PIC_HEIGHT, crop: 'fill', gravity: 'face' },
             { quality: 'auto:good' },
           ],
         });
@@ -553,7 +569,7 @@ export const updateProfile = async (req, res) => {
     if (error.message.includes('PayloadTooLargeError')) {
       return res.json({
         success: false,
-        message: 'Image size too large. Please choose an image smaller than 4MB.',
+        message: `Image size too large. Please choose an image smaller than ${MAX_PROFILE_PIC_SIZE / (1024 * 1024)}MB.`,
       });
     }
 

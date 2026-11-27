@@ -36,6 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PropertyContext } from '../contexts/PropertyContext';
 import { useLoading } from '../contexts/LoadingContext';
 import { useContext } from 'react';
+// Keep in sync with server/constants/enums.js PROPERTY_TYPES
 const propertyTypes = [
   { id: 'apartment', label: 'Apartment' },
   { id: 'house', label: 'House' },
@@ -43,6 +44,8 @@ const propertyTypes = [
   { id: 'cabin', label: 'Cabin' },
   { id: 'cottage', label: 'Cottage' },
   { id: 'loft', label: 'Loft' },
+  { id: 'condo', label: 'Condo' },
+  { id: 'townhouse', label: 'Townhouse' },
 ];
 
 const selectedAmenities = [

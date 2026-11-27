@@ -3,6 +3,18 @@ import User from '../models/User.js';
 import Property from '../models/Property.js';
 import Booking from '../models/Booking.js';
 import AdminLog from '../models/AdminLog.js';
+import {
+  VERIFICATION_STATUS,
+  BOOKING_STATUS,
+  USER_ROLES,
+  ACTIVE_BOOKING_STATUSES,
+  ADMIN_RECENT_ACTIVITY_DAYS,
+  ADMIN_RECENT_ITEMS_LIMIT,
+  ADMIN_LOG_DEFAULT_LIMIT,
+  ADMIN_LOG_DEFAULT_PAGE,
+  ADMIN_LOG_ACTIONS,
+  ADMIN_LOG_TARGET_TYPES,
+} from '../constants/index.js';
 
 // GET Dashboard Statistics
 export const getDashboardStats = async (req, res) => {
@@ -11,31 +23,33 @@ export const getDashboardStats = async (req, res) => {
     const totalUsers = await User.countDocuments();
     const totalProperties = await Property.countDocuments();
     const totalBookings = await Booking.countDocuments();
-    const pendingProperties = await Property.countDocuments({ verificationStatus: 'pending' });
+    const pendingProperties = await Property.countDocuments({
+      verificationStatus: VERIFICATION_STATUS.PENDING,
+    });
 
     // Calculate revenue
-    const bookings = await Booking.find({ status: 'completed' });
+    const bookings = await Booking.find({ status: BOOKING_STATUS.COMPLETED });
     const totalRevenue = bookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
 
     // Get recent activity
     const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - ADMIN_RECENT_ACTIVITY_DAYS);
 
     const recentUsers = await User.find({ createdAt: { $gte: thirtyDaysAgo } })
       .select('fullName email createdAt')
       .sort({ createdAt: -1 })
-      .limit(5);
+      .limit(ADMIN_RECENT_ITEMS_LIMIT);
 
     const recentBookingsData = await Booking.find({ createdAt: { $gte: thirtyDaysAgo } })
       .populate('guest', 'fullName')
       .populate('property', 'title')
       .select('guest property totalPrice createdAt')
       .sort({ createdAt: -1 })
-      .limit(5);
+      .limit(ADMIN_RECENT_ITEMS_LIMIT);
 
     const activeUsers = await User.countDocuments({ isActive: true });
     const activeProperties = await Property.countDocuments({
-      verificationStatus: 'approved',
+      verificationStatus: VERIFICATION_STATUS.APPROVED,
       isActive: true,
     });
 
@@ -69,7 +83,9 @@ export const getAllUsers = async (req, res) => {
       users.map(async (user) => {
         const bookingCount = await Booking.countDocuments({ guest: user._id });
         const propertyCount =
-          user.role === 'host' ? await Property.countDocuments({ host: user._id }) : 0;
+          user.role === USER_ROLES.HOST
+            ? await Property.countDocuments({ host: user._id })
+            : 0;
 
         return {
           ...user.toObject(),
@@ -150,8 +166,8 @@ export const adminUpdateUser = async (req, res) => {
     if (AdminLog) {
       await AdminLog.create({
         admin: req.user._id,
-        action: 'UPDATE_USER',
-        targetType: 'User',
+        action: ADMIN_LOG_ACTIONS.UPDATE_USER,
+        targetType: ADMIN_LOG_TARGET_TYPES.USER,
         targetId: userId,
         details: `Updated user: ${user.fullName}`,
         changes: updates,
@@ -188,8 +204,8 @@ export const adminUpdateProperty = async (req, res) => {
     if (AdminLog) {
       await AdminLog.create({
         admin: req.user._id,
-        action: 'UPDATE_PROPERTY',
-        targetType: 'Property',
+        action: ADMIN_LOG_ACTIONS.UPDATE_PROPERTY,
+        targetType: ADMIN_LOG_TARGET_TYPES.PROPERTY,
         targetId: propertyId,
         details: `Updated property: ${property.title}`,
         changes: updates,
@@ -221,7 +237,7 @@ export const adminDeleteProperty = async (req, res) => {
     // Check for active bookings (reserved, confirmed, checked-in)
     const activeBookings = await Booking.find({
       property: propertyId,
-      status: { $in: ['reserved', 'confirmed', 'checked-in'] },
+      status: { $in: ACTIVE_BOOKING_STATUSES },
     });
 
     if (activeBookings.length > 0) {
@@ -239,7 +255,7 @@ export const adminDeleteProperty = async (req, res) => {
     const upcomingBookings = await Booking.find({
       property: propertyId,
       checkIn: { $gte: now },
-      status: { $in: ['reserved', 'confirmed'] },
+      status: { $in: [BOOKING_STATUS.RESERVED, BOOKING_STATUS.CONFIRMED] },
     });
 
     if (upcomingBookings.length > 0) {
@@ -262,8 +278,8 @@ export const adminDeleteProperty = async (req, res) => {
     if (AdminLog) {
       await AdminLog.create({
         admin: req.user._id,
-        action: 'DELETE_PROPERTY',
-        targetType: 'Property',
+        action: ADMIN_LOG_ACTIONS.DELETE_PROPERTY,
+        targetType: ADMIN_LOG_TARGET_TYPES.PROPERTY,
         targetId: propertyId,
         details: `Deleted property: ${property.title}`,
       });
@@ -291,12 +307,12 @@ export const adminDeleteUser = async (req, res) => {
     }
 
     // Don't allow deleting admin users
-    if (user.role === 'admin') {
+    if (user.role === USER_ROLES.ADMIN) {
       return res.status(403).json({ success: false, message: 'Cannot delete admin users' });
     }
 
     // Delete user's properties if they are a host
-    if (user.isHost || user.role === 'host') {
+    if (user.isHost || user.role === USER_ROLES.HOST) {
       await Property.deleteMany({ host: userId });
     }
 
@@ -310,8 +326,8 @@ export const adminDeleteUser = async (req, res) => {
     if (AdminLog) {
       await AdminLog.create({
         admin: req.user._id,
-        action: 'DELETE_USER',
-        targetType: 'User',
+        action: ADMIN_LOG_ACTIONS.DELETE_USER,
+        targetType: ADMIN_LOG_TARGET_TYPES.USER,
         targetId: userId,
         details: `Deleted user: ${user.fullName}`,
       });
@@ -330,7 +346,7 @@ export const adminDeleteUser = async (req, res) => {
 // GET Admin Logs
 export const getAdminLogs = async (req, res) => {
   try {
-    const { limit = 50, page = 1 } = req.query;
+    const { limit = ADMIN_LOG_DEFAULT_LIMIT, page = ADMIN_LOG_DEFAULT_PAGE } = req.query;
 
     let logs = [];
 

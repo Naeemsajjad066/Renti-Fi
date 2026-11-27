@@ -1,5 +1,14 @@
 // models/Booking.js
 import mongoose from 'mongoose';
+import {
+  BOOKING_STATUS,
+  PAYMENT_STATUS,
+  PAYMENT_METHOD,
+  PAYMENT_OPTION,
+  ACTIVE_BOOKING_STATUSES,
+  MIN_DAYS_BEFORE_CHECKIN_TO_CANCEL,
+  MS_PER_DAY,
+} from '../constants/index.js';
 
 const bookingSchema = new mongoose.Schema(
   {
@@ -86,13 +95,13 @@ const bookingSchema = new mongoose.Schema(
     },
     currency: {
       type: String,
-      default: 'USD',
+      default: 'PKR',
     },
 
     // Payment Option Selected
     paymentOption: {
       type: String,
-      enum: ['arrival', 'early'],
+      enum: Object.values(PAYMENT_OPTION).filter((v) => v !== 'both'), // guests pick 'arrival' or 'early'
       required: true,
     },
 
@@ -125,13 +134,13 @@ const bookingSchema = new mongoose.Schema(
     // Payment Information
     paymentStatus: {
       type: String,
-      enum: ['pending', 'partial', 'paid', 'refunded', 'failed'],
-      default: 'pending',
+      enum: Object.values(PAYMENT_STATUS),
+      default: PAYMENT_STATUS.PENDING,
     },
     paymentMethod: {
       type: String,
-      enum: ['credit_card', 'debit_card', 'cash', 'pending'],
-      default: 'pending',
+      enum: Object.values(PAYMENT_METHOD),
+      default: PAYMENT_METHOD.PENDING,
     },
     paymentId: String, // Legacy field
     paidAt: Date,
@@ -139,8 +148,8 @@ const bookingSchema = new mongoose.Schema(
     // Booking Status
     status: {
       type: String,
-      enum: ['reserved', 'confirmed', 'checked-in', 'completed', 'cancelled', 'expired'],
-      default: 'reserved',
+      enum: Object.values(BOOKING_STATUS),
+      default: BOOKING_STATUS.RESERVED,
     },
     cancellationReason: String,
     cancelledBy: {
@@ -181,6 +190,11 @@ const bookingSchema = new mongoose.Schema(
   }
 );
 
+// Prevent duplicate bookings for the same Stripe payment (webhook + client
+// redirect can race; the unique index makes the second insert fail atomically)
+bookingSchema.index({ stripePaymentIntentId: 1 }, { unique: true, sparse: true });
+bookingSchema.index({ stripeCheckoutSessionId: 1 }, { unique: true, sparse: true });
+
 // Indexes for better query performance
 bookingSchema.index({ guest: 1 });
 bookingSchema.index({ host: 1 });
@@ -197,26 +211,29 @@ bookingSchema.index({ property: 1, checkIn: 1, checkOut: 1, status: 1 });
 
 // Virtual for booking duration
 bookingSchema.virtual('duration').get(function () {
-  return Math.ceil((this.checkOut - this.checkIn) / (1000 * 60 * 60 * 24));
+  return Math.ceil((this.checkOut - this.checkIn) / MS_PER_DAY);
 });
 
 // Method to check if booking can be cancelled
 bookingSchema.methods.canCancel = function () {
   const now = new Date();
-  const daysUntilCheckIn = Math.ceil((this.checkIn - now) / (1000 * 60 * 60 * 24));
+  const daysUntilCheckIn = Math.ceil((this.checkIn - now) / MS_PER_DAY);
 
-  // Cannot cancel if already cancelled, completed, or expired
-  if (['cancelled', 'completed', 'expired'].includes(this.status)) return false;
+  if (
+    [BOOKING_STATUS.CANCELLED, BOOKING_STATUS.COMPLETED, BOOKING_STATUS.EXPIRED].includes(
+      this.status
+    )
+  )
+    return false;
 
-  // Allow cancellation up to 24 hours before check-in
-  return daysUntilCheckIn > 1;
+  return daysUntilCheckIn > MIN_DAYS_BEFORE_CHECKIN_TO_CANCEL;
 };
 
 // Static method to find overlapping bookings
 bookingSchema.statics.findOverlappingBookings = function (propertyId, checkIn, checkOut) {
   return this.find({
     property: propertyId,
-    status: { $in: ['confirmed', 'pending'] },
+    status: { $in: ACTIVE_BOOKING_STATUSES },
     $or: [
       { checkIn: { $lt: checkOut }, checkOut: { $gt: checkIn } },
       { checkIn: { $gte: checkIn, $lt: checkOut } },

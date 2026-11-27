@@ -45,8 +45,9 @@ export default [
       prettier: prettierPlugin,
     },
     rules: {
-      // Prettier as an ESLint rule
-      'prettier/prettier': 'error',
+      // Prettier as an ESLint rule — disabled (formatting is handled by the
+      // editor/formatter directly, not enforced as a lint error)
+      'prettier/prettier': 'off',
 
       // Variables
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],

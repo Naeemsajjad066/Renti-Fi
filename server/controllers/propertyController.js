@@ -4,6 +4,15 @@ import User from '../models/User.js';
 import Booking from '../models/Booking.js';
 import cloudinary from '../lib/cloudinary.js';
 import { sendPropertySubmissionEmail } from '../lib/emailService.js';
+import {
+  VERIFICATION_STATUS,
+  ACTIVE_BOOKING_STATUSES,
+  BOOKING_STATUS,
+  USER_ROLES,
+  PROPERTY_LIST_CACHE_MAX_AGE,
+  PROPERTY_DETAIL_CACHE_MAX_AGE,
+  FEATURED_PROPERTIES_LIMIT,
+} from '../constants/index.js';
 
 // CREATE Property
 export const createProperty = async (req, res) => {
@@ -134,9 +143,9 @@ export const createProperty = async (req, res) => {
       paymentOptions: paymentOptions || '',
       cancellationPolicy: cancellationPolicy || '',
       stripeAccountId: host.stripeAccountId,
-      verificationStatus: 'pending',
+      verificationStatus: VERIFICATION_STATUS.PENDING,
       isVerified: false,
-      isActive: false, // Property won't be shown until approved
+      isActive: false,
     });
 
     // Send submission confirmation email to the host (non-blocking)
@@ -166,7 +175,7 @@ export const getProperties = async (req, res) => {
     // Admins and hosts can see their own properties regardless of status
     const filter = {
       isActive: true,
-      verificationStatus: 'approved',
+      verificationStatus: VERIFICATION_STATUS.APPROVED,
     };
 
     const properties = await Property.find(filter).populate(
@@ -174,9 +183,8 @@ export const getProperties = async (req, res) => {
       'fullName email profilePicture'
     );
 
-    // Add caching headers for better performance
     res.set({
-      'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
+      'Cache-Control': `public, max-age=${PROPERTY_LIST_CACHE_MAX_AGE}`,
       ETag: `"properties-${Date.now()}"`,
     });
 
@@ -197,9 +205,8 @@ export const getProperty = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Property not found' });
     }
 
-    // Add caching headers for better performance
     res.set({
-      'Cache-Control': 'public, max-age=600', // Cache for 10 minutes
+      'Cache-Control': `public, max-age=${PROPERTY_DETAIL_CACHE_MAX_AGE}`,
       ETag: `"property-${property._id}-${property.updatedAt}"`,
     });
 
@@ -262,7 +269,7 @@ export const deleteProperty = async (req, res) => {
     // Check for active bookings (reserved, confirmed, checked-in)
     const activeBookings = await Booking.find({
       property: req.params.id,
-      status: { $in: ['reserved', 'confirmed', 'checked-in'] },
+      status: { $in: ACTIVE_BOOKING_STATUSES },
     });
 
     if (activeBookings.length > 0) {
@@ -280,7 +287,7 @@ export const deleteProperty = async (req, res) => {
     const upcomingBookings = await Booking.find({
       property: req.params.id,
       checkIn: { $gte: now },
-      status: { $in: ['reserved', 'confirmed'] },
+      status: { $in: [BOOKING_STATUS.RESERVED, BOOKING_STATUS.CONFIRMED] },
     });
 
     if (upcomingBookings.length > 0) {
@@ -322,7 +329,11 @@ export const getUserProperties = async (req, res) => {
     const requestedUserId = req.params.userId;
     const currentUserId = req.user._id.toString();
 
-    if (requestedUserId && requestedUserId !== currentUserId && req.user.role !== 'admin') {
+    if (
+      requestedUserId &&
+      requestedUserId !== currentUserId &&
+      req.user.role !== USER_ROLES.ADMIN
+    ) {
       return res.status(403).json({
         success: false,
         message: 'Access denied',
@@ -344,7 +355,7 @@ export const getPublicHostProperties = async (req, res) => {
     const properties = await Property.find({
       host: req.params.hostId,
       isActive: true,
-      verificationStatus: 'approved',
+      verificationStatus: VERIFICATION_STATUS.APPROVED,
     })
       .select(
         '-hostIdCard -propertyDocuments -verifiedBy -rejectionReason -adminNotes -stripeAccountId'
@@ -361,14 +372,16 @@ export const getPublicHostProperties = async (req, res) => {
 // GET featured properties (latest 5 for example)
 export const getFeaturedProperties = async (req, res) => {
   try {
-    const properties = await Property.find({ isActive: true, verificationStatus: 'approved' })
+    const properties = await Property.find({
+      isActive: true,
+      verificationStatus: VERIFICATION_STATUS.APPROVED,
+    })
       .populate('host', 'fullName email profilePicture')
       .sort({ createdAt: -1 })
-      .limit(6);
+      .limit(FEATURED_PROPERTIES_LIMIT);
 
-    // Add caching headers
     res.set({
-      'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
+      'Cache-Control': `public, max-age=${PROPERTY_LIST_CACHE_MAX_AGE}`,
       ETag: `"featured-${Date.now()}"`,
     });
 
@@ -382,7 +395,7 @@ export const getFeaturedProperties = async (req, res) => {
 export const getPendingProperties = async (req, res) => {
   try {
     const properties = await Property.find({
-      verificationStatus: { $in: ['pending', 'resubmitted'] },
+      verificationStatus: { $in: [VERIFICATION_STATUS.PENDING, VERIFICATION_STATUS.RESUBMITTED] },
     })
       .populate('host', 'fullName email profilePicture phone')
       .sort({ createdAt: -1 });
@@ -405,28 +418,15 @@ export const approveProperty = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Property not found' });
     }
 
-    console.log('Approving property:', {
-      id: property._id,
-      title: property.title,
-      hostEmail: property.host.email,
-    });
-
-    // Update property status
-    property.verificationStatus = 'approved';
+    property.verificationStatus = VERIFICATION_STATUS.APPROVED;
     property.isVerified = true;
     property.isActive = true;
     property.verifiedBy = req.user._id;
     property.verifiedAt = new Date();
     property.adminNotes = adminNotes || '';
-    property.rejectionReason = null; // Clear any previous rejection reason
+    property.rejectionReason = null;
 
     await property.save();
-
-    console.log('Property saved with status:', {
-      verificationStatus: property.verificationStatus,
-      isActive: property.isActive,
-      isVerified: property.isVerified,
-    });
 
     // Send approval email to host
     let emailSent = false;
@@ -476,8 +476,7 @@ export const rejectProperty = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Property not found' });
     }
 
-    // Update property status
-    property.verificationStatus = 'rejected';
+    property.verificationStatus = VERIFICATION_STATUS.REJECTED;
     property.isVerified = false;
     property.isActive = false;
     property.verifiedBy = req.user._id;

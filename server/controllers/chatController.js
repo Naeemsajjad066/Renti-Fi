@@ -12,49 +12,20 @@
 import axios from 'axios';
 import { retrieveContext } from '../utils/rentifi-knowledge.js';
 import Property from '../models/Property.js';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-
-const MODELS = [
-  'google/gemma-4-26b-a4b-it:free',
-  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-  'liquid/lfm-3-1.7b:free',
-];
-
-const MAX_HISTORY_TURNS = 6;
-const MAX_MESSAGE_LENGTH = 500;
-const MAX_REPLY_TOKENS = 512;
-const MAX_RETRIES = 2;
-const RETRY_DELAY_MS = 3000;
-const MAX_PROPERTY_RESULTS = 4;
-
-const SENSITIVE_PATTERNS = [
-  /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, // email addresses
-  /bearer\s+[a-z0-9._-]+/gi,                                // JWT tokens
-  /password\s*[:=]\s*\S+/gi,                                // password key-value pairs
-  // Note: we intentionally do NOT redact long numbers from history —
-  // prices like "Rs 15000" and IDs in URLs are harmless in conversation context.
-  // Only the current user message is sanitised before sending to the LLM.
-];
-
-// Pakistani cities recognised for property search
-const KNOWN_CITIES = [
-  'lahore', 'karachi', 'islamabad', 'rawalpindi', 'faisalabad', 'multan',
-  'peshawar', 'quetta', 'sialkot', 'gujranwala', 'hyderabad', 'abbottabad',
-  'murree', 'swat', 'hunza', 'naran', 'kaghan', 'gilgit', 'skardu',
-];
-
-const PROPERTY_TYPES = ['apartment', 'house', 'villa', 'cabin', 'cottage', 'loft', 'condo', 'townhouse'];
-
-// Keywords that signal the user wants to find/book a property
-const SEARCH_INTENT_KEYWORDS = [
-  'find', 'search', 'show', 'list', 'get', 'suggest', 'recommend',
-  'available', 'book', 'rent', 'stay', 'looking for', 'want to',
-  'property', 'properties', 'listing', 'listings', 'place', 'places',
-  'apartment', 'house', 'villa', 'cabin',
-];
+import { VERIFICATION_STATUS, PROPERTY_TYPES,
+  OPENROUTER_API_URL,
+  CHAT_MODELS,
+  MAX_HISTORY_TURNS,
+  MAX_MESSAGE_LENGTH,
+  MAX_REPLY_TOKENS,
+  MAX_RETRIES,
+  RETRY_DELAY_MS,
+  MAX_PROPERTY_RESULTS,
+  KNOWN_CITIES,
+  SEARCH_INTENT_KEYWORDS,
+  HISTORY_SENSITIVE_PATTERNS,
+  MESSAGE_SENSITIVE_PATTERNS,
+} from '../constants/index.js';
 
 // ─── Property intent detection ────────────────────────────────────────────────
 
@@ -94,7 +65,10 @@ function detectPropertySearchIntent(message) {
  * Returns an array of safe, minimal property objects (no host PII).
  */
 async function searchProperties({ city, type, maxPrice, minGuests }) {
-  const filter = { isActive: true, verificationStatus: 'approved' };
+  const filter = {
+    isActive: true,
+    verificationStatus: VERIFICATION_STATUS.APPROVED,
+  };
 
   if (city) filter.city = { $regex: new RegExp(city, 'i') };
   if (type) filter.propertyType = type;
@@ -125,16 +99,9 @@ async function searchProperties({ city, type, maxPrice, minGuests }) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const CURRENT_MSG_SENSITIVE_PATTERNS = [
-  /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, // emails
-  /\b\d{8,}\b/g,                                            // very long IDs (8+ digits)
-  /bearer\s+[a-z0-9._-]+/gi,
-  /password\s*[:=]\s*\S+/gi,
-];
-
 function sanitiseMessage(text) {
   let clean = text.trim().slice(0, MAX_MESSAGE_LENGTH);
-  for (const pattern of CURRENT_MSG_SENSITIVE_PATTERNS) {
+  for (const pattern of MESSAGE_SENSITIVE_PATTERNS) {
     clean = clean.replace(pattern, '[redacted]');
   }
   return clean;
@@ -194,13 +161,19 @@ function sanitiseHistory(rawHistory) {
         typeof m.content === 'string'
     )
     .slice(-MAX_HISTORY_TURNS * 2)
-    .map((m) => ({ role: m.role, content: sanitiseMessage(m.content) }));
+    .map((m) => {
+      let content = m.content;
+      for (const pattern of HISTORY_SENSITIVE_PATTERNS) {
+        content = content.replace(pattern, '[redacted]');
+      }
+      return { role: m.role, content };
+    });
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function callOpenRouter(apiKey, messages, referer) {
-  for (const model of MODELS) {
+  for (const model of CHAT_MODELS) {
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
       try {
         const response = await axios.post(

@@ -13,6 +13,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import BookingStatusBadge from './BookingStatusBadge';
+import { PAYMENT_OPTION, PAYMENT_OPTION_LABELS, CURRENCY, BOOKING_STATUS } from '@/constants/booking';
 
 const formatGuests = (booking) => {
   const count = booking.guests?.adults || booking.guests || 1;
@@ -20,7 +21,7 @@ const formatGuests = (booking) => {
 };
 
 const formatPaymentOption = (option) =>
-  option === 'early' ? '40% paid · 60% on arrival' : 'Pay on arrival';
+  PAYMENT_OPTION_LABELS[option] ?? PAYMENT_OPTION_LABELS[PAYMENT_OPTION.ARRIVAL];
 
 const BookingCard = ({
   booking,
@@ -68,7 +69,7 @@ const BookingCard = ({
             </Link>
             <div className="text-right shrink-0">
               <p className="font-bold text-gray-900 dark:text-white text-base">
-                Rs {booking.totalPrice?.toLocaleString()}
+                {CURRENCY.PREFIX}{booking.totalPrice?.toLocaleString()}
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500">total</p>
             </div>
@@ -174,7 +175,7 @@ const BookingCard = ({
                 </a>
               )}
 
-              {booking.status === 'upcoming' && (
+              {booking.status === BOOKING_STATUS.UPCOMING && (
                 <button
                   onClick={() => onCancel(booking._id)}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-red-200 dark:border-red-800/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-xs font-medium transition-colors"
@@ -183,7 +184,7 @@ const BookingCard = ({
                 </button>
               )}
 
-              {booking.status === 'completed' && !reviewed && (
+              {booking.status === BOOKING_STATUS.COMPLETED && !reviewed && (
                 <button
                   onClick={() => onWriteReview(booking)}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-lg text-xs font-medium transition-colors"
@@ -192,7 +193,7 @@ const BookingCard = ({
                 </button>
               )}
 
-              {booking.status === 'completed' && reviewed && (
+              {booking.status === BOOKING_STATUS.COMPLETED && reviewed && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-xs font-medium">
                   <Check size={12} /> Reviewed
                 </span>

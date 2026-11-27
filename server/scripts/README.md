@@ -6,44 +6,26 @@ One-off utility scripts for database management. Run from the `server/` director
 
 ---
 
-## createAdmin.js
+## admin.js
 
-Creates a new admin user or promotes an existing user to admin.
+Unified admin management. Create a new admin user or promote an existing one.
 
 ```bash
-node scripts/createAdmin.js <email> <password>
+# Create a new admin user (or promote existing user to admin)
+node scripts/admin.js create <email> <password>
+
+# Promote an existing user to admin by email
+node scripts/admin.js promote <email>
+
+# Promote an existing user to admin by MongoDB ObjectId
+node scripts/admin.js promote-id <userId>
 ```
 
+**Examples:**
 ```bash
-node scripts/createAdmin.js admin@example.com MySecurePass123
-```
-
----
-
-## makeAdmin.js
-
-Promotes an existing user to admin by email address.
-
-```bash
-node scripts/makeAdmin.js <email>
-```
-
-```bash
-node scripts/makeAdmin.js user@example.com
-```
-
----
-
-## makeAdminById.js
-
-Promotes an existing user to admin by MongoDB ObjectId.
-
-```bash
-node scripts/makeAdminById.js <userId>
-```
-
-```bash
-node scripts/makeAdminById.js 64a1b2c3d4e5f6a7b8c9d0e1
+node scripts/admin.js create admin@example.com MySecurePass123
+node scripts/admin.js promote user@example.com
+node scripts/admin.js promote-id 64a1b2c3d4e5f6a7b8c9d0e1
 ```
 
 ---

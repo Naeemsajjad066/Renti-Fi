@@ -1,5 +1,17 @@
 // config/stripe.js
 import Stripe from 'stripe';
+import {
+  UPFRONT_PAYMENT_RATIO,
+  PARTIAL_REFUND_RATIO,
+  FLEXIBLE_FULL_REFUND_DAYS,
+  MODERATE_FULL_REFUND_DAYS,
+  MODERATE_PARTIAL_REFUND_DAYS,
+  STRICT_FULL_REFUND_DAYS,
+  STRICT_PARTIAL_REFUND_DAYS,
+  MS_PER_DAY,
+  CANCELLATION_POLICY,
+  PAYMENT_OPTION,
+} from '../constants/index.js';
 
 // Lazy initialization to ensure env vars are loaded
 let stripeInstance = null;
@@ -26,65 +38,48 @@ export const stripe = new Proxy(
   }
 );
 
-// Payment calculation helpers
-export const calculatePaymentBreakdown = (totalPrice, paymentOption) => {
-  if (paymentOption === 'early') {
-    const upfrontAmount = Math.round(totalPrice * 0.4); // 40%
-    const arrivalAmount = totalPrice - upfrontAmount; // 60%
+// ─── Payment calculation helpers ──────────────────────────────────────────────
 
-    return {
-      upfrontAmount,
-      arrivalAmount,
-      totalAmount: totalPrice,
-    };
-  } else {
-    // Payment on arrival - 100% due on arrival
-    return {
-      upfrontAmount: 0,
-      arrivalAmount: totalPrice,
-      totalAmount: totalPrice,
-    };
+export const calculatePaymentBreakdown = (totalPrice, paymentOption) => {
+  if (paymentOption === PAYMENT_OPTION.EARLY) {
+    const upfrontAmount = Math.round(totalPrice * UPFRONT_PAYMENT_RATIO);
+    const arrivalAmount = totalPrice - upfrontAmount;
+    return { upfrontAmount, arrivalAmount, totalAmount: totalPrice };
   }
+
+  // PAYMENT_OPTION.ARRIVAL — 100% due on arrival
+  return { upfrontAmount: 0, arrivalAmount: totalPrice, totalAmount: totalPrice };
 };
 
-// Cancellation refund calculator
+// ─── Cancellation refund calculator ──────────────────────────────────────────
+
 export const calculateRefundAmount = (booking, cancellationPolicy) => {
   const now = new Date();
   const checkIn = new Date(booking.checkIn);
-  const daysUntilCheckIn = Math.ceil((checkIn - now) / (1000 * 60 * 60 * 24));
+  const daysUntilCheckIn = Math.ceil((checkIn - now) / MS_PER_DAY);
 
-  // Only refund if upfront payment was made
-  if (!booking.paymentBreakdown?.upfrontPaid) {
-    return 0;
-  }
+  // Only refund if the upfront Stripe payment was made
+  if (!booking.paymentBreakdown?.upfrontPaid) return 0;
 
   const upfrontAmount = booking.paymentBreakdown.upfrontAmount;
 
   switch (cancellationPolicy) {
-    case 'flexible':
-      if (daysUntilCheckIn >= 1) {
-        return upfrontAmount; // Full refund
-      } else {
-        return Math.round(upfrontAmount * 0.5); // 50% refund
-      }
+    case CANCELLATION_POLICY.FLEXIBLE:
+      return daysUntilCheckIn >= FLEXIBLE_FULL_REFUND_DAYS
+        ? upfrontAmount
+        : Math.round(upfrontAmount * PARTIAL_REFUND_RATIO);
 
-    case 'moderate':
-      if (daysUntilCheckIn >= 7) {
-        return upfrontAmount; // Full refund
-      } else if (daysUntilCheckIn >= 3) {
-        return Math.round(upfrontAmount * 0.5); // 50% refund
-      } else {
-        return 0; // No refund
-      }
+    case CANCELLATION_POLICY.MODERATE:
+      if (daysUntilCheckIn >= MODERATE_FULL_REFUND_DAYS) return upfrontAmount;
+      if (daysUntilCheckIn >= MODERATE_PARTIAL_REFUND_DAYS)
+        return Math.round(upfrontAmount * PARTIAL_REFUND_RATIO);
+      return 0;
 
-    case 'strict':
-      if (daysUntilCheckIn >= 14) {
-        return upfrontAmount; // Full refund
-      } else if (daysUntilCheckIn >= 7) {
-        return Math.round(upfrontAmount * 0.5); // 50% refund
-      } else {
-        return 0; // No refund
-      }
+    case CANCELLATION_POLICY.STRICT:
+      if (daysUntilCheckIn >= STRICT_FULL_REFUND_DAYS) return upfrontAmount;
+      if (daysUntilCheckIn >= STRICT_PARTIAL_REFUND_DAYS)
+        return Math.round(upfrontAmount * PARTIAL_REFUND_RATIO);
+      return 0;
 
     default:
       return 0;
