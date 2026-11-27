@@ -1,0 +1,398 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 195 15% 97%; /* very light teal-tinted white */
+    --foreground: 200 25% 18%; /* deep charcoal */
+
+    --card: 195 15% 97%;
+    --card-foreground: 200 25% 18%;
+
+    --popover: 195 15% 97%;
+    --popover-foreground: 200 25% 18%;
+
+    --primary: 200 100% 27%; /* #008C8C teal */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 200 16% 26%; /* #36454F charcoal-gray */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 195 20% 92%;
+    --muted-foreground: 200 15% 40%;
+
+    --accent: 33 99% 48%; /* #F28500 tangerine */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 195 15% 85%;
+    --input: 195 15% 85%;
+    --ring: 200 100% 27%;
+
+    --radius: 0.75rem;
+
+    /* Brand palette — direct hex values for use in arbitrary CSS */
+    --charcoal-gray: #36454f;
+    --teal: #008c8c;
+    --tangerine: #f28500;
+
+    --sidebar-background: 200 16% 26%; /* charcoal */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 200 100% 27%; /* teal */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 33 99% 48%; /* tangerine */
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 200 15% 32%;
+    --sidebar-ring: 200 100% 27%;
+  }
+
+  .dark {
+    --background: 200 25% 10%;
+    --foreground: 195 20% 92%;
+
+    --card: 200 25% 10%;
+    --card-foreground: 195 20% 92%;
+
+    --popover: 200 25% 10%;
+    --popover-foreground: 195 20% 92%;
+
+    --primary: 200 100% 35%; /* slightly lighter teal for dark mode */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 200 16% 20%;
+    --secondary-foreground: 195 20% 92%;
+
+    --muted: 200 20% 16%;
+    --muted-foreground: 195 15% 55%;
+
+    --accent: 33 99% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 200 20% 18%;
+    --input: 200 20% 18%;
+    --ring: 200 100% 35%;
+
+    --sidebar-background: 200 25% 10%;
+    --sidebar-foreground: 195 20% 92%;
+    --sidebar-primary: 200 100% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 33 99% 55%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 200 20% 18%;
+    --sidebar-ring: 200 100% 35%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body {
+    @apply antialiased scroll-smooth transition-colors duration-300;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display font-semibold tracking-tight text-gray-900 dark:text-gray-100;
+  }
+}
+
+@layer components {
+  .animate-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  .page-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full;
+  }
+
+  .glass-effect {
+    @apply bg-white/90 backdrop-blur-sm border border-teal/10 shadow-soft;
+  }
+
+  .nav-item {
+    @apply relative px-3 py-2 text-sm font-medium text-foreground transition-all duration-200 hover:text-teal;
+  }
+
+  .nav-item::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-teal transition-all duration-300;
+  }
+
+  .nav-item:hover::after {
+    @apply w-full;
+  }
+
+  .nav-item.active {
+    @apply text-teal;
+  }
+
+  .nav-item.active::after {
+    @apply w-full;
+  }
+
+  .property-card {
+    @apply relative overflow-hidden rounded-xl bg-white shadow-md transition-all duration-300 hover:shadow-xl;
+  }
+
+  .primary-button {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg bg-teal text-white font-medium transition-all duration-200 hover:bg-teal/90 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-teal/20;
+  }
+
+  .secondary-button {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg bg-white text-charcoal-gray font-medium border border-teal/20 transition-all duration-200 hover:bg-teal/5 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-teal/20;
+  }
+
+  .form-input {
+    @apply w-full px-4 py-2 rounded-lg border border-teal/20 focus:border-teal focus:ring-2 focus:ring-teal/20 focus:outline-none transition-colors bg-white text-gray-800;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+
+  .custom-scrollbar {
+    @apply scrollbar-thin scrollbar-thumb-teal/30 scrollbar-track-transparent hover:scrollbar-thumb-teal;
+  }
+
+  .shadow-soft {
+    @apply shadow-[0_5px_30px_-15px_rgba(0,140,140,0.15)];
+  }
+
+  .shadow-card {
+    @apply shadow-[0_10px_30px_-15px_rgba(0,140,140,0.2)];
+  }
+
+  .shadow-elevated {
+    @apply shadow-[0_15px_35px_-15px_rgba(0,140,140,0.25)];
+  }
+
+  .blur-backdrop {
+    @apply backdrop-blur-md bg-teal/10;
+  }
+
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1;
+  }
+
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-105;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-[0_0_15px_rgba(0,140,140,0.5)];
+  }
+
+  /* Enhanced design components */
+  .hero-gradient {
+    @apply bg-gradient-to-b from-teal/5 via-teal/5 to-transparent;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:translate-y-[-5px] hover:shadow-xl;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-teal to-charcoal-gray;
+  }
+
+  .feature-icon {
+    @apply w-12 h-12 rounded-xl flex items-center justify-center bg-teal/10 text-teal mb-4;
+  }
+
+  .feature-card {
+    @apply p-6 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  .cta-gradient {
+    @apply bg-gradient-to-r from-charcoal-gray to-teal;
+  }
+}
+
+/* Custom animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Button with animated arrow */
+.btn-with-arrow .arrow {
+  transition: transform 0.2s ease-out;
+}
+
+.btn-with-arrow:hover .arrow {
+  transform: translateX(4px);
+}
+
+/* Underline animation */
+.animated-underline {
+  position: relative;
+}
+
+.animated-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: currentColor;
+  transition: width 0.3s ease;
+}
+
+.animated-underline:hover::after {
+  width: 100%;
+}
+
+/* Shimmering effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* New animations */
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.8s ease-out forwards;
+}
+
+@keyframes zoomIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-zoom-in {
+  animation: zoomIn 0.5s ease-out forwards;
+}
+
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ─── react-day-picker v9 — Rentifi booking calendar overrides ──────────── */
+.rdp-rentifi {
+  --rdp-accent-color: #008c8c;
+  --rdp-accent-background-color: rgba(0, 140, 140, 0.12);
+}
+
+/* day button base */
+.rdp-rentifi .rdp-day_button {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: inherit;
+}
+.rdp-rentifi .rdp-day_button:hover:not(:disabled) {
+  background-color: rgba(0, 140, 140, 0.12);
+}
+
+/* selected / range */
+.rdp-rentifi .rdp-selected .rdp-day_button,
+.rdp-rentifi .rdp-range_start .rdp-day_button,
+.rdp-rentifi .rdp-range_end .rdp-day_button {
+  background-color: #008c8c !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+.rdp-rentifi .rdp-range_middle .rdp-day_button {
+  background-color: rgba(0, 140, 140, 0.18) !important;
+  border-radius: 0 !important;
+  color: #1a3540;
+}
+.dark .rdp-rentifi .rdp-range_middle .rdp-day_button {
+  color: #a0d4d4;
+}
+
+/* today */
+.rdp-rentifi .rdp-today .rdp-day_button {
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: #008c8c;
+}
+
+/* disabled = past days → grey out */
+.rdp-rentifi .rdp-disabled .rdp-day_button {
+  color: #a0b8c0 !important;
+  cursor: not-allowed !important;
+  text-decoration: none;
+  opacity: 0.45;
+  background: transparent !important;
+}
+
+/* booked days */
+.rdp-rentifi [data-booked='true'] .rdp-day_button {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+  text-decoration: line-through;
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+}

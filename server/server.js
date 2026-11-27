@@ -1,0 +1,170 @@
+import express from 'express';
+import 'dotenv/config';
+import cors from 'cors';
+import helmet from 'helmet';
+import http from 'http';
+import mongoSanitize from 'express-mongo-sanitize';
+import { connectDB } from './lib/db.js';
+import userRouter from './routes/userRoutes.js';
+import propertyRouter from './routes/properties.js';
+import bookingRouter from './routes/bookings.js';
+import reviewRouter from './routes/reviews.js';
+import adminRouter from './routes/admin.js';
+import paymentRouter from './routes/payments.js';
+import stripeConnectRouter from './routes/stripeConnect.js';
+import complaintRouter from './routes/complaints.js';
+import chatRouter from './routes/chat.js';
+// import messageRouter from "./routes/messageRoutes.js";
+
+const app = express();
+const server = http.createServer(app);
+
+// Stripe webhook endpoint needs raw body - must be before express.json()
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+
+// middleware setup
+app.use(express.json({ limit: '4mb' }));
+app.use(helmet());
+
+// Security middleware - sanitize data to prevent NoSQL injection
+app.use(mongoSanitize());
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+
+      // Build allowed list from env vars — support comma-separated values
+      // e.g. CLIENT_URL=https://rentifi.vercel.app,https://www.rentifi.com
+      const fromEnv = [process.env.CLIENT_URL, process.env.FRONTEND_URL]
+        .filter(Boolean)
+        .flatMap((v) => v.split(',').map((s) => s.trim()))
+        .filter(Boolean);
+
+      const allowedOrigins = [
+        'http://localhost:5173',
+        'http://localhost:8080',
+        'http://localhost:3000',
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:8080',
+        'http://127.0.0.1:3000',
+        ...fromEnv,
+      ];
+
+      // Exact match
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Allow all Vercel preview deployments for this project
+      // e.g. https://rentifi-abc123-username.vercel.app
+      if (/\.vercel\.app$/.test(origin)) {
+        return callback(null, true);
+      }
+
+      // Allow Render preview URLs
+      if (/\.onrender\.com$/.test(origin)) {
+        return callback(null, true);
+      }
+
+      // In development always allow — never block localhost variants
+      if (process.env.NODE_ENV !== 'production') {
+        return callback(null, true);
+      }
+
+      // Blocked — log the origin so it's visible in Render/server logs
+      console.error(`CORS blocked origin: ${origin}`);
+      console.error(`Add it to CLIENT_URL or FRONTEND_URL env var on Render.`);
+      callback(new Error(`Origin not allowed by CORS: ${origin}`));
+    },
+    credentials: true,
+    optionsSuccessStatus: 200,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+      'Referer',
+      'token',
+      'Accept-Language',
+    ],
+  })
+);
+
+// Add performance and security headers
+app.use((req, res, next) => {
+  // Security headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+
+  // Performance headers
+  // Log requests in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`${req.method} ${req.path} - Origin: ${req.get('Origin')}`);
+  }
+
+  next();
+});
+
+// Error handling middleware for payload too large
+app.use((error, req, res, next) => {
+  if (error.type === 'entity.too.large') {
+    return res.status(413).json({
+      success: false,
+      message: 'File too large. Please choose an image smaller than 4MB.',
+    });
+  }
+  next(error);
+});
+
+// Handle preflight requests
+app.options('*', (req, res) => {
+  res.sendStatus(200);
+});
+
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Rentifi API is running',
+    version: '1.0.0',
+    endpoints: {
+      status: '/api/status',
+      auth: '/api/auth',
+      properties: '/api/properties',
+      bookings: '/api/bookings',
+      reviews: '/api/reviews',
+      payments: '/api/payments',
+    },
+  });
+});
+
+// test route
+app.use('/api/status', (req, res) => res.send('Server is live'));
+
+app.use('/api/auth', userRouter);
+app.use('/api/properties', propertyRouter);
+app.use('/api/bookings', bookingRouter);
+app.use('/api/reviews', reviewRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/payments', paymentRouter);
+app.use('/api/stripe-connect', stripeConnectRouter);
+app.use('/api/complaints', complaintRouter);
+app.use('/api/chat', chatRouter);
+// app.use("/api/messages",messageRouter)
+
+const PORT = process.env.PORT || 5000;
+
+// connect to mongodb
+await connectDB();
+
+// start server - bind to 0.0.0.0 for cloud deployment
+server.listen(PORT, '0.0.0.0', () => {
+  console.log('Server is running on port: ' + PORT);
+});
+
+//export server for vercel
+export default server;

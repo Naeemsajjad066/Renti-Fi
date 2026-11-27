@@ -1,0 +1,9 @@
+export { default as HeroSection } from './HeroSection';
+export { default as HowItWorksSection } from './HowItWorksSection';
+export { default as FeaturedListingsSection } from './FeaturedListingsSection';
+export { default as PopularDestinationsSection } from './PopularDestinationsSection';
+export { default as PropertyTypeFilter } from './PropertyTypeFilter';
+export { default as ExplorePropertiesSection } from './ExplorePropertiesSection';
+export { default as WhyChooseUsSection } from './WhyChooseUsSection';
+export { default as TestimonialsSection } from './TestimonialsSection';
+export { default as HostCTASection } from './HostCTASection';

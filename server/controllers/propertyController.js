@@ -1,0 +1,513 @@
+// controllers/propertyController.js
+import Property from '../models/Property.js';
+import User from '../models/User.js';
+import Booking from '../models/Booking.js';
+import cloudinary from '../lib/cloudinary.js';
+import { sendPropertySubmissionEmail } from '../lib/emailService.js';
+
+// CREATE Property
+export const createProperty = async (req, res) => {
+  try {
+    // Check if host has connected Stripe account
+    const host = await User.findById(req.user._id);
+    if (!host.stripeAccountId || !host.stripeOnboardingComplete) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please connect your Stripe account before listing a property',
+        requiresStripeSetup: true,
+      });
+    }
+
+    const {
+      title,
+      description,
+      address,
+      city,
+      state,
+      zipCode,
+      country,
+      propertyType,
+      bedrooms,
+      bathrooms,
+      maxGuests,
+      price,
+      selectedAmenities,
+      latitude,
+      longitude,
+      locationAccuracy,
+      paymentOptions,
+      cancellationPolicy,
+    } = req.body;
+
+    // Separate files by field name - uploadFields returns an object
+    const imageFiles = req.files?.['images'] || [];
+    const idCardFile = req.files?.['idCard']?.[0]; // Single file
+    const docFiles = req.files?.['propertyDocuments'] || [];
+
+    // Upload property images
+    let uploadedImages = [];
+    if (imageFiles.length > 0) {
+      const uploadPromises = imageFiles.map(
+        (file) =>
+          new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+              { folder: 'properties' },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result.secure_url);
+              }
+            );
+            stream.end(file.buffer);
+          })
+      );
+      uploadedImages = await Promise.all(uploadPromises);
+    }
+
+    // Upload ID card
+    let idCardData = null;
+    if (idCardFile) {
+      const idCardUpload = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: 'verification/id-cards' },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(idCardFile.buffer);
+      });
+      idCardData = {
+        url: idCardUpload.secure_url,
+        publicId: idCardUpload.public_id,
+        uploadedAt: new Date(),
+      };
+    }
+
+    // Upload property documents
+    let propertyDocumentsData = [];
+    if (docFiles.length > 0) {
+      const docUploadPromises = docFiles.map(
+        (file) =>
+          new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+              { folder: 'verification/property-docs' },
+              (error, result) => {
+                if (error) reject(error);
+                else
+                  resolve({
+                    url: result.secure_url,
+                    publicId: result.public_id,
+                    name: file.originalname,
+                    uploadedAt: new Date(),
+                  });
+              }
+            );
+            stream.end(file.buffer);
+          })
+      );
+      propertyDocumentsData = await Promise.all(docUploadPromises);
+    }
+
+    const newProperty = await Property.create({
+      host: req.user._id,
+      title,
+      description,
+      address,
+      city,
+      state,
+      zipCode,
+      country,
+      propertyType,
+      bedrooms,
+      bathrooms,
+      maxGuests,
+      price,
+      amenities: selectedAmenities ? JSON.parse(selectedAmenities) : [],
+      images: uploadedImages,
+      latitude: latitude ? parseFloat(latitude) : null,
+      longitude: longitude ? parseFloat(longitude) : null,
+      locationAccuracy: locationAccuracy ? parseFloat(locationAccuracy) : null,
+      locationCapturedAt: latitude && longitude ? new Date() : null,
+      isLocationVerified: !!(latitude && longitude),
+      hostIdCard: idCardData,
+      propertyDocuments: propertyDocumentsData,
+      paymentOptions: paymentOptions || '',
+      cancellationPolicy: cancellationPolicy || '',
+      stripeAccountId: host.stripeAccountId,
+      verificationStatus: 'pending',
+      isVerified: false,
+      isActive: false, // Property won't be shown until approved
+    });
+
+    // Send submission confirmation email to the host (non-blocking)
+    sendPropertySubmissionEmail(host.email, {
+      hostName: host.fullName,
+      propertyTitle: title,
+      city,
+      state,
+      price,
+    }).catch((err) => console.error('Property submission email failed:', err.message));
+
+    return res.json({
+      success: true,
+      message: "Property submitted for verification. You'll receive an email once it's reviewed.",
+      property: newProperty,
+    });
+  } catch (error) {
+    console.error('Error creating property:', error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// GET all properties
+export const getProperties = async (req, res) => {
+  try {
+    // Only show approved properties to regular users
+    // Admins and hosts can see their own properties regardless of status
+    const filter = {
+      isActive: true,
+      verificationStatus: 'approved',
+    };
+
+    const properties = await Property.find(filter).populate(
+      'host',
+      'fullName email profilePicture'
+    );
+
+    // Add caching headers for better performance
+    res.set({
+      'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
+      ETag: `"properties-${Date.now()}"`,
+    });
+
+    res.json({ success: true, properties });
+  } catch {
+    res.status(500).json({ success: false, message: 'Error fetching properties' });
+  }
+};
+
+// GET single property by ID
+export const getProperty = async (req, res) => {
+  try {
+    const property = await Property.findById(req.params.id).populate(
+      'host',
+      'fullName email profilePicture createdAt'
+    );
+    if (!property) {
+      return res.status(404).json({ success: false, message: 'Property not found' });
+    }
+
+    // Add caching headers for better performance
+    res.set({
+      'Cache-Control': 'public, max-age=600', // Cache for 10 minutes
+      ETag: `"property-${property._id}-${property.updatedAt}"`,
+    });
+
+    res.json({ success: true, property });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ success: false, message: 'Error fetching property', error: err.message });
+  }
+};
+
+// UPDATE Property
+export const updateProperty = async (req, res) => {
+  try {
+    const property = await Property.findById(req.params.id);
+
+    if (!property) {
+      return res.status(404).json({ success: false, message: 'Property not found' });
+    }
+
+    if (property.host.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Unauthorized' });
+    }
+
+    // Handle new images
+    let uploadedImages = property.images;
+    if (req.files && req.files.length > 0) {
+      const uploadPromises = req.files.map((file) =>
+        cloudinary.uploader.upload(file.path, { folder: 'properties' })
+      );
+      const results = await Promise.all(uploadPromises);
+      uploadedImages = [...uploadedImages, ...results.map((r) => r.secure_url)];
+    }
+
+    const updatedProperty = await Property.findByIdAndUpdate(
+      req.params.id,
+      { ...req.body, images: uploadedImages },
+      { new: true }
+    );
+
+    res.json({ success: true, property: updatedProperty });
+  } catch {
+    res.status(500).json({ success: false, message: 'Error updating property' });
+  }
+};
+
+// DELETE Property
+export const deleteProperty = async (req, res) => {
+  try {
+    const property = await Property.findById(req.params.id);
+
+    if (!property) {
+      return res.status(404).json({ success: false, message: 'Property not found' });
+    }
+
+    if (property.host.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Unauthorized' });
+    }
+
+    // Check for active bookings (reserved, confirmed, checked-in)
+    const activeBookings = await Booking.find({
+      property: req.params.id,
+      status: { $in: ['reserved', 'confirmed', 'checked-in'] },
+    });
+
+    if (activeBookings.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'Cannot delete property with active bookings. Please wait until all bookings are completed or cancelled.',
+        hasActiveBookings: true,
+        activeBookingsCount: activeBookings.length,
+      });
+    }
+
+    // Check for upcoming bookings (bookings with future check-in dates)
+    const now = new Date();
+    const upcomingBookings = await Booking.find({
+      property: req.params.id,
+      checkIn: { $gte: now },
+      status: { $in: ['reserved', 'confirmed'] },
+    });
+
+    if (upcomingBookings.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'Cannot delete property with upcoming bookings. Please cancel all bookings before deleting the property.',
+        hasUpcomingBookings: true,
+        upcomingBookingsCount: upcomingBookings.length,
+      });
+    }
+
+    await Property.findByIdAndDelete(req.params.id);
+
+    res.json({ success: true, message: 'Property deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting property:', error);
+    res.status(500).json({ success: false, message: 'Error deleting property' });
+  }
+};
+
+// CHECK Availability (basic)
+// export const checkAvailability = async (req, res) => {
+//   try {
+//     const property = await Property.findById(req.params.id);
+//     if (!property) {
+//       return res.status(404).json({ success: false, message: "Property not found" });
+//     }
+
+//     res.json({ success: true, availableDates: property.availableDates });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: "Error checking availability" });
+//   }
+// };
+
+// GET properties of logged-in user
+export const getUserProperties = async (req, res) => {
+  try {
+    const requestedUserId = req.params.userId;
+    const currentUserId = req.user._id.toString();
+
+    if (requestedUserId && requestedUserId !== currentUserId && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied',
+      });
+    }
+
+    const userId = requestedUserId || currentUserId;
+    const properties = await Property.find({ host: userId });
+    res.json({ success: true, properties });
+  } catch (error) {
+    console.error('Error fetching user properties:', error);
+    res.status(500).json({ success: false, message: 'Error fetching user properties' });
+  }
+};
+
+// GET approved properties for a public host profile
+export const getPublicHostProperties = async (req, res) => {
+  try {
+    const properties = await Property.find({
+      host: req.params.hostId,
+      isActive: true,
+      verificationStatus: 'approved',
+    })
+      .select(
+        '-hostIdCard -propertyDocuments -verifiedBy -rejectionReason -adminNotes -stripeAccountId'
+      )
+      .populate('host', 'fullName profilePic bio createdAt')
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, properties });
+  } catch {
+    res.status(404).json({ success: false, message: 'Host properties not found' });
+  }
+};
+
+// GET featured properties (latest 5 for example)
+export const getFeaturedProperties = async (req, res) => {
+  try {
+    const properties = await Property.find({ isActive: true, verificationStatus: 'approved' })
+      .populate('host', 'fullName email profilePicture')
+      .sort({ createdAt: -1 })
+      .limit(6);
+
+    // Add caching headers
+    res.set({
+      'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
+      ETag: `"featured-${Date.now()}"`,
+    });
+
+    res.json({ success: true, properties });
+  } catch {
+    res.status(500).json({ success: false, message: 'Error fetching featured properties' });
+  }
+};
+
+// GET pending properties for admin verification
+export const getPendingProperties = async (req, res) => {
+  try {
+    const properties = await Property.find({
+      verificationStatus: { $in: ['pending', 'resubmitted'] },
+    })
+      .populate('host', 'fullName email profilePicture phone')
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, properties, count: properties.length });
+  } catch {
+    res.status(500).json({ success: false, message: 'Error fetching pending properties' });
+  }
+};
+
+// APPROVE property (Admin only)
+export const approveProperty = async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const { adminNotes } = req.body;
+
+    const property = await Property.findById(propertyId).populate('host', 'fullName email');
+
+    if (!property) {
+      return res.status(404).json({ success: false, message: 'Property not found' });
+    }
+
+    console.log('Approving property:', {
+      id: property._id,
+      title: property.title,
+      hostEmail: property.host.email,
+    });
+
+    // Update property status
+    property.verificationStatus = 'approved';
+    property.isVerified = true;
+    property.isActive = true;
+    property.verifiedBy = req.user._id;
+    property.verifiedAt = new Date();
+    property.adminNotes = adminNotes || '';
+    property.rejectionReason = null; // Clear any previous rejection reason
+
+    await property.save();
+
+    console.log('Property saved with status:', {
+      verificationStatus: property.verificationStatus,
+      isActive: property.isActive,
+      isVerified: property.isVerified,
+    });
+
+    // Send approval email to host
+    let emailSent = false;
+    try {
+      const { sendPropertyApprovalEmail } = await import('../lib/emailService.js');
+      await sendPropertyApprovalEmail(property.host.email, {
+        hostName: property.host.fullName,
+        propertyTitle: property.title,
+        propertyId: property._id,
+        verifiedAt: property.verifiedAt,
+      });
+      emailSent = true;
+      console.log('Approval email sent successfully to:', property.host.email);
+    } catch (emailError) {
+      console.error('Error sending approval email:', emailError.message);
+      console.error('Email stack:', emailError.stack);
+      // Continue even if email fails
+    }
+
+    res.json({
+      success: true,
+      message: emailSent
+        ? 'Property approved successfully and email sent to host'
+        : 'Property approved successfully (email failed to send)',
+      property,
+      emailSent,
+    });
+  } catch (error) {
+    console.error('Error approving property:', error);
+    res.status(500).json({ success: false, message: 'Error approving property' });
+  }
+};
+
+// REJECT property (Admin only)
+export const rejectProperty = async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const { rejectionReason, adminNotes } = req.body;
+
+    if (!rejectionReason) {
+      return res.status(400).json({ success: false, message: 'Rejection reason is required' });
+    }
+
+    const property = await Property.findById(propertyId).populate('host', 'fullName email');
+
+    if (!property) {
+      return res.status(404).json({ success: false, message: 'Property not found' });
+    }
+
+    // Update property status
+    property.verificationStatus = 'rejected';
+    property.isVerified = false;
+    property.isActive = false;
+    property.verifiedBy = req.user._id;
+    property.verifiedAt = new Date();
+    property.rejectionReason = rejectionReason;
+    property.adminNotes = adminNotes || '';
+
+    await property.save();
+
+    // Send rejection email to host
+    try {
+      const { sendPropertyRejectionEmail } = await import('../lib/emailService.js');
+      await sendPropertyRejectionEmail(property.host.email, {
+        hostName: property.host.fullName,
+        propertyTitle: property.title,
+        rejectionReason,
+        propertyId: property._id,
+      });
+    } catch (emailError) {
+      console.error('Error sending rejection email:', emailError);
+      // Continue even if email fails
+    }
+
+    res.json({
+      success: true,
+      message: 'Property rejected',
+      property,
+    });
+  } catch (error) {
+    console.error('Error rejecting property:', error);
+    res.status(500).json({ success: false, message: 'Error rejecting property' });
+  }
+};

@@ -1,0 +1,16 @@
+{
+  "name": "rentifi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Rentifi monorepo — client + server",
+  "scripts": {
+    "lint": "npm run lint --prefix client && npm run lint --prefix server",
+    "lint:fix": "npm run lint:fix --prefix client && npm run lint:fix --prefix server",
+    "prettier": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\" --ignore-path .prettierignore",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\" --ignore-path .prettierignore",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\" --ignore-path .prettierignore"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3"
+  }
+}
